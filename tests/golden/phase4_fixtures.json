@@ -1,0 +1,1037 @@
+{
+  "case1_identical": {
+    "R_in": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "R_out": [
+      [
+        1.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        1.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        1.0
+      ]
+    ],
+    "sigma": [
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        0.0
+      ],
+      [
+        0.0,
+        0.0,
+        45000000.0
+      ]
+    ],
+    "tau_tip": 25000000.0,
+    "thresholds": {
+      "m_prime_min": 0.5,
+      "tau_c_pa": 5000000.0,
+      "tau_star_ref_pa": 15000000.0,
+      "beta": 0.2
+    },
+    "result": {
+      "outcome": "transmitted",
+      "incoming_system_index": 0,
+      "selected_candidate": {
+        "system_index": 0,
+        "plane_miller": [
+          1,
+          1,
+          1
+        ],
+        "direction_miller": [
+          0,
+          1,
+          -1
+        ],
+        "s_specimen": [
+          0.0,
+          0.7071067811865475,
+          -0.7071067811865475
+        ],
+        "n_specimen": [
+          0.5773502691896258,
+          0.5773502691896258,
+          0.5773502691896258
+        ],
+        "m_prime": 1.0,
+        "residual_b_m": 0.0,
+        "tau_out_pa": 18371173.070873838,
+        "tau_star_pa": 15000000.0,
+        "passed_all": true
+      },
+      "candidates": [
+        {
+          "system_index": 0,
+          "m_prime": 1.0,
+          "residual_b_m": 0.0,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 15000000.0,
+          "passed_m_prime": true,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": true,
+          "reasons": []
+        },
+        {
+          "system_index": 1,
+          "m_prime": 0.5000000000000002,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 16499999.999999998,
+          "passed_m_prime": true,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": true,
+          "reasons": []
+        },
+        {
+          "system_index": 2,
+          "m_prime": 0.5000000000000002,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 0.0,
+          "tau_star_pa": 16499999.999999998,
+          "passed_m_prime": true,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "tau_out = 0.000 MPa < tau_c (5.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 3,
+          "m_prime": 0.3333333333333335,
+          "residual_b_m": 0.0,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 17000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.3333 < m'_min (0.5000)"
+          ]
+        },
+        {
+          "system_index": 4,
+          "m_prime": 0.16666666666666674,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 17500000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1667 < m'_min (0.5000)"
+          ]
+        },
+        {
+          "system_index": 5,
+          "m_prime": 0.16666666666666674,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 0.0,
+          "tau_star_pa": 17500000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1667 < m'_min (0.5000)",
+            "tau_out = 0.000 MPa < tau_c (5.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 6,
+          "m_prime": 0.0,
+          "residual_b_m": 4.049499999999999e-10,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 18000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0000 < m'_min (0.5000)"
+          ]
+        },
+        {
+          "system_index": 7,
+          "m_prime": 0.16666666666666674,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 17500000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1667 < m'_min (0.5000)"
+          ]
+        },
+        {
+          "system_index": 8,
+          "m_prime": 0.16666666666666674,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 0.0,
+          "tau_star_pa": 17500000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1667 < m'_min (0.5000)",
+            "tau_out = 0.000 MPa < tau_c (5.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 9,
+          "m_prime": 0.0,
+          "residual_b_m": 4.049499999999999e-10,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 18000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0000 < m'_min (0.5000)"
+          ]
+        },
+        {
+          "system_index": 10,
+          "m_prime": 0.16666666666666674,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 18371173.070873838,
+          "tau_star_pa": 17500000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1667 < m'_min (0.5000)"
+          ]
+        },
+        {
+          "system_index": 11,
+          "m_prime": 0.16666666666666674,
+          "residual_b_m": 2.863428910414923e-10,
+          "tau_out_pa": 0.0,
+          "tau_star_pa": 17500000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1667 < m'_min (0.5000)",
+            "tau_out = 0.000 MPa < tau_c (5.000 MPa)"
+          ]
+        }
+      ],
+      "summary_log": "Transmitted: Candidate 0 ((1, 1, 1))[(0, 1, -1)] selected. m' = 1.0000, |b_r| = 0.000 Angstrom, tau_out = 18.371 MPa >= tau_c, tau_tip = 25.000 MPa >= tau* (15.000 MPa)."
+    }
+  },
+  "case2_misoriented": {
+    "R_in": [
+      [
+        0.9216490856090721,
+        -0.38751720202221734,
+        0.019833838076209875
+      ],
+      [
+        0.3835570423814814,
+        0.902113004769273,
+        -0.19767681165408388
+      ],
+      [
+        0.05871080169382652,
+        0.18979606097868743,
+        0.9800665778412416
+      ]
+    ],
+    "R_out": [
+      [
+        0.2946474392282531,
+        -0.9138629870456304,
+        0.2793516197631058
+      ],
+      [
+        0.9371910584115386,
+        0.21923412638390422,
+        -0.2713103718292879
+      ],
+      [
+        0.18669709850368066,
+        0.34174674649032766,
+        0.9210609940028851
+      ]
+    ],
+    "sigma": [
+      [
+        10000000.000000002,
+        10000000.000000002,
+        20000000.000000004
+      ],
+      [
+        10000000.000000002,
+        10000000.000000002,
+        20000000.000000004
+      ],
+      [
+        20000000.000000004,
+        20000000.000000004,
+        40000000.00000001
+      ]
+    ],
+    "tau_tip": 30000000.0,
+    "thresholds": {
+      "m_prime_min": 0.4,
+      "tau_c_pa": 4000000.0,
+      "tau_star_ref_pa": 20000000.0,
+      "beta": 0.1
+    },
+    "result": {
+      "outcome": "transmitted",
+      "incoming_system_index": 3,
+      "selected_candidate": {
+        "system_index": 0,
+        "plane_miller": [
+          1,
+          1,
+          1
+        ],
+        "direction_miller": [
+          0,
+          1,
+          -1
+        ],
+        "s_specimen": [
+          -0.8437301398852972,
+          0.3468673411603004,
+          -0.40963703285411135
+        ],
+        "n_specimen": [
+          -0.19622053034997725,
+          0.5110212755297349,
+          0.8368720089865217
+        ],
+        "m_prime": 0.576741509306128,
+        "residual_b_m": 2.0581501094835406e-10,
+        "tau_out_pa": 26171970.693610273,
+        "tau_star_pa": 20846516.981387746,
+        "passed_all": true
+      },
+      "candidates": [
+        {
+          "system_index": 0,
+          "m_prime": 0.576741509306128,
+          "residual_b_m": 2.0581501094835406e-10,
+          "tau_out_pa": 26171970.693610273,
+          "tau_star_pa": 20846516.981387746,
+          "passed_m_prime": true,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": true,
+          "reasons": []
+        },
+        {
+          "system_index": 1,
+          "m_prime": 0.7399794801744947,
+          "residual_b_m": 8.90830482303359e-11,
+          "tau_out_pa": 3444001.374205168,
+          "tau_star_pa": 20520041.03965101,
+          "passed_m_prime": true,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "tau_out = 3.444 MPa < tau_c (4.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 2,
+          "m_prime": 0.16323797086836683,
+          "residual_b_m": 3.599450975500808e-10,
+          "tau_out_pa": 22727969.31940511,
+          "tau_star_pa": 21673524.058263265,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1632 < m'_min (0.4000)"
+          ]
+        },
+        {
+          "system_index": 3,
+          "m_prime": 0.5133149718628703,
+          "residual_b_m": 2.0581501094835406e-10,
+          "tau_out_pa": 1776543.9984314349,
+          "tau_star_pa": 20973370.05627426,
+          "passed_m_prime": true,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "tau_out = 1.777 MPa < tau_c (4.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 4,
+          "m_prime": 0.13043162519516646,
+          "residual_b_m": 3.648014190229342e-10,
+          "tau_out_pa": 3298053.7839265317,
+          "tau_star_pa": 21739136.749609668,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1304 < m'_min (0.4000)",
+            "tau_out = 3.298 MPa < tau_c (4.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 5,
+          "m_prime": 0.38288334666770385,
+          "residual_b_m": 2.706736889882809e-10,
+          "tau_out_pa": 1521509.7854950968,
+          "tau_star_pa": 21234233.306664594,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.3829 < m'_min (0.4000)",
+            "tau_out = 1.522 MPa < tau_c (4.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 6,
+          "m_prime": 0.12268493505243461,
+          "residual_b_m": 3.1409560021032393e-10,
+          "tau_out_pa": 26026023.10333164,
+          "tau_star_pa": 21754630.129895132,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1227 < m'_min (0.4000)"
+          ]
+        },
+        {
+          "system_index": 7,
+          "m_prime": 0.2930549299381804,
+          "residual_b_m": 8.90830482303359e-11,
+          "tau_out_pa": 3466270.433642143,
+          "tau_star_pa": 21413890.14012364,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.2931 < m'_min (0.4000)",
+            "tau_out = 3.466 MPa < tau_c (4.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 8,
+          "m_prime": 0.17036999488574583,
+          "residual_b_m": 2.706736889882809e-10,
+          "tau_out_pa": 22559752.669689495,
+          "tau_star_pa": 21659260.01022851,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1704 < m'_min (0.4000)"
+          ]
+        },
+        {
+          "system_index": 9,
+          "m_prime": 0.15675333021197466,
+          "residual_b_m": 3.1409560021032393e-10,
+          "tau_out_pa": 1922491.5887100734,
+          "tau_star_pa": 21686493.33957605,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1568 < m'_min (0.4000)",
+            "tau_out = 1.922 MPa < tau_c (4.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 10,
+          "m_prime": 0.07415408450495935,
+          "residual_b_m": 3.648014190229342e-10,
+          "tau_out_pa": 3612218.023920782,
+          "tau_star_pa": 21851691.83099008,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0742 < m'_min (0.4000)",
+            "tau_out = 3.612 MPa < tau_c (4.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 11,
+          "m_prime": 0.08259924570701534,
+          "residual_b_m": 3.599450975500808e-10,
+          "tau_out_pa": 1689726.4352107067,
+          "tau_star_pa": 21834801.50858597,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": true,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0826 < m'_min (0.4000)",
+            "tau_out = 1.690 MPa < tau_c (4.000 MPa)"
+          ]
+        }
+      ],
+      "summary_log": "Transmitted: Candidate 0 ((1, 1, 1))[(0, 1, -1)] selected. m' = 0.5767, |b_r| = 2.058 Angstrom, tau_out = 26.172 MPa >= tau_c, tau_tip = 30.000 MPa >= tau* (20.847 MPa)."
+    }
+  },
+  "case3_pinned": {
+    "R_in": [
+      [
+        0.9216490856090721,
+        -0.38751720202221734,
+        0.019833838076209875
+      ],
+      [
+        0.3835570423814814,
+        0.902113004769273,
+        -0.19767681165408388
+      ],
+      [
+        0.05871080169382652,
+        0.18979606097868743,
+        0.9800665778412416
+      ]
+    ],
+    "R_out": [
+      [
+        0.2946474392282531,
+        -0.9138629870456304,
+        0.2793516197631058
+      ],
+      [
+        0.9371910584115386,
+        0.21923412638390422,
+        -0.2713103718292879
+      ],
+      [
+        0.18669709850368066,
+        0.34174674649032766,
+        0.9210609940028851
+      ]
+    ],
+    "sigma": [
+      [
+        10000000.000000002,
+        10000000.000000002,
+        20000000.000000004
+      ],
+      [
+        10000000.000000002,
+        10000000.000000002,
+        20000000.000000004
+      ],
+      [
+        20000000.000000004,
+        20000000.000000004,
+        40000000.00000001
+      ]
+    ],
+    "tau_tip": 10000000.0,
+    "thresholds": {
+      "m_prime_min": 0.4,
+      "tau_c_pa": 4000000.0,
+      "tau_star_ref_pa": 50000000.0,
+      "beta": 0.0
+    },
+    "result": {
+      "outcome": "pinned",
+      "incoming_system_index": 3,
+      "selected_candidate": null,
+      "candidates": [
+        {
+          "system_index": 0,
+          "m_prime": 0.576741509306128,
+          "residual_b_m": 2.0581501094835406e-10,
+          "tau_out_pa": 26171970.693610273,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": true,
+          "passed_tau_out": true,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 1,
+          "m_prime": 0.7399794801744947,
+          "residual_b_m": 8.90830482303359e-11,
+          "tau_out_pa": 3444001.374205168,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": true,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "tau_out = 3.444 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 2,
+          "m_prime": 0.16323797086836683,
+          "residual_b_m": 3.599450975500808e-10,
+          "tau_out_pa": 22727969.31940511,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1632 < m'_min (0.4000)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 3,
+          "m_prime": 0.5133149718628703,
+          "residual_b_m": 2.0581501094835406e-10,
+          "tau_out_pa": 1776543.9984314349,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": true,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "tau_out = 1.777 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 4,
+          "m_prime": 0.13043162519516646,
+          "residual_b_m": 3.648014190229342e-10,
+          "tau_out_pa": 3298053.7839265317,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1304 < m'_min (0.4000)",
+            "tau_out = 3.298 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 5,
+          "m_prime": 0.38288334666770385,
+          "residual_b_m": 2.706736889882809e-10,
+          "tau_out_pa": 1521509.7854950968,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.3829 < m'_min (0.4000)",
+            "tau_out = 1.522 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 6,
+          "m_prime": 0.12268493505243461,
+          "residual_b_m": 3.1409560021032393e-10,
+          "tau_out_pa": 26026023.10333164,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1227 < m'_min (0.4000)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 7,
+          "m_prime": 0.2930549299381804,
+          "residual_b_m": 8.90830482303359e-11,
+          "tau_out_pa": 3466270.433642143,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.2931 < m'_min (0.4000)",
+            "tau_out = 3.466 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 8,
+          "m_prime": 0.17036999488574583,
+          "residual_b_m": 2.706736889882809e-10,
+          "tau_out_pa": 22559752.669689495,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1704 < m'_min (0.4000)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 9,
+          "m_prime": 0.15675333021197466,
+          "residual_b_m": 3.1409560021032393e-10,
+          "tau_out_pa": 1922491.5887100734,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1568 < m'_min (0.4000)",
+            "tau_out = 1.922 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 10,
+          "m_prime": 0.07415408450495935,
+          "residual_b_m": 3.648014190229342e-10,
+          "tau_out_pa": 3612218.023920782,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0742 < m'_min (0.4000)",
+            "tau_out = 3.612 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        },
+        {
+          "system_index": 11,
+          "m_prime": 0.08259924570701534,
+          "residual_b_m": 3.599450975500808e-10,
+          "tau_out_pa": 1689726.4352107067,
+          "tau_star_pa": 50000000.0,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": false,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0826 < m'_min (0.4000)",
+            "tau_out = 1.690 MPa < tau_c (4.000 MPa)",
+            "tau_tip = 10.000 MPa < tau*(m') (50.000 MPa)"
+          ]
+        }
+      ],
+      "summary_log": "Pinned: No candidate slip system satisfied all transmission criteria (m' >= 0.4, tau_out >= 4.00 MPa, tau_tip >= tau*(m'))."
+    }
+  },
+  "case4_unresolved": {
+    "R_in": [
+      [
+        0.9216490856090721,
+        -0.38751720202221734,
+        0.019833838076209875
+      ],
+      [
+        0.3835570423814814,
+        0.902113004769273,
+        -0.19767681165408388
+      ],
+      [
+        0.05871080169382652,
+        0.18979606097868743,
+        0.9800665778412416
+      ]
+    ],
+    "R_out": [
+      [
+        0.2946474392282531,
+        -0.9138629870456304,
+        0.2793516197631058
+      ],
+      [
+        0.9371910584115386,
+        0.21923412638390422,
+        -0.2713103718292879
+      ],
+      [
+        0.18669709850368066,
+        0.34174674649032766,
+        0.9210609940028851
+      ]
+    ],
+    "sigma": [
+      [
+        10000000.000000002,
+        10000000.000000002,
+        20000000.000000004
+      ],
+      [
+        10000000.000000002,
+        10000000.000000002,
+        20000000.000000004
+      ],
+      [
+        20000000.000000004,
+        20000000.000000004,
+        40000000.00000001
+      ]
+    ],
+    "tau_tip": 30000000.0,
+    "thresholds": {
+      "m_prime_min": 0.4,
+      "tau_c_pa": 4000000.0,
+      "tau_star_ref_pa": null,
+      "beta": 0.0
+    },
+    "result": {
+      "outcome": "unresolved_threshold",
+      "incoming_system_index": 3,
+      "selected_candidate": null,
+      "candidates": [
+        {
+          "system_index": 0,
+          "m_prime": 0.576741509306128,
+          "residual_b_m": 2.0581501094835406e-10,
+          "tau_out_pa": 26171970.693610273,
+          "tau_star_pa": null,
+          "passed_m_prime": true,
+          "passed_tau_out": true,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 1,
+          "m_prime": 0.7399794801744947,
+          "residual_b_m": 8.90830482303359e-11,
+          "tau_out_pa": 3444001.374205168,
+          "tau_star_pa": null,
+          "passed_m_prime": true,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "tau_out = 3.444 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 2,
+          "m_prime": 0.16323797086836683,
+          "residual_b_m": 3.599450975500808e-10,
+          "tau_out_pa": 22727969.31940511,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1632 < m'_min (0.4000)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 3,
+          "m_prime": 0.5133149718628703,
+          "residual_b_m": 2.0581501094835406e-10,
+          "tau_out_pa": 1776543.9984314349,
+          "tau_star_pa": null,
+          "passed_m_prime": true,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "tau_out = 1.777 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 4,
+          "m_prime": 0.13043162519516646,
+          "residual_b_m": 3.648014190229342e-10,
+          "tau_out_pa": 3298053.7839265317,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1304 < m'_min (0.4000)",
+            "tau_out = 3.298 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 5,
+          "m_prime": 0.38288334666770385,
+          "residual_b_m": 2.706736889882809e-10,
+          "tau_out_pa": 1521509.7854950968,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.3829 < m'_min (0.4000)",
+            "tau_out = 1.522 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 6,
+          "m_prime": 0.12268493505243461,
+          "residual_b_m": 3.1409560021032393e-10,
+          "tau_out_pa": 26026023.10333164,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1227 < m'_min (0.4000)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 7,
+          "m_prime": 0.2930549299381804,
+          "residual_b_m": 8.90830482303359e-11,
+          "tau_out_pa": 3466270.433642143,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.2931 < m'_min (0.4000)",
+            "tau_out = 3.466 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 8,
+          "m_prime": 0.17036999488574583,
+          "residual_b_m": 2.706736889882809e-10,
+          "tau_out_pa": 22559752.669689495,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": true,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1704 < m'_min (0.4000)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 9,
+          "m_prime": 0.15675333021197466,
+          "residual_b_m": 3.1409560021032393e-10,
+          "tau_out_pa": 1922491.5887100734,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.1568 < m'_min (0.4000)",
+            "tau_out = 1.922 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 10,
+          "m_prime": 0.07415408450495935,
+          "residual_b_m": 3.648014190229342e-10,
+          "tau_out_pa": 3612218.023920782,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0742 < m'_min (0.4000)",
+            "tau_out = 3.612 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        },
+        {
+          "system_index": 11,
+          "m_prime": 0.08259924570701534,
+          "residual_b_m": 3.599450975500808e-10,
+          "tau_out_pa": 1689726.4352107067,
+          "tau_star_pa": null,
+          "passed_m_prime": false,
+          "passed_tau_out": false,
+          "passed_tau_tip": null,
+          "passed_all": false,
+          "reasons": [
+            "m' = 0.0826 < m'_min (0.4000)",
+            "tau_out = 1.690 MPa < tau_c (4.000 MPa)",
+            "tau*_ref is unresolved (M6 pending calibration); threshold check blocked"
+          ]
+        }
+      ],
+      "summary_log": "Transmission decision unresolved: tau_star_ref is unresolved (M6 calibration pending). Evaluated 12 candidates for geometric compatibility and driving stress."
+    }
+  }
+}

@@ -1,0 +1,5 @@
+file,material,structure,phase_of_interest,heat_treatment,etchant,magnification,scale_bar_um,pixels_for_scale_bar
+aluminium_al995_doitpoms609.jpg,Aluminium (99.5%),FCC,alpha-Al,Extruded,~250x (estimated from 40 um bar),Anodised/oxidised for polarized light,40.0,100
+copper_cu997_doitpoms436.jpg,Copper (99.7%),FCC,alpha-Cu,Wrought annealed,Ammonium persulphate,~100x (estimated from 200 um bar),200.0,291
+ferritic_steel_fe202.jpg,Ferritic steel (plain carbon),BCC,Ferrite,Hot wrought normalised 950 C,2% Nital,~100x (estimated from 200 um bar),200.0,292
+pure_iron_ferpur100x.jpg,Pure alpha-iron (>99.9%),BCC,Ferrite,Annealed,2% Nital,100x (author recorded),100.0,451

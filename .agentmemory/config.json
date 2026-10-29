@@ -1,0 +1,20 @@
+{
+  "version": "1.0.0",
+  "project": "hpsim",
+  "scope": "shared",
+  "tiers": {
+    "working": { "enabled": true, "ttl_days": 7 },
+    "episodic": { "enabled": true, "ttl_days": 30 },
+    "semantic": { "enabled": true, "ttl_days": 365 },
+    "procedural": { "enabled": true, "ttl_days": 365 }
+  },
+  "retrieval": {
+    "bm25": true,
+    "graph": true,
+    "vector": false
+  },
+  "guardrails": {
+    "redact_secrets": true,
+    "require_provenance": true
+  }
+}

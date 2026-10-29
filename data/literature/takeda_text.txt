@@ -1,0 +1,358 @@
+=== PAGE 1 ===
+1.
+Introduction
+In polycrystalline metals, yield strength increases with
+grain reﬁnement in proportion to the inverse of square root
+of grain size, so called Hall–Petch relationship. In the case
+of polycrystalline iron, the following relationship has al-
+ready been established for yield strength (sy) in the grain
+size region down to 0.2 mm,1,2) where “d” denotes the grain
+size in micrometer.
+sy [MPa]100600d [mm]1/2................(1)
+After that, many challenges for ultra grain reﬁnement to
+1 mm have been performed in conventional low carbon steel
+and it was conﬁrmed that most of data are on the line3)
+drawn by the above equation. As far as discussing the grain
+size dependency of conventional low carbon steel, it is con-
+cluded that the Hall–Petch coefﬁcient (ky) should be the
+value of around 600 MPa·mm1/2. On the other hand, it 
+has recently reported that the ky is very small (about
+100 MPa·mm1/2) in IF-steel.4,5) This suggests a certain im-
+purity dependency of ky in polycrystalline iron.
+In this study, the carbon and nitrogen contents depend-
+ence of Hall–Petch coefﬁcient of ferritic iron was investi-
+gated by using various irons containing different contents
+of carbon and nitrogen up to 60 ppm C or N. The mecha-
+nism of the change in Hall–Petch coefﬁcient was then dis-
+cussed in terms of the grain boundary segregation of car-
+bon and nitrogen atoms.
+2.
+Experimental Procedure
+The chemical compositions of materials used in this in-
+vestigation are listed in Table 1. These materials are con-
+ventional pure iron containing different amount of carbon
+and nitrogen up to 60 ppm in total. The symbol of each
+sample denotes the kind of element and its amount (ppm)
+added intentionally, for example, C60 means the iron con-
+taining about 60 ppm of carbon in total. In IF-steel, sufﬁ-
+cient amount of Ti is added to ﬁx carbon and nitrogen as
+Ti(C, N).
+Ingots (25 kg) of 110 mm square in cross section were
+homogenized at 1 523 K for 3.6 ks and then hot-rolled to
+10 mm thick. The hot-rolled plates were subjected to 90%
+1122
+© 2008 ISIJ
+ISIJ International, Vol. 48 (2008), No. 8, pp. 1122–1125
+Effect of Interstitial Elements on Hall–Petch Coefﬁcient of Ferritic
+Iron
+Kengo TAKEDA,1) Nobuo NAKADA,2) Toshihiro TSUCHIYAMA2) and Setsuo TAKAKI2)
+1) Graduate Student, Department of Materials Science and Engineering, Kyushu University, 744 Motooka, Nishi-ku, Fukuoka
+819-0395 Japan.
+2) Department of Materials Science and Engineering, Kyushu University, 744 Motooka, Nishi-ku,
+Fukuoka 819-0395 Japan.
+(Received on December 19, 2007; accepted on March 15, 2008)
+Yield strength was investigated in iron with different grain size and different contents of carbon and nitro-
+gen. The Hall–Petch coefﬁcient; ky is originally very small in high purity iron (about 100 MPa·mm1/2) but it in-
+creases with increasing the amount of solute carbon content. The value of ky is enlarged to around
+550 MPa·mm1/2 by 60 ppm of solute carbon and levels off at around 600 MPa·mm1/2 in the region above
+60 ppm solute carbon. On the other hand, nitrogen hardly inﬂuences the ky value. The mechanism of the
+change in Hall–Petch coefﬁcient was then discussed in terms of the grain boundary segregation of carbon
+and nitrogen atoms.
+KEY WORDS: ferritic iron; Hall–Petch coefﬁcient; carbon; nitrogen; yield strength.
+Table 1.
+Chemical compositions of polycrystalline ferritic steels used in this study (mass ppm).
+=== PAGE 2 ===
+cold rolling. Plates (150 mm150 mm) cut from cold rolled
+materials were annealed at 973 K for 60 s through 600 s to
+change the ferrite grain size and then quenched into water
+to suppress the precipitation of carbide and nitride on cool-
+ing. The specimens were put in a thermostatic chamber set
+at 225 K soon after the annealing to suppress strain harden-
+ing. The grain size (nominal grain size) was measured by
+quadrature method.6) Tensile testing was carried out at ini-
+tial strain rate of 103 s1 for plate test pieces standardized
+by JIS13B. In this article, the yield strength of specimens
+was deﬁned as the upper-yielding stress or the elastic limit
+when the specimen exhibits continuous yielding. The elas-
+tic limit was estimated at the critical stress where the
+stress–strain curve begins to deviate from the linear relation
+of Young’s modulus measured by resonance method. The
+yield strengths obtained were plotted against the inverse of
+square root of grain size on the basis of Hall–Petch rela-
+tionship, and then the ky was estimated by least-square
+method.
+3.
+Results and Discussion
+3.1.
+Microstructural Character of Specimens
+Figure 1 displays the estimated amount of solute carbon
+and nitrogen. The amount of carbide and nitride was ob-
+tained by means of electrolytic extraction method, thus the
+amount of solute carbon and nitrogen was estimated by
+subtracting it from the total amount. However, from the dif-
+ﬁculty of extraction of very tiny particles of carbide and ni-
+tride, the amount of solute carbon and nitrogen seems to be
+overestimated. The true amounts of solute carbon and nitro-
+gen in IF-steel should be much smaller. In the following
+chapter, the solute carbon/nitrogen contents were used for
+data analysis when the effects of carbon/nitrogen on grain
+reﬁnement strengthening were discussed.
+The microstructure analysis by electron back scattering
+pattern is one of the useful methods for grain size evalua-
+tion because the informations on orientation distribution
+and grain size distribution can be obtained at the same time.
+For example, Fig. 2 displays the orientation imaging map
+and the orientation distribution of crystal grains obtained in
+the sample C60 annealed at 973 K for 90 s and IF-steel an-
+nealed at 973 K for 120 s. The grain boundary in the imag-
+ing maps represents the high angle boundary with misori-
+entation angle more than 15°. These results indicate ran-
+dom distribution of crystal grains. From the imaging maps,
+the nominal grain size was evaluated at 27 mm and 30 mm
+in the sample (a) and (c), respectively. The same mi-
+crostructure analysis was performed for the other samples
+and the nominal grain size was evaluated objectively in
+each sample.
+3.2.
+Effects of Carbon and Nitrogen on the Hall–Petch
+Coefﬁcient
+Figure 3 shows the relation between the yield strength
+measured by tensile testing and the inverse of square root of
+grain size. In all C-series (a) and N-series (b), the yield
+strength linearly increases with increasing the inverse of
+square root of grain size in accordance with Hall–Petch re-
+lationship. The equation expressing Hall–Petch relationship
+for each specimen is shown in the ﬁgure. It should be noted
+here that the slope of linear relation, Hall–Petch coefﬁcient
+(ky), is varied depending on the kind of interstitial elements
+ISIJ International, Vol. 48 (2008), No. 8
+1123
+© 2008 ISIJ
+Fig. 2.
+Orientation imaging maps and inverse pole ﬁgures of
+C60 sample annealed at 973 K for 90 s ((a) and (b)) and
+of IF-steel annealed at 973 K for 120 s ((c) and (d)).
+Fig. 1.
+Solute carbon and nitrogen estimated from the results of
+electrolytic extraction.
+Fig. 3.
+Hall–Petch relationship in C-series (a) and N-series sam-
+ples (b).
+=== PAGE 3 ===
+and its content. The ky of C-series monotonously increases
+with increasing solute carbon content (a), while that of N-
+series hardly changes even when the solute nitrogen content
+is increased more than 9 ppm (the content in BASE) (b).
+The IF-steel has the lowest ky of all the specimens. From
+these results, it is suggested that the Hall–Petch coefﬁcient
+strongly depends on the solute carbon content but not on
+the solute nitrogen content. On the other hand, the frictional
+stresses, s0, given by the extrapolation of the Hall–Petch
+relationship to inﬁnitely large grain size, almost converge
+on one similar value around 60 MPa irrespective of carbon
+and nitrogen content. This corresponds to the yield strength
+of pure iron with inﬁnitely large grain size given by the
+Pickering’s prediction relation on yield strength of steel.7)
+Since the s0 is the inherent strength without grain reﬁne-
+ment strengthening, it is deduced that the solid solution
+strengthening by carbon and nitrogen would have a negligi-
+ble small inﬂuence on the yield strength of ferritic iron. The
+change in ky is shown in Fig. 4 as a function of solute car-
+bon or nitrogen content. The ﬁgure (a) indicates that the
+value of ky increases signiﬁcantly in the small carbon con-
+tent region and reaches around 550 MPa·mm1/2 by 60 ppm
+of solute carbon. As for the conventional low carbon steels,
+the value of ky is 550–600 MPa·mm1/2.3) This result indi-
+cates that a small difference in solute carbon content causes
+the scattering of yield strength of low carbon steel through
+a marked change in ky. On the other hand, the ﬁgure (b)
+demonstrates that solute nitrogen hardly inﬂuences to the
+ky. When the inﬂuence of nitrogen is discussed on the grain
+size dependence, the effect of carbon should be eliminated
+in the N-series samples because these samples contain
+small amount of solute carbon as shown in Fig. 1. The dif-
+ference from the value of IF-steel is probably due to the
+contribution of solute carbon.
+Figure 5 summarizes all of data in the relation between
+ky and solute carbon content. Data of the specimen used 
+for the previous research1,2) is added in this ﬁgure. This 
+ﬁgure displays a clear tendency of leveling off of ky at
+550–600 MPa·mm1/2. This means that solute carbon affects
+ky greatly in the region below 60 ppm but does not give a
+large inﬂuence in the region above 60 ppm. It is conﬁrmed
+again that ky depends only on the amount of solute carbon
+regardless of solute nitrogen content. The change of ky is
+approximately represented by the following equation as a
+function of solute carbon content.
+ky [MPa·mm1/2]100120[Cppm]0.31 ............(2)
+3.3.
+Change in Hall–Petch Coefﬁcient by Grain
+Boundary Segregation of Interstitial Alloy Ele-
+ment
+The change in ky due to interstitial alloy element has
+been well known in nitrogen bearing austenitic steels.
+Norström8) ﬁrstly reported that the ky of Fe–18%Cr–
+14%Ni–3%Mo alloy was increased by the addition of nitro-
+gen. Authors9) also systematically investigated the ky of
+austenitic steels with different amounts of nitrogen, and re-
+vealed the relation between ky and nitrogen concentration
+up to 1.2 mass%. The contribution of nitrogen to ky has
+often been discussed since the Norström’s report, and sev-
+eral mechanisms have been proposed. They could be classi-
+ﬁed to the following four ideas:
+(1)
+Nitrogen increases the twin density that appears as the
+increased Hall–Petch coefﬁcient.8,10)
+(2)
+Planar slip of dislocations promoted by nitrogen en-
+hances the grain reﬁnement strengthening.8,11–13)
+(3)
+Grain boundary segregation of nitrogen atoms stabi-
+lizes the ledge structure of grain boundary working as
+a dislocation source.12)
+(4)
+Dislocations are locked by a strong interaction be-
+tween nitrogen atoms and dislocations.12)
+However, each mechanism was only demonstrated indi-
+rectly in a certain kind of steel, and there are also counter-
+arguments for each mechanism. Although we have never
+reached a consensus, the most frequently used idea, includ-
+ing nonferrous materials, would be the (3) grain boundary
+segregation theory. This is based on the yielding mecha-
+nism proposed by Li14) that the grain boundary ledges are
+supposed to be dislocation sources. As representative exam-
+ples supporting this mechanism, a result in Ni–S alloy by
+Floreen15) and that in Fe–P alloy by Spitzig16) were re-
+ported. Both of the results concluded an increase in
+Hall–Petch coefﬁcient with enhancing the grain boundary
+segregation.
+ISIJ International, Vol. 48 (2008), No. 8
+1124
+© 2008 ISIJ
+Fig. 4.
+Change in Hall–Petch coefﬁcient as a function of the
+amount of solute carbon or nitrogen in C-series (a) and
+N-series samples (b).
+Fig. 5.
+Change in Hall–Petch coefﬁcient as a function of solute
+carbon content.
+=== PAGE 4 ===
+Here, on the assumption that the classical grain boundary
+segregation theory would be applied to the case of this
+study, namely, carbon in ferritic steel, the Hall–Petch coefﬁ-
+cient was compared with the concentration of carbon at
+grain boundary. According to the MacLean’s theory,17)
+solute carbon concentration segregated at ferrite grain
+boundary at 973 K is calculated by following equation:
+[Cgb][at%C] exp(Q/RT)/(1[at%C] exp(Q/RT)) ...(3)
+In this equation, [at%C], Q and R are the total carbon
+concentration in solid solution, the activation energy of car-
+bon for grain boundary segregation and the gas constant,
+respectively. As for the value of Q, 78 kJ/mol estimated by
+Grabke18) was taken.
+Figure 6 shows relationship between ky and segregated
+carbon content calculated by Eq. (3). ky value tends to in-
+crease linearly with increasing segregated carbon content,
+which suggests that grain boundary segregation of intersti-
+tial alloy elements signiﬁcantly prevents the yielding of fer-
+ritic steel. Only 60 ppm carbon causes marked grain bound-
+ary segregation to 80 at%, resulting in the enlargement of
+the ky from 100 (in IF-steel) to 550 MPa·mm1/2. The solu-
+bility of carbon was reported to be approximately 60 ppm
+even at ambient temperature19) in Fe–C binary alloy. There-
+fore, it could be understood that the similar ky values,
+around 600 MPa·mm1/2, have been reported in lots of previ-
+ous studies on grain reﬁnement strengthening of ferritic
+steels except for IF-steels. On the other hand, it is known
+that nitrogen has less tendency to cause grain boundary
+segregation in steel, as compared to carbon.20–22) This
+agrees well with the experimental results that ky is hardly
+inﬂuenced by nitrogen. The enlarged ky by nitrogen men-
+tioned above might be due to the large amount of solute ni-
+trogen in austenite matrix leading to the high concentration
+of nitrogen at grain boundary even though the segregation
+coefﬁcient is small.
+5.
+Conclusions
+(1)
+IF-steel has a low Hall–Petch coefﬁcient of approx-
+imately 100 MPa·mm1/2. The Hall–Petch coefﬁcient of fer-
+ritic iron monotonously increases with increasing solute
+carbon content, and it levels off at 550–600 MPa·mm1/2
+when the solute carbon content reaches 60 ppm. On the
+other hand, the solute nitrogen hardly affects the Hall–Petch
+coefﬁcient.
+(2)
+The increase in Hall–Petch coefﬁcient by solute
+carbon seems to be derived from the grain boundary segre-
+gation of carbon atoms. The small effect of solute nitrogen
+on Hall–Petch coefﬁcient could be explained by the less
+tendency of nitrogen atoms to cause grain boundary segre-
+gation.
+REFERENCES
+1)
+Y. Kimura and S. Takaki: J. JSTP, 41 (2000), 13.
+2)
+S. Takaki, K. Kawasaki and Y. Kimura: J. Mater. Process. Technol.,
+117 (2001), 359.
+3)
+S. Fukushima, M. Etou, T. Sasaki and T. Shibahara: Proc. PROTEUS
+2nd Symp. JRCM, New Energy and Industrial Technology Develop-
+ment Organization, Kanagawa, (2005), 7.
+4)
+R. Matoba, N. Nakada, Y. Futamura, T. Tsuchiyama and S. Takaki:
+Tetsu-to-Hagané, 93 (2007), 513.
+5)
+N. Kamikawa: Doctoral dissertation, Osaka University, (2005).
+6)
+JIS Hand Book Iron and Steel I, Japan Standard Association, Tokyo,
+(2006), 638.
+7)
+F. B. Pickering: Toward Improved Ductility and Toughness, ed. by
+ISIJ and Japan Institute of Metals, Climax Molybdenum Develop-
+ment Company (Japan) Ltd., Tokyo, (1971), 9.
+8)
+L. A. Norström: Met. Sci., 11 (1977), 208.
+9)
+T. Tsuchiyama, H. Uchida, K. Kataoka and S. Takaki: ISIJ Int., 42
+(2002), 1438.
+10)
+S. Degallaix, J. Foct and A. Hendry: Mater. Sci. Technol., 2 (1986),
+946.
+11)
+P. J. Uggowitzer and M. O. Spiedel: Proc. Int. Conf. Stainless Steels,
+ISIJ, Tokyo, Japan, (1991), 762.
+12)
+V. G. Gavriljuk, H. Berns, C. Escher, N. I. Glavatskaya, A. Sozinov
+and Yu. N. Petrov: Mater. Sci. Forum, 318–320 (1999), 455.
+13)
+M. Nyström, U. Lindstedt, B. Karlsson and J. O. Nilsson: Mater. Sci.
+Technol., 13 (1997), 560.
+14)
+J. C. M. Li: Trans. TMS-AIME, 227 (1963), 239.
+15)
+S. Floreen and J. H. Westbrook: Acta Metall., 17 (1969), 1175.
+16)
+W. A. Spitzig: Metall. Mater. Trans., 3 (1972), 1183.
+17)
+D. McLean: Grain Boundaries in Metals, Clarendon Press, Oxford,
+(1957), 116.
+18)
+H. J. Grabke: Steel Res., 57 (1986), No. 4, 178.
+19)
+I. Tamura and T. Maki: Steel Materials, Japan Institute of Metals,
+Sendai, (1985), 16.
+20)
+M. L. Rudy and R. A. Huggins: TMS-AIME, 236 (1966), No. 12,
+1662.
+21)
+G. Lagerberg and A. Josefsson: Acta Metall., 3 (1955), No. 5, 236.
+22)
+Yu. N. Petrov, V. G. Gavriljuk, H. Berns and C. Escher: Scr. Mater.,
+40 (1999), No. 6, 669.
+ISIJ International, Vol. 48 (2008), No. 8
+1125
+© 2008 ISIJ
+Fig. 6.
+Reration between Hall–Petch coefﬁcient and grain
+boundary segregation of carbon.
