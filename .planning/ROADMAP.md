@@ -15,7 +15,7 @@ Build and validate `hpsim` across 8 phases: from audited literature/micrograph d
 - [x] **Phase 3: Stress-Driven Glide & Playback Controls** - Overdamped dislocation glide kinematics (`V-04`), swept-boundary intersection (`V-05`), and trajectory playback HUD
 - [x] **Phase 4: Grain Boundary Transmission & Explainable Event Log** - Livingston–Gorczyca $m'$, residual Burgers vector $|\mathbf{b}_r|$, outgoing RSS $\tau_{\text{out}}$ (`V-06`), and two-grain 3D boundary scene
 - [x] **Phase 5: Discrete Dislocation Pile-Up Engine** - 1D pile-up equilibrium solver, Golub–Welsch EFN Laguerre benchmark, tip stress identity $\tau_{\text{tip}} = N\tau_{\text{eff}}$ (`V-07`, `V-08`), and interactive 1D pile-up SVG card
-- [ ] **Phase 6: Emergent Hall–Petch Derivation** - Source-shutoff pile-up yield-onset bisection, grain-size sweep, emergent $d^{-1/2}$ scaling (`V-09`), analytic $k_y$ consistency (`V-10`), $\tau^*_{\text{ref}}$ calibration & literature comparison (`V-15`), and interactive `HallPetchChart`
+- [x] **Phase 6: Emergent Hall–Petch Derivation** - Source-shutoff pile-up yield-onset bisection, grain-size sweep, emergent $d^{-1/2}$ scaling (`V-09`), analytic $k_y$ consistency (`V-10`), $\tau^*_{\text{ref}}$ calibration & literature comparison (`V-15`), and interactive `HallPetchChart`
 - [ ] **Phase 7: Micrograph Preprocessing & Web Data Integration** - Offline Python CV pipeline (`src/hpsim/micro/`), synthetic Voronoi intercept validation (`V-11`), real micrograph segmentation & QA overlays (`V-12`), chord rescaling (`V-16`), and web micrograph overlay + JSON/CSV importer
 - [ ] **Phase 8: Final Packaging, Validation Report & Static Build Verification** - Complete multi-panel web app integration, deterministic experiment presets, auto-generated `docs/validation_report.md` & `docs/limitations.md`, and full 10-level test ladder verification
 
@@ -91,10 +91,10 @@ Plans:
   2. Log–log slope of $\tau_{\text{eff,crit}}$ vs $d$ over $\ge 1.5$ decades of grain size equals $-0.5 \pm 0.05$ (`V-09`), and OLS + bootstrap fitted $k_y$ agrees within 15% of the analytical continuum formula $k_y = M_T\sqrt{2Gb\tau^*/(\pi(1-\nu))}$ (`V-10`).
   3. Single scalar $\tau^*_{\text{ref}}$ is calibrated per material against verified literature fits (`data/literature/hall_petch_verified_fits.csv`), recorded as `calibrated` in `materials.yaml` / `web/public/data/materials.json`, and evaluated honestly against held-out literature fits (`V-15`).
   4. Interactive `HallPetchChart` in `web/src/ui/` plots simulated discrete pile-up yield points, OLS regression line with CI, continuum EFN analytical curve, and cited literature fits with clear provenance badges (`sourced`, `calibrated`, `illustrative`).
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 06-01: TBD
+- [x] 06-01: Python & TypeScript source shut-off, yield-onset bisection, Hall–Petch sweep, calibration (`V-09`, `V-10`, `V-15`), golden parity fixtures, and interactive SVG chart
 
 ### Phase 7: Micrograph Preprocessing & Web Data Integration
 **Goal**: Implement the offline Python micrograph analysis pipeline (`src/hpsim/micro/`) for synthetic Voronoi validation (`V-11`), real metallographic image segmentation, QA overlays, and ASTM E112 lineal intercept grain-size measurement (`V-12`), chord-length distribution extraction and rescaling (`V-16`), seeded grain orientations (`V-13`), and interactive browser micrograph overlay + local JSON/CSV chord import.
@@ -131,6 +131,6 @@ Plans:
 | 3. Stress-Driven Glide & Playback Controls | 1/1 | Complete | 2026-10-20 |
 | 4. Grain Boundary Transmission & Explainable Event Log | 1/1 | Complete | 2026-10-21 |
 | 5. Discrete Dislocation Pile-Up Engine | 1/1 | Complete | 2026-10-21 |
-| 6. Emergent Hall–Petch Derivation | 0/1 | Not started | - |
+| 6. Emergent Hall–Petch Derivation | 1/1 | Complete | 2026-10-29 |
 | 7. Micrograph Preprocessing & Web Data Integration | 0/1 | Not started | - |
 | 8. Final Packaging, Validation Report & Static Build Verification | 0/1 | Not started | - |

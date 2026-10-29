@@ -60,4 +60,12 @@
 - **A-P5-3 (Decision M6 Status Unaltered):** $\tau^*_{\text{ref}}$ remains completely unresolved and uncalibrated; no values were added to `materials.yaml`. Material parameters in demo/tests are strictly labeled illustrative.
 - **A-P5-4 (UI Read-Only Presentation):** Interactive 1D pile-up diagram and controls added to `App.tsx` displaying exact computed equilibrium positions, obstacle boundary at $x=0$, tip stress concentration, and EFN comparison. Failure states (e.g. iteration budget exceeded) are explicitly communicated without showing stale positions.
 
+## 7. Phase 6 Authorization Record (2026-10-29)
+
+- **Authorized:** Phase 6 — Emergent Hall–Petch Derivation. Implemented quasi-static source shut-off at $x = L = d / 2$, yield-onset bisection on $\tau_{\text{eff}}$, multi-grain-size Hall–Petch sweeps with seeded bootstrap 95% confidence intervals, and single-scalar $\tau^*_{\text{ref}}$ calibration in Python (`src/hpsim/core/hallpetch.py`) and TypeScript (`web/src/core/hallpetch.ts`).
+- **A-P6-1 (Governing Source Shut-Off & Yield Onset):** Starting from $N = 1$ at $x_0 = 0$, dislocations are emitted while $\tau_{\text{eff}} - \tau_{\text{back}}(L; N) > \tau_{\text{src}}$ and $x_j < L = d / 2$. Yield onset occurs at the smallest $\tau_{\text{eff}}$ where $\tau_{\text{tip}}(L, \tau_{\text{eff}}) = N \tau_{\text{eff}} \ge \tau^*(m')$.
+- **A-P6-2 (Single-Parameter Calibration & Provenance Guardrails):** $\tau^*_{\text{ref}}$ (with $\beta = 0, m' = 1$) is calibrated strictly on each material's primary high-purity verified literature fit in `data/literature/hall_petch_verified_fits.csv` and evaluated without refitting on the held-out secondary dataset (`V-15`). In `src/hpsim/materials/materials.yaml`, `tau_star_ref` retains `value: null` to preserve raw literature provenance, while calibrated values are stored in `CALIBRATED_MATERIALS` and `web/public/data/materials.json` (`tau_star_ref_calibrated`).
+- **A-P6-3 (Solute Segregation Limitation in Iron/Steel):** The 39.4% slope increase between Ti-stabilized IF-iron ($k_y = 114\,\text{MPa}\cdot\mu\text{m}^{1/2}$) and Base iron with 5 ppm free carbon ($k_y = 188\,\text{MPa}\cdot\mu\text{m}^{1/2}$) is explicitly analyzed as an unmodeled grain-boundary carbon segregation mechanism per `spec.md` §10.2 (`V-15`).
+
+
 

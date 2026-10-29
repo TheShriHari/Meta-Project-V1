@@ -15,6 +15,9 @@ html, body, #root { margin: 0; height: 100%; background: #070b16; color: #e6ebf7
 .tag { font-size: 10px; padding: 2px 6px; border-radius: 99px; background: #5b3d00; color: #ffd48a; margin-left: 6px; letter-spacing: 0; text-transform: none; }
 .tag.phase4 { background: #3b2075; color: #c4b5fd; font-weight: 600; }
 .tag.phase5 { background: #065f46; color: #6ee7b7; font-weight: 600; }
+.tag.phase6 { background: #1e3a8a; color: #93c5fd; font-weight: 600; }
+.tag.sourced { background: #064e3b; color: #6ee7b7; }
+.tag.calibrated { background: #312e81; color: #a5b4fc; }
 .tag.illustrative { background: #7c2d12; color: #fdba74; }
 .tag.unresolved { background: #451a03; color: #fde047; }
 .row { display: flex; gap: 8px; margin-bottom: 8px; }

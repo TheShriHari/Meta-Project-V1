@@ -45,6 +45,23 @@ from hpsim.core.glide import (
     calculate_glide_velocity,
     integrate_dislocation_position,
 )
+from hpsim.core.hallpetch import (
+    SourceShutoffInputs,
+    SourceShutoffResult,
+    YieldOnsetInputs,
+    YieldOnsetResult,
+    HallPetchSweepInputs,
+    HallPetchPoint,
+    HallPetchSweepResult,
+    solve_pileup_with_source,
+    find_yield_onset,
+    compute_effective_tau_star,
+    compute_analytic_hall_petch_ky,
+    compute_analytic_tau_star_from_ky,
+    run_hall_petch_sweep,
+    calibrate_tau_star_ref,
+    evaluate_literature_calibration_and_validation,
+)
 
 __all__ = [
     "nm_to_m",

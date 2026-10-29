@@ -389,4 +389,36 @@ In addition to the analytical Golub–Welsch solver, HPSim provides a damped New
 | Case 4 | $N=25$ | Al ($\mu=26\text{ GPa}, \nu=0.33, b=0.286\text{ nm}$) | $120\text{ MPa}$ | $< 10^{-12}\text{ m}$ | $3.80 \times 10^{-6}\text{ Pa}$ |
 | Case 5 | $N=4$ | Al, perturbed $+5\%$ | $50\text{ MPa}$ | Bit-for-bit status (`max_iterations_exceeded`) | $2.38 \times 10^{6}\text{ Pa}$ |
 
+---
+
+## 13. Emergent Hall–Petch Derivation, Source Shut-Off & Boundary Calibration (Phase 6)
+
+### 13.1 Quasi-Static Source Shut-Off at $x = L = d / 2$
+In a grain of diameter $d$, a dislocation source at the grain center ($x = L = d / 2$) emits identical like-signed edge dislocations toward the leading obstacle at $x = 0$ under an effective resolved shear stress $\tau_{\text{eff}} = \tau_{\text{app}} - \tau_c > 0$.
+
+Starting from $N = 1$ (a single leader dislocation pinned at $x_0 = 0$), mobile dislocations are added one by one while the net shear stress at the source exceeds the source operation stress $\tau_{\text{src}}$ (default $0.0\text{ Pa}$):
+$$\tau_{\text{eff}} - \tau_{\text{back}}(L; N) > \tau_{\text{src}}, \quad \text{where } \tau_{\text{back}}(L; N) = \sum_{j=0}^{N-1} \frac{A}{L - x_j}, \quad A = \frac{\mu b}{2\pi (1 - \nu)}$$
+and all $N + 1$ equilibrium positions satisfy $x_j < L$.
+
+Once source emission shuts off at equilibrium count $N(L, \tau_{\text{eff}})$, the concentrated tip shear stress acting on the leading dislocation at $x = 0$ is given by Eshelby's theorem:
+$$\tau_{\text{tip}}(L, \tau_{\text{eff}}) = N(L, \tau_{\text{eff}}) \, \tau_{\text{eff}}$$
+
+### 13.2 Boundary Obstacle Threshold & Yield Onset Bisection
+The critical shear stress required for slip transmission across the grain boundary follows the Lee–Robertson–Birnbaum compatibility relation:
+$$\tau^*(m') = \tau^*_{\text{ref}} \left[ 1 + \beta (1 - m') \right]$$
+where $\tau^*_{\text{ref}} > 0$ is the single calibrated material barrier parameter, $m' \in [0, 1]$ is the LRB geometric compatibility factor, and $\beta \ge 0$ (default $\beta = 0.0$ per `spec.md` §5.7) controls misorientation sensitivity.
+
+For a grain of size $d$ ($L = d / 2$), the critical effective shear stress $\tau_{\text{eff,crit}}(d)$ is determined via 60-step bisection as the smallest $\tau_{\text{eff}} > 0$ such that:
+$$\tau_{\text{tip}}(L = d / 2, \tau_{\text{eff}}) \ge \tau^*(m')$$
+The emergent macroscopic polycrystal yield stress is then:
+$$\sigma_y(d) = \sigma_0 + M_T \, \tau_{\text{eff,crit}}(d)$$
+where $\sigma_0$ is the lattice friction stress ($\sigma_0 = M_T \tau_c$ or the specimen's experimental friction stress intercept) and $M_T$ is the Taylor orientation factor ($3.06$ for FCC, $2.75$ for BCC).
+
+### 13.3 Continuum Eshelby–Frank–Nabarro Scaling vs. Discrete Step Plateaus
+In the continuum limit ($N \to \infty$), substituting $N_{\text{asymp}}(L = d / 2, \tau_{\text{eff}}) = \frac{\pi (1 - \nu) d \, \tau_{\text{eff}}}{2 \mu b}$ into $\tau_{\text{tip}} = N \tau_{\text{eff}} = \tau^*$ yields the classical analytic Hall–Petch relation:
+$$\tau_{\text{eff,crit,cont}}(d) = \left[ \frac{2 \mu b \tau^*}{\pi (1 - \nu)} \right]^{1/2} d^{-1/2}, \quad k_{y,\text{analytic}} = M_T \left[ \frac{2 \mu b \tau^*}{\pi (1 - \nu)} \right]^{1/2}$$
+- **Log–Log Exponent (`V-09`):** A linear regression of $\log_{10}(\tau_{\text{eff,crit}})$ against $\log_{10}(d)$ over $\ge 1.5$ decades of grain size recovers the theoretical $-0.5$ power-law exponent within $\pm 0.05$.
+- **Discrete Integer-$N$ Step Plateaus (`V-10`):** Because the physical dislocation count $N \in \mathbb{Z}^+$ is an integer, $\tau_{\text{eff,crit}}(d)$ exhibits discrete quantization steps of width $\Delta \tau_{\text{plateau}} = \tau^* / N_{\text{crit}} - \tau^* / (N_{\text{crit}} + 1)$, and the discrete fitted slope $k_y$ agrees with $k_{y,\text{analytic}}$ within $15\%$ across the multi-dislocation pile-up regime.
+
+
 

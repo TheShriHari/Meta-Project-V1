@@ -112,13 +112,18 @@ def compute_efn_roots(m: int) -> np.ndarray:
         return np.array([], dtype=float)
 
     # Diagonal elements: a_j = 2*j + 1 + alpha for alpha=1 => a_j = 2*j + 2
-    diag = np.array([2.0 * j + 2.0 for j in range(m)], dtype=float)
+    diag = 2.0 * np.arange(m, dtype=float) + 2.0
+
+    if m == 1:
+        return diag
 
     # Sub/super-diagonal: b_j = sqrt((j + 1) * (j + 1 + alpha)) for alpha=1 => sqrt((j + 1) * (j + 2))
-    subdiag = np.array([np.sqrt((j + 1.0) * (j + 2.0)) for j in range(m - 1)], dtype=float)
+    idx = np.arange(1, m, dtype=float)
+    subdiag = np.sqrt(idx * (idx + 1.0))
 
-    # Eigenvalues of symmetric tridiagonal matrix
-    roots = np.linalg.eigvalsh(np.diag(diag) + np.diag(subdiag, 1) + np.diag(subdiag, -1))
+    # Fast O(m) symmetric tridiagonal eigensolver
+    from scipy.linalg import eigh_tridiagonal
+    roots = eigh_tridiagonal(diag, subdiag, eigvals_only=True)
     return np.sort(roots)
 
 

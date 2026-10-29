@@ -68,11 +68,11 @@
 ---
 
 ## Phase 6: Emergent Hall–Petch Derivation (3–4 days)
-- [ ] **TASK-601**: Implement yield-onset bisection and grain-size sweep in Python (`hallpetch.py`) and TypeScript (`hallpetch.ts`).
-- [ ] **TASK-602**: Validate V-09 (emergent log–log slope of τ_eff,crit vs d equals −0.5 ± 0.05 over 1.5 decades).
-- [ ] **TASK-603**: Validate V-10 (fitted k_y consistency within 15% of analytic Hall–Petch formula).
-- [ ] **TASK-604**: Calibrate single scalar τ*_ref on calibration dataset; compare against held-out literature data (`V-15`).
-- [ ] **TASK-605**: Build responsive Hall–Petch chart in web app (`HallPetchChart.tsx`) showing discrete simulation points, fitted line, analytic continuum curve, and cited literature points.
+- [x] **TASK-601**: Implement yield-onset bisection and grain-size sweep in Python (`hallpetch.py`) and TypeScript (`hallpetch.ts`).
+- [x] **TASK-602**: Validate V-09 (emergent log–log slope of τ_eff,crit vs d equals −0.5 ± 0.05 over 1.5 decades).
+- [x] **TASK-603**: Validate V-10 (fitted k_y consistency within 15% of analytic Hall–Petch formula).
+- [x] **TASK-604**: Calibrate single scalar τ*_ref on calibration dataset; compare against held-out literature data (`V-15`).
+- [x] **TASK-605**: Build responsive Hall–Petch chart in web app (`HallPetchChart.tsx` / `App.tsx`) showing discrete simulation points, fitted line, analytic continuum curve, and cited literature points.
 - **GATE 6**: V-09, V-10, and V-15 evaluated and reported; headline Hall–Petch chart operational in browser; approved by human.
 
 ---

@@ -10,3 +10,5 @@ export * from "./stress.ts";
 export * from "./glide.ts";
 export * from "./boundary.ts";
 export * from "./pileup.ts";
+export * from "./hallpetch.ts";
+export * from "./micrograph.ts";
