@@ -53,4 +53,5 @@ export interface ChapterProps {
   experimentLog: ExperimentRun[];
   material: "aluminium" | "copper";
   onChangeMaterial: (mat: "aluminium" | "copper") => void;
+  onGoResearchMode?: () => void;
 }

@@ -63,7 +63,7 @@ export function Chapter2Wall({
         l === "atoms" || l === "ghost" || l === "slipPlane" || l === "core" || l === "boundary" || l === "outgoingCandidates" || l === "burgers"
       );
     }
-    v.setView("isometric");
+    // Camera pose preserved across updates by v.loadStructure
     v.setCorePosition(demo.controller.state.pos_m);
   }, []);
 
@@ -82,7 +82,12 @@ export function Chapter2Wall({
       v.dispose();
       viewerRef.current = null;
     };
-  }, [initScene, tiltDeg, setNarration]);
+  }, []);
+
+  useEffect(() => {
+    if (!viewerRef.current) return;
+    initScene(tiltDeg);
+  }, [tiltDeg, initScene]);
 
   // Evaluate transmission using real boundary module
   const evaluateTransmission = useCallback((tilt: number): TransmissionResult => {
@@ -189,12 +194,13 @@ export function Chapter2Wall({
         </div>
 
         {/* Camera Views & Dislocation View */}
-        <div className="views chapter-camera-views" role="group" aria-label="Camera views">
+        <div className="chapter-camera-views chapter-views-bar" role="group" aria-label="Camera views">
           {(["front", "top", "side", "isometric"] as ViewName[]).map((vn) => (
             <button
               key={vn}
               type="button"
               id={`ch2-view-${vn}`}
+              title={`Switch camera to ${vn} view`}
               onClick={() => {
                 setIsDislocationViewActive(false);
                 viewerRef.current?.setView(vn);
@@ -206,6 +212,7 @@ export function Chapter2Wall({
           <button
             type="button"
             id="ch2-view-dislocation"
+            title="Dedicated textbook edge-dislocation perspective"
             onClick={() => {
               const active = viewerRef.current?.toggleDislocationView();
               setIsDislocationViewActive(Boolean(active));
@@ -221,6 +228,7 @@ export function Chapter2Wall({
           <button
             type="button"
             id="ch2-view-reset"
+            title="Reset camera to default view"
             onClick={() => {
               setIsDislocationViewActive(false);
               viewerRef.current?.resetCamera();
@@ -302,6 +310,7 @@ export function Chapter2Wall({
               className="chapter-primary-btn glow"
               onClick={handleStressIt}
               id="btn-stress-wall"
+              title="Stress it / Apply stress"
             >
               Stress it &rarr;
             </button>
@@ -323,8 +332,9 @@ export function Chapter2Wall({
               className="chapter-primary-btn pulse"
               onClick={() => onNavigateChapter("strength")}
               id="btn-goto-strength"
+              title="Next: Multi-grain"
             >
-              More walls, more strength &rarr;
+              More walls, more strength (Multi-grain) &rarr;
             </button>
           </div>
         )}

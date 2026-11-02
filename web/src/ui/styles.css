@@ -512,6 +512,9 @@ small { color: #8391bb; }
    ========================================================================== */
 
 .learning-experience-root {
+  --control-island-bottom: 20px;
+  --control-island-height: 68px;
+  --narration-gap: 16px;
   display: flex;
   flex-direction: column;
   height: 100vh;
@@ -694,30 +697,49 @@ small { color: #8391bb; }
   height: 100%;
 }
 
-/* Narration Strip */
+/* Narration Strip - Cleanly positioned in dedicated zone above control island */
 .narration-strip-container {
   position: absolute;
-  bottom: 18px;
+  bottom: calc(var(--control-island-bottom, 20px) + var(--control-island-height, 68px) + var(--narration-gap, 16px));
   left: 50%;
   transform: translateX(-50%);
-  z-index: 45;
+  z-index: 35;
   pointer-events: none;
-  max-width: 80vw;
+  max-width: min(840px, 86vw);
+  width: max-content;
+  display: flex;
+  justify-content: center;
+  transition: bottom 0.25s ease;
 }
 
 .narration-strip-text {
   margin: 0;
-  font-size: 19px;
+  font-size: 18px;
   font-weight: 500;
   color: #f8fafc;
-  background: rgba(15, 23, 42, 0.9);
+  background: rgba(15, 23, 42, 0.92);
   backdrop-filter: blur(12px);
-  border: 1px solid rgba(56, 189, 248, 0.3);
-  padding: 12px 28px;
-  border-radius: 30px;
-  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
+  border: 1px solid rgba(56, 189, 248, 0.35);
+  padding: 10px 26px;
+  border-radius: 28px;
+  box-shadow: 0 8px 32px rgba(0, 0, 0, 0.55);
   text-align: center;
+  line-height: 1.45;
+  pointer-events: none;
   transition: opacity 0.2s ease, transform 0.2s ease;
+}
+
+/* Chapter 3 Narration: elevated above taller island and centered over Voronoi diagram */
+.learning-experience-root.chapter-strength .narration-strip-container {
+  bottom: calc(var(--control-island-bottom, 20px) + 118px + var(--narration-gap, 16px));
+  left: calc(50% - 108px);
+}
+
+/* Chapter 4 Narration: centered over left 3D canvas above equation explainer card */
+.learning-experience-root.chapter-equation .narration-strip-container {
+  bottom: 172px;
+  left: 25%;
+  max-width: min(520px, 46vw);
 }
 
 .narration-strip-text.fade-in {
@@ -770,33 +792,37 @@ small { color: #8391bb; }
 
 .scene-disclaimer-chip {
   position: absolute;
-  top: 18px;
+  bottom: 20px;
   right: 20px;
+  top: auto;
   font-size: 11px;
   color: #64748b;
-  background: rgba(15, 23, 42, 0.7);
+  background: rgba(15, 23, 42, 0.75);
+  backdrop-filter: blur(6px);
   padding: 5px 12px;
   border-radius: 12px;
   border: 1px solid #1e293b;
   z-index: 20;
+  pointer-events: none;
 }
 
-/* Floating Control Islands */
+/* Dedicated Bottom Chapter Control Island */
 .chapter-control-island {
   position: absolute;
-  bottom: 84px;
+  bottom: var(--control-island-bottom, 20px);
   left: 50%;
   transform: translateX(-50%);
   background: rgba(15, 23, 42, 0.94);
   backdrop-filter: blur(12px);
   border: 1px solid #334155;
   border-radius: 18px;
-  padding: 14px 26px;
+  padding: 12px 24px;
   z-index: 40;
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
   box-shadow: 0 12px 36px rgba(0, 0, 0, 0.6);
+  pointer-events: auto;
 }
 
 .island-action-group,
@@ -911,15 +937,17 @@ small { color: #8391bb; }
 /* Chapter 2 Wall Specifics */
 .scene-outcome-banner {
   position: absolute;
-  top: 70px;
-  left: 20px;
-  padding: 12px 20px;
-  border-radius: 12px;
+  top: 20px;
+  left: 50%;
+  transform: translateX(-50%);
+  padding: 10px 22px;
+  border-radius: 14px;
   display: flex;
   align-items: center;
   gap: 14px;
-  z-index: 25;
-  backdrop-filter: blur(8px);
+  z-index: 30;
+  backdrop-filter: blur(10px);
+  box-shadow: 0 10px 28px rgba(0, 0, 0, 0.5);
   animation: banner-pop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1);
 }
 
@@ -1000,40 +1028,83 @@ small { color: #8391bb; }
 }
 
 .strength-meter-panel {
-  width: 160px;
+  width: 230px;
   background: #090e1a;
   border-left: 1px solid #1e293b;
-  padding: 24px 16px;
+  padding: 20px 14px;
   display: flex;
   flex-direction: column;
   align-items: center;
+  justify-content: space-between;
   z-index: 25;
+  box-sizing: border-box;
+}
+
+.meter-header {
+  width: 100%;
+  text-align: center;
+  margin-bottom: 8px;
 }
 
 .meter-heading {
   margin: 0;
-  font-size: 14px;
+  font-size: 14.5px;
   font-weight: 700;
   color: #f1f5f9;
-  text-align: center;
+  letter-spacing: -0.01em;
 }
 
 .meter-sub {
-  margin: 4px 0 16px;
-  font-size: 10.5px;
-  color: #64748b;
-  text-align: center;
+  margin: 4px 0 0;
+  font-size: 11px;
+  color: #94a3b8;
   line-height: 1.3;
 }
 
-.vertical-meter-track {
-  width: 22px;
-  height: 240px;
-  background: #1e293b;
-  border-radius: 11px;
+.meter-gauge-row {
+  display: flex;
+  flex-direction: row;
+  align-items: center;
+  justify-content: center;
+  gap: 10px;
+  width: 100%;
   position: relative;
-  margin: 10px 0;
-  box-shadow: inset 0 2px 6px rgba(0, 0, 0, 0.6);
+  margin: 12px 0;
+}
+
+.meter-scale-column {
+  display: flex;
+  flex-direction: column;
+  justify-content: space-between;
+  height: 230px;
+  font-size: 9.5px;
+  font-weight: 500;
+  color: #64748b;
+  text-align: right;
+  max-width: 66px;
+  line-height: 1.25;
+}
+
+.meter-scale-column .scale-high {
+  color: #ef4444;
+}
+
+.meter-scale-column .scale-mid {
+  color: #f59e0b;
+}
+
+.meter-scale-column .scale-low {
+  color: #38bdf8;
+}
+
+.vertical-meter-track {
+  width: 20px;
+  height: 230px;
+  background: #151e2e;
+  border-radius: 10px;
+  position: relative;
+  box-shadow: inset 0 2px 8px rgba(0, 0, 0, 0.7);
+  border: 1px solid rgba(255, 255, 255, 0.08);
 }
 
 .vertical-meter-fill {
@@ -1041,46 +1112,194 @@ small { color: #8391bb; }
   bottom: 0;
   left: 0;
   width: 100%;
-  background: linear-gradient(to top, #38bdf8 0%, #f59e0b 60%, #ef4444 100%);
-  border-radius: 11px;
+  background: linear-gradient(to top, #38bdf8 0%, #f59e0b 55%, #ef4444 100%);
+  border-radius: 10px;
   transition: height 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  box-shadow: 0 0 12px rgba(245, 158, 11, 0.4);
 }
 
 .vertical-meter-needle {
   position: absolute;
-  left: 28px;
+  left: 24px;
   transform: translateY(50%);
   display: flex;
   align-items: center;
   gap: 4px;
   transition: bottom 0.6s cubic-bezier(0.34, 1.56, 0.64, 1);
+  z-index: 10;
 }
 
 .needle-pointer {
-  color: #38bdf8;
-  font-size: 12px;
+  color: #f59e0b;
+  font-size: 11px;
 }
 
 .needle-value {
-  font-size: 12.5px;
+  font-size: 11px;
   font-weight: 700;
   color: #ffffff;
   background: #0f172a;
-  padding: 2px 6px;
+  padding: 1.5px 6px;
   border-radius: 4px;
   border: 1px solid #334155;
+  white-space: nowrap;
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.5);
 }
 
-.meter-labels {
+.meter-footer-readout {
+  width: 100%;
   display: flex;
   flex-direction: column;
-  justify-content: space-between;
-  height: 240px;
+  align-items: center;
+  gap: 3px;
+  padding-top: 10px;
+  border-top: 1px solid #1e293b;
+}
+
+.meter-readout-label {
   font-size: 10px;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
   color: #64748b;
+  font-weight: 600;
+}
+
+.meter-readout-value {
+  font-size: 18px;
+  font-weight: 800;
+  color: #f59e0b;
+  font-family: var(--font-mono, monospace);
+}
+
+.meter-material-badge {
+  font-size: 10px;
+  color: #94a3b8;
+  background: #1e293b;
+  padding: 2px 8px;
+  border-radius: 10px;
+  margin-top: 2px;
+}
+
+/* Microstructure Legend Card */
+.microstructure-legend-card {
   position: absolute;
-  right: 18px;
-  pointer-events: none;
+  top: 16px;
+  right: 20px;
+  width: 220px;
+  background: rgba(13, 20, 36, 0.88);
+  backdrop-filter: blur(10px);
+  border: 1px solid rgba(245, 158, 11, 0.25);
+  border-radius: 12px;
+  padding: 12px 14px;
+  z-index: 30;
+  box-shadow: 0 8px 24px rgba(0, 0, 0, 0.45);
+}
+
+.legend-title {
+  font-size: 11.5px;
+  font-weight: 700;
+  color: #f8fafc;
+  text-transform: uppercase;
+  letter-spacing: 0.04em;
+  margin-bottom: 8px;
+  display: flex;
+  align-items: center;
+  gap: 6px;
+}
+
+.legend-title::before {
+  content: "";
+  display: inline-block;
+  width: 7px;
+  height: 7px;
+  background: #f59e0b;
+  border-radius: 50%;
+  box-shadow: 0 0 6px #f59e0b;
+}
+
+.legend-items {
+  list-style: none;
+  padding: 0;
+  margin: 0;
+  display: flex;
+  flex-direction: column;
+  gap: 7px;
+}
+
+.legend-item {
+  display: flex;
+  align-items: flex-start;
+  gap: 8px;
+}
+
+.legend-swatch {
+  width: 14px;
+  height: 14px;
+  border-radius: 3px;
+  flex-shrink: 0;
+  margin-top: 1px;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+}
+
+.grain-swatch {
+  background: linear-gradient(135deg, #7c5c3b, #45311f);
+  border: 1px solid #916c48;
+}
+
+.boundary-swatch {
+  background: #170f07;
+  border: 1.5px solid #f59e0b;
+}
+
+.dislocation-swatch {
+  color: #38bdf8;
+  font-size: 13px;
+  font-weight: 800;
+  line-height: 1;
+}
+
+.pileup-swatch {
+  color: #f59e0b;
+  font-size: 11px;
+}
+
+.meter-swatch {
+  background: linear-gradient(to top, #38bdf8, #f59e0b, #ef4444);
+  border-radius: 2px;
+}
+
+.legend-text {
+  display: flex;
+  flex-direction: column;
+  line-height: 1.25;
+}
+
+.legend-text strong {
+  font-size: 11px;
+  color: #e2e8f0;
+}
+
+.legend-text span {
+  font-size: 9.5px;
+  color: #94a3b8;
+}
+
+.legend-item.highlight-pileup {
+  background: rgba(245, 158, 11, 0.12);
+  padding: 4px 6px;
+  border-radius: 6px;
+  border: 1px solid rgba(245, 158, 11, 0.3);
+}
+
+.legend-footnote {
+  margin-top: 9px;
+  padding-top: 8px;
+  border-top: 1px solid rgba(255, 255, 255, 0.08);
+  font-size: 9px;
+  color: #64748b;
+  line-height: 1.3;
 }
 
 .corner-pattern-card {
@@ -1131,13 +1350,24 @@ small { color: #8391bb; }
 }
 
 .ch3-island {
-  bottom: 84px;
+  bottom: var(--control-island-bottom, 20px);
+  left: calc(50% - 108px);
+  transform: translateX(-50%);
+  flex-direction: column;
+  gap: 10px;
+  padding: 12px 22px;
 }
 
 .ch3-action-row {
   display: flex;
   align-items: center;
-  gap: 20px;
+  gap: 18px;
+}
+
+.ch3-next-row {
+  display: flex;
+  justify-content: center;
+  width: 100%;
 }
 
 .grain-slider {
@@ -1428,10 +1658,10 @@ small { color: #8391bb; }
   margin-top: 4px;
 }
 
-/* Experiment Log Drawer */
+/* Experiment Log Drawer - Bottom-Left Dedicated Zone */
 .experiment-log-drawer {
   position: absolute;
-  bottom: 18px;
+  bottom: var(--control-island-bottom, 20px);
   left: 20px;
   z-index: 50;
   display: flex;
@@ -1466,7 +1696,8 @@ small { color: #8391bb; }
 
 .experiment-log-body {
   margin-bottom: 8px;
-  width: 380px;
+  width: 360px;
+  max-width: calc(100vw - 40px);
   max-height: 280px;
   background: #0f172a;
   border: 1px solid #334155;
@@ -1474,7 +1705,41 @@ small { color: #8391bb; }
   padding: 12px;
   overflow-y: auto;
   box-shadow: 0 10px 30px rgba(0, 0, 0, 0.6);
+  z-index: 55;
   animation: log-slide-up 0.25s ease-out;
+}
+
+.experiment-log-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  padding-bottom: 8px;
+  margin-bottom: 8px;
+  border-bottom: 1px solid #1e293b;
+}
+
+.experiment-log-header-title {
+  font-size: 11px;
+  font-weight: 700;
+  color: #94a3b8;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+
+.experiment-log-close-btn {
+  background: transparent;
+  border: none;
+  color: #64748b;
+  font-size: 12px;
+  cursor: pointer;
+  padding: 2px 6px;
+  border-radius: 4px;
+  line-height: 1;
+}
+
+.experiment-log-close-btn:hover {
+  background: #1e293b;
+  color: #f1f5f9;
 }
 
 @keyframes log-slide-up {
@@ -1526,10 +1791,51 @@ small { color: #8391bb; }
   font-weight: 700;
 }
 
-/* Responsive Queries for Mobile & Tablet */
+/* Camera Preset Controls - Top-Left Dedicated Zone */
+.chapter-camera-views {
+  position: absolute;
+  left: 20px;
+  top: 56px;
+  bottom: auto !important;
+  z-index: 25;
+  display: flex;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+.chapter-camera-views button {
+  background: rgba(15, 23, 42, 0.88);
+  backdrop-filter: blur(8px);
+  border: 1px solid rgba(148, 163, 184, 0.3);
+  color: #cbd5e1;
+  font-size: 11px;
+  font-weight: 500;
+  padding: 5px 10px;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: all 0.15s ease;
+}
+
+.chapter-camera-views button:hover {
+  background: rgba(30, 41, 59, 0.95);
+  border-color: #38bdf8;
+  color: #f8fafc;
+}
+
+/* ==========================================================================
+   Responsive Queries for Tablet & Mobile (Non-Overlapping Layout)
+   ========================================================================== */
 @media (max-width: 900px) {
   .learning-stepper .stepper-label {
     display: none;
+  }
+  .learning-experience-root.chapter-strength .narration-strip-container {
+    left: 50%;
+  }
+  .learning-experience-root.chapter-equation .narration-strip-container {
+    left: 50%;
+    bottom: calc(100vh - 44vh + 10px);
+    max-width: 90vw;
   }
   .ch4-split-container {
     grid-template-columns: 1fr;
@@ -1541,37 +1847,163 @@ small { color: #8391bb; }
     padding: 8px 18px;
   }
   .experiment-log-body {
-    width: 300px;
+    width: 320px;
   }
   .strength-meter-panel {
     display: none;
   }
+  .ch3-island {
+    left: 50%;
+  }
 }
 
+@media (max-width: 768px) {
+  .learning-nav-header {
+    padding: 0 12px;
+    height: 50px;
+  }
+  .nav-brand-tag,
+  .nav-brand-divider {
+    display: none;
+  }
+  .nav-research-btn {
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+  .stepper-connector {
+    width: 14px;
+  }
+  .stepper-node {
+    padding: 4px 6px;
+  }
 
-.chapter-camera-views {
-  position: absolute;
-  left: 16px;
-  top: 16px;
-  z-index: 20;
-  display: flex;
-  gap: 6px;
-  flex-wrap: wrap;
-}
-.chapter-camera-views button {
-  background: rgba(15, 23, 42, 0.85);
-  backdrop-filter: blur(6px);
-  border: 1px solid rgba(148, 163, 184, 0.3);
-  color: #cbd5e1;
-  font-size: 11px;
-  font-weight: 500;
-  padding: 4px 9px;
-  border-radius: 6px;
-  cursor: pointer;
-  transition: all 0.15s ease;
-}
-.chapter-camera-views button:hover {
-  background: rgba(30, 41, 59, 0.95);
-  border-color: #38bdf8;
-  color: #f8fafc;
+  /* Stack controls vertically on mobile */
+  .chapter-control-island {
+    bottom: 56px;
+    left: 50%;
+    transform: translateX(-50%);
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+    padding: 10px 14px;
+    gap: 8px;
+    flex-direction: column;
+    border-radius: 14px;
+  }
+
+  .island-action-group,
+  .island-completed-group,
+  .island-running-group {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .island-slider-wrap {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .island-slider-wrap input[type="range"] {
+    width: 100%;
+  }
+
+  .chapter-primary-btn,
+  .chapter-secondary-btn {
+    width: 100%;
+    text-align: center;
+    padding: 10px 14px;
+    font-size: 13.5px;
+  }
+
+  .ch3-island {
+    bottom: 56px;
+    left: 50%;
+    width: calc(100% - 24px);
+    max-width: calc(100% - 24px);
+  }
+
+  .ch3-action-row {
+    flex-direction: column;
+    width: 100%;
+    gap: 8px;
+    align-items: stretch;
+  }
+
+  .grain-slider {
+    width: 100%;
+    min-width: 0;
+  }
+
+  .prediction-box {
+    width: 100%;
+    align-items: center;
+  }
+
+  .prediction-buttons {
+    width: 100%;
+  }
+
+  .pred-btn {
+    flex: 1;
+    padding: 8px 10px;
+    font-size: 12px;
+    text-align: center;
+  }
+
+  /* Safe elevated narration on mobile */
+  .narration-strip-container {
+    bottom: 185px;
+    max-width: 92vw;
+  }
+
+  .learning-experience-root.chapter-strength .narration-strip-container {
+    bottom: 235px;
+  }
+
+  .learning-experience-root.chapter-equation .narration-strip-container {
+    bottom: calc(100vh - 44vh + 10px);
+    max-width: 92vw;
+  }
+
+  .narration-strip-text {
+    font-size: 14px;
+    padding: 7px 14px;
+    line-height: 1.35;
+  }
+
+  /* Camera views on mobile */
+  .chapter-camera-views {
+    top: 48px;
+    left: 10px;
+    gap: 4px;
+  }
+
+  .chapter-camera-views button {
+    padding: 3px 7px;
+    font-size: 10px;
+  }
+
+  .scene-overlay-badge {
+    top: 12px;
+    left: 10px;
+    padding: 4px 10px;
+    font-size: 11px;
+  }
+
+  /* Experiment log drawer on mobile */
+  .experiment-log-drawer {
+    bottom: 12px;
+    left: 12px;
+  }
+
+  .experiment-log-toggle {
+    padding: 6px 10px;
+    font-size: 11px;
+  }
+
+  .experiment-log-body {
+    width: calc(100vw - 24px);
+    max-height: 220px;
+  }
 }

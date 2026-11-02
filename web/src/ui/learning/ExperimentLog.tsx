@@ -27,6 +27,18 @@ export function ExperimentLog({ runs, isOpen, onToggle }: ExperimentLogProps) {
 
       {isOpen && (
         <div className="experiment-log-body">
+          <div className="experiment-log-header">
+            <span className="experiment-log-header-title">Recorded Experiments ({runs.length})</span>
+            <button
+              type="button"
+              className="experiment-log-close-btn"
+              onClick={onToggle}
+              title="Close log"
+              aria-label="Close experiment log"
+            >
+              ✕
+            </button>
+          </div>
           {runs.length === 0 ? (
             <p className="experiment-log-empty">
               No simulation experiments recorded yet. Complete experiments in Chapters 1–3 to collect real data.

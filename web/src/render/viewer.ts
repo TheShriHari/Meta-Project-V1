@@ -94,6 +94,7 @@ export class Viewer {
   // Dislocation view camera state
   private isDislocationView = false;
   private savedPose?: CameraPose;
+  private isInitialized = false;
 
   /** Last rendered displaced positions (metres): render state, separate from demo.ideal. */
   renderPositions: Float64Array = new Float64Array(0);
@@ -156,6 +157,9 @@ export class Viewer {
   }
 
   loadStructure(demo: Demo) {
+    const isFirstLoad = !this.isInitialized;
+    const oldCenter = this.center.clone();
+
     this.demo = demo;
     disposeHierarchy(this.content);
     this.content.clear();
@@ -194,7 +198,7 @@ export class Viewer {
     bg.setAttribute("position", new THREE.BufferAttribute(new Float32Array(pairs.length * 3), 3));
     this.bonds = new THREE.LineSegments(
       bg,
-      new THREE.LineBasicMaterial({ color: 0x8aa0c8, transparent: true, opacity: 0.55 })
+      new THREE.LineBasicMaterial({ color: 0x8aa0c8, transparent: true, opacity: 0.38 })
     );
     this.bonds.frustumCulled = false;
     this.layers.bonds = this.bonds;
@@ -209,18 +213,19 @@ export class Viewer {
     this.layers.axes = new THREE.AxesHelper(S(a_m) * 2);
 
     // 5. Slip Plane (Translucent Amber Plane with amber border)
-    const s = new THREE.Vector3(...geom.s);
-    const n = new THREE.Vector3(...geom.n);
-    const xi = new THREE.Vector3().crossVectors(s, n);
-    const diag = S(Math.hypot(...box_m));
+    const s = new THREE.Vector3(...geom.s).normalize();
+    const n = new THREE.Vector3(...geom.n).normalize();
+    const xi = new THREE.Vector3().crossVectors(s, n).normalize();
+    const diag = S(Math.hypot(...box_m)) * 1.15;
     const p0Vec = new THREE.Vector3(S(geom.p0[0]), S(geom.p0[1]), S(geom.p0[2]));
 
     this.layers.slipPlane = createSlipPlaneMesh(p0Vec, s, xi, n, diag);
     this.annotationManager.attachTo(
       this.layers.slipPlane,
       "slip",
-      xi.clone().multiplyScalar(diag * 0.45)
+      new THREE.Vector3(diag * 0.25, diag * 0.42, 0)
     );
+    this.layers.slipPlane.updateMatrixWorld(true);
 
     // 6. Burgers Vector Arrow & Dislocation Core
     this.burgers = new THREE.ArrowHelper(
@@ -235,7 +240,7 @@ export class Viewer {
     this.annotationManager.attachTo(
       this.burgers,
       "burgers",
-      s.clone().multiplyScalar(S(demo.b_m) * 1.9)
+      s.clone().multiplyScalar(S(demo.b_m) * 2.2)
     );
 
     const half = S(Math.max(...box_m)) * 0.6;
@@ -243,11 +248,25 @@ export class Viewer {
       xi.clone().multiplyScalar(-half),
       xi.clone().multiplyScalar(half),
     ]);
-    this.coreLine = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: 0xff3b5c, linewidth: 2 }));
+    this.coreLine = new THREE.Line(lg, new THREE.LineBasicMaterial({ color: 0xf43f5e, linewidth: 2 }));
     this.coreMarker = new THREE.Mesh(
-      new THREE.SphereGeometry(S(demo.b_m) * 0.32, 20, 16),
-      new THREE.MeshBasicMaterial({ color: 0xff3b5c })
+      new THREE.SphereGeometry(S(demo.b_m) * 0.38, 24, 20),
+      new THREE.MeshStandardMaterial({
+        color: 0xec4899,
+        emissive: 0xec4899,
+        emissiveIntensity: 0.6,
+        roughness: 0.2,
+      })
     );
+    const haloGeom = new THREE.SphereGeometry(S(demo.b_m) * 0.58, 24, 20);
+    const haloMat = new THREE.MeshBasicMaterial({
+      color: 0xf43f5e,
+      transparent: true,
+      opacity: 0.35,
+      depthWrite: false,
+    });
+    this.coreMarker.add(new THREE.Mesh(haloGeom, haloMat));
+
     const core = new THREE.Group();
     core.name = "coreGroup";
     core.add(this.coreLine, this.coreMarker);
@@ -361,7 +380,33 @@ export class Viewer {
     this.center.set(S(box_m[0]) / 2, S(box_m[1]) / 2, S(box_m[2]) / 2);
     // Camera distance pulled back to 4.0 for 15% breathing room
     this.distance = S(box_m[0]) * 4.0;
-    this.setView("isometric");
+
+    if (isFirstLoad) {
+      this.setView("isometric");
+      this.isInitialized = true;
+    } else if (this.isDislocationView) {
+      // Preserve Dislocation View centered on the slip plane
+      const g = demo.geom;
+      const slipCenterNm = new THREE.Vector3(
+        g.p0[0] * NM,
+        g.p0[1] * NM,
+        g.p0[2] * NM
+      );
+      applyDislocationView(this.camera, this.controls, g.s, g.n, slipCenterNm, this.distance * 0.9);
+    } else {
+      // Preserve current camera pose (position, target, up, zoom)
+      const centerDelta = this.center.clone().sub(oldCenter);
+      if (centerDelta.lengthSq() > 1e-8) {
+        this.camera.position.add(centerDelta);
+        this.controls.target.add(centerDelta);
+        if (this.savedPose) {
+          this.savedPose.position.add(centerDelta);
+          this.savedPose.target.add(centerDelta);
+        }
+      }
+      this.controls.update();
+    }
+
     this.setCorePosition(demo.controller.state.pos_m);
   }
 
@@ -401,11 +446,7 @@ export class Viewer {
 
     // Update extra half-plane position and anchored labels
     this.extraHalfPlaneManager?.updateCorePosition(pos_m);
-
-    // If dislocation view is active, keep camera focus locked on the moving core
-    if (this.isDislocationView) {
-      this.controls.target.copy(core);
-    }
+    // Camera remains completely stationary during playback to accurately display defect migration
   }
 
   setLayer(layer: Layer, visible: boolean) {
@@ -434,6 +475,14 @@ export class Viewer {
     this.setView("isometric");
   }
 
+  saveCameraState(): CameraPose {
+    return saveCameraPose(this.camera, this.controls);
+  }
+
+  restoreCameraState(pose: CameraPose): void {
+    restoreCameraPose(this.camera, this.controls, pose);
+  }
+
   /**
    * Toggles the dedicated textbook-style Dislocation View:
    * - Projects Burgers vector s horizontally
@@ -450,13 +499,13 @@ export class Viewer {
       this.savedPose = saveCameraPose(this.camera, this.controls);
 
       const g = d.geom;
-      const coreNm = new THREE.Vector3(
-        (g.p0[0] + d.controller.state.pos_m * g.s[0]) * NM,
-        (g.p0[1] + d.controller.state.pos_m * g.s[1]) * NM,
-        (g.p0[2] + d.controller.state.pos_m * g.s[2]) * NM
+      const slipCenterNm = new THREE.Vector3(
+        g.p0[0] * NM,
+        g.p0[1] * NM,
+        g.p0[2] * NM
       );
 
-      applyDislocationView(this.camera, this.controls, g.s, g.n, coreNm, this.distance * 0.9);
+      applyDislocationView(this.camera, this.controls, g.s, g.n, slipCenterNm, this.distance * 0.9);
       this.isDislocationView = true;
       return true;
     } else {

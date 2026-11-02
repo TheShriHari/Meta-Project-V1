@@ -62,7 +62,7 @@ export class AtomMeshManager {
     const ghostMaterial = new THREE.MeshBasicMaterial({
       color: 0xffffff,
       transparent: true,
-      opacity: 0.14,
+      opacity: 0.12,
       depthWrite: false,
     });
     this._ghostMesh = new THREE.InstancedMesh(ghostGeometry, ghostMaterial, this.count);
@@ -128,16 +128,22 @@ export class AtomMeshManager {
       // Normalized strain metric t in [0, 1] relative to Burgers magnitude
       const t = Math.min(Math.max(magnitude / bm, 0.0), 1.0);
 
-      // Base color: Warm gold #D4A843 for Grain 1; Bronze-gold #B8912E for Grain 2 (if atom is past boundary or in Grain 2)
+      // Base color: Warm gold #D4A843 for Grain 1; Bronze-gold #B8912E for Grain 2
       const isGrain2 =
         this.splitX !== undefined && (ix >= this.splitX || rx >= this.splitX);
       const baseColor = isGrain2 ? COLOR_GRAIN2 : COLOR_GRAIN1;
 
-      // Displacement color: Cyan-white gradient (#38bdf8 to #e0f2fe)
-      this.dispColor.lerpColors(COLOR_CYAN, COLOR_CYAN_WHITE, t);
-
-      // Blend smoothly from base gold to cyan-white
-      this.finalColor.lerpColors(baseColor, this.dispColor, t);
+      // Displacement strain shading: smooth gradient from warm gold towards cyan and cyan-white
+      // Interpolates through HSL to preserve rich saturation and completely eliminate muddy grey/brown tones
+      if (t <= 0.02) {
+        this.finalColor.copy(baseColor);
+      } else if (t <= 0.70) {
+        const u = (t - 0.02) / 0.68;
+        this.finalColor.copy(baseColor).lerpHSL(COLOR_CYAN, u);
+      } else {
+        const u = (t - 0.70) / 0.30;
+        this.finalColor.copy(COLOR_CYAN).lerp(COLOR_CYAN_WHITE, u);
+      }
       this._atomsMesh.setColorAt(i, this.finalColor);
     }
 

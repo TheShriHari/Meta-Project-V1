@@ -47,6 +47,8 @@ Progress: [██████████] 100%
 | 7 | 1/1 | 25 min | 25 min |
 | 8 | 1/1 | 20 min | 20 min |
 | 9 | 1/1 | 15 min | 15 min |
+| 10 | 1/1 | 25 min | 25 min |
+| 11 | 1/1 | 35 min | 35 min |
 
 ## Accumulated Context
 
@@ -61,6 +63,8 @@ Progress: [██████████] 100%
 - [Phase 7]: Integrated offline micrograph segmentation, ASTM E112 lineal intercept chord distributions, and client-side JSON/CSV chord drag-and-drop.
 - [Phase 8]: Packaged unified static web application, automated V&V report generator (`docs/validation_report.md`), limitations audit (`docs/limitations.md`), and canonical simulation presets.
 - [Phase 9]: Separated default beginner landing experience from dense research dashboard. Made one-click simulation the primary route with honest edge-only labelling and reactive Hall–Petch line chart.
+- [Phase 10]: Created four-chapter intuitive learning journey (The Defect, The Wall, More Walls More Strength, The Pattern Has a Name) with persistent Experiment Log and Research Mode integration.
+- [Phase 11]: Upgraded 3D visualization to museum-grade scientific fidelity: 32x24 spherical atoms with strict uniform scaling (zero capsule distortion), static ghost reference lattice (ideal R0), translucent indigo grain-boundary plane (0x818cf8), gold-family orientation palette (#D4A843 / #B8912E), dynamic cyan-white displacement gradient (|u|), CSS2D world-space annotations, Burgers vector arrow, 3-point scientific lighting, extra half-plane of atoms terminating at dislocation line, dedicated textbook Dislocation View preset, and context-aware SceneLegend across Chapters 1-4 and Research Mode while preserving 100% of core physics and Phase 9/10.
 
 ### Pending Todos
 

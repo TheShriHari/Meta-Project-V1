@@ -44,6 +44,7 @@ export interface DemoOptions {
   systemIndex: number;
   axisKey: string;
   appliedStress_pa: number;
+  initialPos_m?: number;
   grain2TiltDeg?: number;
   mPrimeMin?: number;
   useIllustrativeTauStar?: boolean;
@@ -88,6 +89,7 @@ export function buildDemo(o: DemoOptions) {
       domain_min_m: geom.tMin, domain_max_m: geom.tMax, max_step_m: 0.25 * b,
     },
     s, n, loadingAxis: axis, appliedStress_pa: o.appliedStress_pa,
+    initialPos_m: o.initialPos_m !== undefined ? o.initialPos_m : geom.tMin,
   });
 
   // Phase 4: Evaluate boundary transmission

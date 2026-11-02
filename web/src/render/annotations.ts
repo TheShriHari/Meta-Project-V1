@@ -57,8 +57,8 @@ export class AnnotationManager {
     // 4 world-space annotations
     this.coreLabel = new CSS2DObject(createPillElement("Dislocation core (\u22A5)"));
     this.gbLabel = new CSS2DObject(createPillElement("Grain boundary"));
-    this.slipLabel = new CSS2DObject(createPillElement("Slip plane"));
-    this.burgersLabel = new CSS2DObject(createPillElement("b"));
+    this.slipLabel = new CSS2DObject(createPillElement("Slip plane {111}"));
+    this.burgersLabel = new CSS2DObject(createPillElement("Burgers vector (b)"));
 
     this.labels = {
       core: this.coreLabel,

@@ -23,7 +23,10 @@ export function LearningExperience({ onGoResearchMode }: LearningExperienceProps
   };
 
   return (
-    <div className="learning-experience-root">
+    <div
+      className={`learning-experience-root chapter-${session.currentChapter}`}
+      data-chapter={session.currentChapter}
+    >
       {/* Top Thin Chapter Stepper Bar */}
       <ChapterNavigation
         currentChapter={session.currentChapter}
@@ -80,6 +83,7 @@ export function LearningExperience({ onGoResearchMode }: LearningExperienceProps
             experimentLog={session.experimentLog}
             material={session.selectedMaterial}
             onChangeMaterial={session.setSelectedMaterial}
+            onGoResearchMode={onGoResearchMode}
           />
         )}
       </main>

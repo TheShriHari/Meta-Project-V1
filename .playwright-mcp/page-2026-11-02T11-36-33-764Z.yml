@@ -1,0 +1,82 @@
+- generic [ref=f5e3]:
+  - banner [ref=f5e4]:
+    - generic [ref=f5e5]:
+      - generic [ref=f5e6]: HPSim
+      - generic [ref=f5e7]: /
+      - generic [ref=f5e8]: Intuitive Mechanics
+    - navigation "Chapter progress" [ref=f5e9]:
+      - 'button "Chapter 1: The Defect" [ref=f5e11] [cursor=pointer]':
+        - generic [ref=f5e12]: ✓
+        - generic [ref=f5e13]: The Defect
+      - 'button "Chapter 2: The Wall" [ref=f5e16] [cursor=pointer]':
+        - generic [ref=f5e17]: ✓
+        - generic [ref=f5e18]: The Wall
+      - 'button "Chapter 3: More Walls, More Strength" [active] [ref=f5e21] [cursor=pointer]':
+        - generic [ref=f5e22]: ✓
+        - generic [ref=f5e23]: More Walls, More Strength
+      - 'button "Chapter 4: The Pattern Has a Name" [ref=f5e26] [cursor=pointer]':
+        - generic [ref=f5e27]: ✓
+        - generic [ref=f5e28]: The Pattern Has a Name
+    - button "Research Mode →" [ref=f5e29] [cursor=pointer]
+  - main [ref=f5e30]:
+    - generic [ref=f5e111]:
+      - generic [ref=f5e112]:
+        - img "Polycrystalline microstructure Voronoi mosaic" [ref=f5e113]
+        - generic: "Schematic Voronoi Microstructure: 67 grains visible (Mean size: 50 μm)"
+        - complementary "Microstructure Legend" [ref=f5e521]:
+          - generic [ref=f5e522]: Microstructure Guide
+          - list [ref=f5e523]:
+            - listitem [ref=f5e524]:
+              - generic [ref=f5e526]:
+                - strong [ref=f5e527]: Grain Matrix
+                - generic [ref=f5e528]: Warm metallic crystal domains
+            - listitem [ref=f5e529]:
+              - generic [ref=f5e531]:
+                - strong [ref=f5e532]: Grain Boundaries
+                - generic [ref=f5e533]: Interfaces blocking dislocation glide
+            - listitem [ref=f5e534]:
+              - generic [ref=f5e535]: ⟂
+              - generic [ref=f5e536]:
+                - strong [ref=f5e537]: Dislocations
+                - generic [ref=f5e538]: Mobile slip defects
+            - listitem [ref=f5e539]:
+              - generic [ref=f5e541]:
+                - strong [ref=f5e542]: Yield Resistance
+                - generic [ref=f5e543]: Hall–Petch strength (σ_y)
+          - generic [ref=f5e544]: Schematic 2D Voronoi representation. Yield strength calculated from calibrated pile-up physics model.
+      - complementary [ref=f5e545]:
+        - generic [ref=f5e546]:
+          - heading "Yield Resistance" [level=3] [ref=f5e547]
+          - paragraph [ref=f5e548]: Hall–Petch model (σ_y)
+        - generic [ref=f5e549]:
+          - generic [ref=f5e550]:
+            - generic [ref=f5e551]: High Strength (Fine grains)
+            - generic [ref=f5e552]: Medium
+            - generic [ref=f5e553]: Low Strength (Coarse grains)
+          - generic [ref=f5e556]:
+            - generic [ref=f5e557]: ◀
+            - generic [ref=f5e558]: —
+        - generic [ref=f5e559]:
+          - generic [ref=f5e560]: "Calculated Yield:"
+          - generic [ref=f5e561]: 19.9 MPa
+          - generic [ref=f5e562]: Aluminium (99.999% High-Purity Al)
+      - generic [ref=f5e564]:
+        - generic [ref=f5e565]:
+          - generic [ref=f5e566]:
+            - text: "Average Grain Size:"
+            - strong [ref=f5e567]: 50 μm
+            - text: (Medium grains)
+          - 'slider "Average Grain Size: 50 μm (Medium grains)" [ref=f5e568] [cursor=pointer]': "50"
+        - generic [ref=f5e569]:
+          - generic [ref=f5e570]: "Smaller grains make the metal:"
+          - generic [ref=f5e571]:
+            - button "Stronger ▲" [ref=f5e572] [cursor=pointer]
+            - button "Weaker ▼" [ref=f5e573] [cursor=pointer]
+        - button "Stress it →" [disabled] [ref=f5e574]
+  - status:
+    - paragraph: In polycrystalline metals, millions of crystal grains meet at atomic interfaces. How does grain size affect strength?
+  - complementary [ref=f5e106]:
+    - button "🔬 Experiment Log (0 runs) ▲" [ref=f5e107] [cursor=pointer]:
+      - generic [ref=f5e108]: 🔬
+      - generic [ref=f5e109]: Experiment Log (0 runs)
+      - generic [ref=f5e110]: ▲

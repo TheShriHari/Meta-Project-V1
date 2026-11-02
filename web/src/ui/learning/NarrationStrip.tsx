@@ -22,6 +22,8 @@ export function NarrationStrip({ text }: NarrationStripProps) {
     return () => clearTimeout(timeout);
   }, [text, displayText]);
 
+  if (!displayText) return null;
+
   return (
     <div className="narration-strip-container" role="status" aria-live="polite">
       <p className={`narration-strip-text ${fading ? "fade-out" : "fade-in"}`}>

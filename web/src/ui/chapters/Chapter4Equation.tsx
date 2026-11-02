@@ -17,18 +17,21 @@ export function Chapter4Equation({
   experimentLog,
   setNarration,
   material,
+  onGoResearchMode,
 }: ChapterProps) {
   const hostRef = useRef<HTMLDivElement>(null);
   const viewerRef = useRef<Viewer | null>(null);
 
+  const mat = CALIBRATED_MATERIALS[material] ?? CALIBRATED_MATERIALS.aluminium;
+
   const [activeTerm, setActiveTerm] = useState<"sigma0" | "ky" | "d" | null>(null);
   const [predictionUm, setPredictionUm] = useState<number>(5);
-  const [predictionMpa, setPredictionMpa] = useState<number>(150);
+  const [predictionMpa, setPredictionMpa] = useState<number>(() => {
+    return Math.round((mat.calibrationFit.sigma0Pa / 1e6) + (mat.calibrationFit.kyPaM05 / 1000) / Math.sqrt(5));
+  });
   const [predictionTested, setPredictionTested] = useState<boolean>(false);
   const [actualTestedMpa, setActualTestedMpa] = useState<number | null>(null);
   const [isDislocationViewActive, setIsDislocationViewActive] = useState<boolean>(false);
-
-  const mat = CALIBRATED_MATERIALS[material] ?? CALIBRATED_MATERIALS.aluminium;
 
   const onCompleteRef = useRef(onCompleteChapter);
   onCompleteRef.current = onCompleteChapter;
@@ -73,18 +76,52 @@ export function Chapter4Equation({
 
   // Extract student data points from Chapter 3
   const studentPoints = useMemo(() => {
-    const runs = experimentLog.filter((r) => r.chapter === "strength" && r.grainSizeUm && r.calculatedStrengthMpa);
+    const runs = experimentLog.filter(
+      (r) => r.chapter === "strength" && r.grainSizeUm && r.calculatedStrengthMpa
+    );
     if (runs.length >= 2) {
       return runs.map((r) => ({
         runNumber: r.runNumber,
         grainSizeUm: r.grainSizeUm!,
         x: 1 / Math.sqrt(r.grainSizeUm!), // d^(-1/2) in μm^(-1/2)
         y: r.calculatedStrengthMpa!,     // σ_y in MPa
+        isStudentData: true,
       }));
     }
+    if (runs.length === 1) {
+      const studentPt = {
+        runNumber: runs[0].runNumber,
+        grainSizeUm: runs[0].grainSizeUm!,
+        x: 1 / Math.sqrt(runs[0].grainSizeUm!),
+        y: runs[0].calculatedStrengthMpa!,
+        isStudentData: true,
+      };
+      // Supplement with 2 calibrated model points so student sees the line trend
+      const refSizes = studentPt.grainSizeUm > 100 ? [50, 20] : [200, 80];
+      const refPts = refSizes.map((d) => {
+        const res = findYieldOnset({
+          muPa: mat.muPa,
+          nu: mat.nu,
+          burgersM: mat.burgersM,
+          grainSizeM: d * 1e-6,
+          tauCPa: mat.tauCPa,
+          taylorFactor: mat.taylorFactor,
+          tauStarRefPa: mat.calibratedTauStarRefPa,
+          sigma0OffsetPa: mat.calibrationFit.sigma0Pa,
+        });
+        return {
+          runNumber: 0,
+          grainSizeUm: d,
+          x: 1 / Math.sqrt(d),
+          y: res.sigmaYPa / 1e6,
+          isStudentData: false,
+        };
+      });
+      return [studentPt, ...refPts].sort((a, b) => a.x - b.x);
+    }
     // Fallback if user jumped straight to Chapter 4: provide 3 representative points from real model
-    const sizes = [150, 50, 20];
-    return sizes.map((d, i) => {
+    const sizes = [180, 60, 20];
+    return sizes.map((d) => {
       const res = findYieldOnset({
         muPa: mat.muPa,
         nu: mat.nu,
@@ -96,27 +133,14 @@ export function Chapter4Equation({
         sigma0OffsetPa: mat.calibrationFit.sigma0Pa,
       });
       return {
-        runNumber: i + 1,
+        runNumber: 0,
         grainSizeUm: d,
         x: 1 / Math.sqrt(d),
         y: res.sigmaYPa / 1e6,
+        isStudentData: false,
       };
     });
   }, [experimentLog, mat]);
-
-  // SVG Chart dimensions
-  const W = 460, H = 280;
-  const PAD = { top: 30, right: 25, bottom: 45, left: 55 };
-  const plotW = W - PAD.left - PAD.right;
-  const plotH = H - PAD.top - PAD.bottom;
-
-  const xMin = 0;
-  const xMax = 0.5; // up to d = 4 μm
-  const yMin = 30;
-  const yMax = Math.max(...studentPoints.map((p) => p.y), 180) * 1.1;
-
-  const toSvgX = (x: number) => PAD.left + (x / xMax) * plotW;
-  const toSvgY = (y: number) => PAD.top + (1 - (y - yMin) / (yMax - yMin)) * plotH;
 
   // Calibrated theoretical curve points across range
   const theoryCurve = useMemo(() => {
@@ -140,6 +164,32 @@ export function Chapter4Equation({
       };
     });
   }, [mat]);
+
+  // SVG Chart dimensions with calibrated zero-based dynamic Y range
+  const W = 460, H = 280;
+  const PAD = { top: 30, right: 25, bottom: 45, left: 55 };
+  const plotW = W - PAD.left - PAD.right;
+  const plotH = H - PAD.top - PAD.bottom;
+
+  const xMin = 0;
+  const xMax = 0.5; // up to d = 4 μm
+  const yMin = 0;
+  const maxYData = Math.max(
+    ...studentPoints.map((p) => p.y),
+    ...theoryCurve.map((p) => p.y),
+    (mat.calibrationFit.sigma0Pa / 1e6) + (mat.calibrationFit.kyPaM05 / 1000) * 0.5
+  );
+  const yMax = Math.ceil((maxYData * 1.25) / 5) * 5;
+
+  const yTicks = [
+    Math.round(yMax * 0.25),
+    Math.round(yMax * 0.5),
+    Math.round(yMax * 0.75),
+    yMax,
+  ];
+
+  const toSvgX = (x: number) => PAD.left + (x / xMax) * plotW;
+  const toSvgY = (y: number) => PAD.top + (1 - (y - yMin) / (yMax - yMin)) * plotH;
 
   const polylineTheory = theoryCurve
     .map((p) => `${toSvgX(p.x).toFixed(1)},${toSvgY(p.y).toFixed(1)}`)
@@ -177,7 +227,7 @@ export function Chapter4Equation({
             </div>
 
             {/* Camera Views & Dislocation View */}
-            <div className="views chapter-camera-views" role="group" aria-label="Camera views">
+            <div className="chapter-camera-views chapter-views-bar" role="group" aria-label="Camera views">
               {(["front", "top", "side", "isometric"] as ViewName[]).map((vn) => (
                 <button
                   key={vn}
@@ -194,6 +244,7 @@ export function Chapter4Equation({
               <button
                 type="button"
                 id="ch4-view-dislocation"
+            title="Turn on Defect View / Dislocation View"
                 onClick={() => {
                   const active = viewerRef.current?.toggleDislocationView();
                   setIsDislocationViewActive(Boolean(active));
@@ -308,17 +359,65 @@ export function Chapter4Equation({
                 rx="6"
               />
 
-              {/* Grid Lines */}
-              {[50, 100, 150].map((yVal) => (
-                <line
-                  key={`y-grid-${yVal}`}
-                  x1={PAD.left}
-                  y1={toSvgY(yVal)}
-                  x2={PAD.left + plotW}
-                  y2={toSvgY(yVal)}
-                  stroke="#1e293b"
-                  strokeDasharray="3 3"
-                />
+              {/* Y Grid Lines and Tick Labels */}
+              {yTicks.map((yVal) => (
+                <g key={`y-grid-${yVal}`}>
+                  <line
+                    x1={PAD.left}
+                    y1={toSvgY(yVal)}
+                    x2={PAD.left + plotW}
+                    y2={toSvgY(yVal)}
+                    stroke="#1e293b"
+                    strokeDasharray="3 3"
+                  />
+                  <text
+                    x={PAD.left - 8}
+                    y={toSvgY(yVal) + 3}
+                    textAnchor="end"
+                    fill="#64748b"
+                    fontSize="9.5"
+                    fontFamily="monospace"
+                  >
+                    {yVal}
+                  </text>
+                </g>
+              ))}
+
+              {/* X Grid Lines and Ticks for key grain sizes */}
+              {[
+                { d: 100, x: 0.1 },
+                { d: 25, x: 0.2 },
+                { d: 11, x: 0.3 },
+                { d: 6.25, x: 0.4 },
+              ].map(({ d, x }) => (
+                <g key={`x-tick-${d}`}>
+                  <line
+                    x1={toSvgX(x)}
+                    y1={PAD.top}
+                    x2={toSvgX(x)}
+                    y2={PAD.top + plotH}
+                    stroke="#141d33"
+                    strokeDasharray="2 2"
+                  />
+                  <line
+                    x1={toSvgX(x)}
+                    y1={PAD.top + plotH}
+                    x2={toSvgX(x)}
+                    y2={PAD.top + plotH + 4}
+                    stroke="#64748b"
+                    strokeWidth="1"
+                  />
+                  <text
+                    x={toSvgX(x)}
+                    y={PAD.top + plotH + 15}
+                    textAnchor="middle"
+                    fill="#64748b"
+                    fontSize="9"
+                    fontFamily="monospace"
+                  >
+                    {x.toFixed(1)}
+                  </text>
+                </g>
               ))}
 
               {/* Calibrated Theory Line */}
@@ -330,29 +429,43 @@ export function Chapter4Equation({
                 strokeDasharray="4 2"
               />
 
-              {/* Student Experiment Points */}
+              {/* Student Experiment Points & Calibrated Reference Points */}
               {studentPoints.map((p, idx) => (
                 <g key={`student-pt-${idx}`} className="student-datapoint">
+                  {p.isStudentData && (
+                    <circle
+                      cx={toSvgX(p.x)}
+                      cy={toSvgY(p.y)}
+                      r="9"
+                      fill="none"
+                      stroke="#f59e0b"
+                      strokeWidth="1.5"
+                      opacity="0.5"
+                    />
+                  )}
                   <circle
                     cx={toSvgX(p.x)}
                     cy={toSvgY(p.y)}
-                    r="5.5"
-                    fill="#f59e0b"
+                    r={p.isStudentData ? "6" : "4.5"}
+                    fill={p.isStudentData ? "#f59e0b" : "#38bdf8"}
                     stroke="#ffffff"
                     strokeWidth="1.5"
                   >
                     <title>
-                      {`Run #${p.runNumber}: Grain ${p.grainSizeUm} μm → Strength ${p.y.toFixed(1)} MPa`}
+                      {p.isStudentData
+                        ? `Your Run #${p.runNumber}: Grain ${p.grainSizeUm} μm → Strength ${p.y.toFixed(1)} MPa`
+                        : `Calibrated Model Reference: Grain ${p.grainSizeUm} μm → Strength ${p.y.toFixed(1)} MPa`}
                     </title>
                   </circle>
                   <text
-                    x={toSvgX(p.x) + 7}
+                    x={toSvgX(p.x) + 8}
                     y={toSvgY(p.y) + 3}
-                    fill="#cbd5e1"
+                    fill={p.isStudentData ? "#fde68a" : "#94a3b8"}
                     fontSize="9.5"
+                    fontWeight={p.isStudentData ? "700" : "500"}
                     fontFamily="monospace"
                   >
-                    {p.grainSizeUm} μm
+                    {p.grainSizeUm} μm {p.isStudentData ? "★" : ""}
                   </text>
                 </g>
               ))}
@@ -378,13 +491,13 @@ export function Chapter4Equation({
               {/* Axis labels */}
               <text
                 x={PAD.left + plotW / 2}
-                y={H - 10}
+                y={H - 8}
                 textAnchor="middle"
                 fill="#94a3b8"
                 fontSize="11"
                 fontWeight="600"
               >
-                Finer grains &rarr;
+                Grain boundary density: d^(−1/2) (μm^(−1/2)) &rarr; Finer grains
               </text>
               <text
                 x={14}
@@ -395,12 +508,12 @@ export function Chapter4Equation({
                 fontWeight="600"
                 transform={`rotate(-90, 14, ${PAD.top + plotH / 2})`}
               >
-                Strength (MPa)
+                Yield Strength σ_y (MPa)
               </text>
 
               {/* Grain annotations */}
-              <text x={PAD.left + 10} y={PAD.top + plotH - 10} fill="#64748b" fontSize="9" fontStyle="italic">
-                large grains
+              <text x={PAD.left + 10} y={PAD.top + plotH - 8} fill="#64748b" fontSize="9" fontStyle="italic">
+                coarse grains
               </text>
               <text x={PAD.left + plotW - 10} y={PAD.top + 18} fill="#64748b" fontSize="9" fontStyle="italic" textAnchor="end">
                 fine grains
@@ -429,9 +542,9 @@ export function Chapter4Equation({
                   Predict strength: <strong>{predictionMpa} MPa</strong>
                   <input
                     type="range"
-                    min={80}
-                    max={250}
-                    step={5}
+                    min={Math.max(5, Math.round(yMax * 0.2))}
+                    max={Math.round(yMax * 1.5)}
+                    step={1}
                     value={predictionMpa}
                     onChange={(e) => {
                       setPredictionMpa(Number(e.target.value));
@@ -454,6 +567,20 @@ export function Chapter4Equation({
                 </div>
               )}
             </div>
+
+            {/* Research Mode Call to Action */}
+            {onGoResearchMode && (
+              <div className="ch4-research-cta" style={{ marginTop: "14px", textAlign: "center" }}>
+                <button
+                  className="chapter-primary-btn glow"
+                  onClick={onGoResearchMode}
+                  id="btn-goto-research-dashboard"
+                  style={{ width: "100%", padding: "12px 20px" }}
+                >
+                  Open Full Research Dashboard &rarr;
+                </button>
+              </div>
+            )}
 
             {/* Collapsible Calibration Disclosure */}
             <details className="hp-calibration-details">

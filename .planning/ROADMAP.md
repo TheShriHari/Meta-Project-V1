@@ -154,6 +154,7 @@ Plans:
 | 8. Final Packaging, Validation Report & Static Build Verification | 1/1 | Complete | 2026-10-29 |
 | 9. One-Click Beginner Experience | 1/1 | Complete | 2026-11-02 |
 | 10. Four-Chapter Interactive Learning Experience | 1/1 | Complete | 2026-11-02 |
+| 11. Scientific 3D Rendering & Visual Fidelity | 1/1 | Complete | 2026-11-02 |
 
 ### Phase 9: One-Click Beginner Experience
 
@@ -195,10 +196,10 @@ Plans:
 
 ### Phase 11: Scientific 3D Rendering & Visual Fidelity
 
-**Goal:** [To be planned]
-**Requirements**: TBD
+**Goal:** Implement the approved 3D visualization redesign for HPSim: spherical atoms (32x24 segments), ghost reference lattice, translucent 3D grain-boundary plane, gold orientation colour palette with displacement highlighting, CSS2D world-space annotations, Burgers vector arrow, depth lighting, camera breathing room, extra half-plane visualization, dedicated Dislocation View preset, and context-aware Scene Legend across Chapters 1-4 and Research Mode.
+**Requirements**: FR-01, FR-05, FR-06, FR-13, FR-14
 **Depends on:** Phase 10
-**Plans:** 0 plans
+**Plans:** 1 plan
 
 Plans:
-- [ ] TBD (run /gsd-plan-phase 11 to break down)
+- [x] 11-01: Scientific 3D rendering redesign, ghost lattice, grain boundary plane, world-space annotations, camera/lighting enhancements, extra half-plane, Dislocation View, and Scene Legend

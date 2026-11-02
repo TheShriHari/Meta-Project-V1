@@ -57,10 +57,12 @@ export function applyViewPreset(
 
 /**
  * Applies a textbook-style edge dislocation camera perspective:
- * - Centres on the dislocation core.
- * - Projects Burgers vector s horizontally across the screen.
- * - Projects dislocation line xi = s x n vertically on the screen.
- * - Uses an oblique viewing angle to reveal the 3D thickness of the extra half-plane.
+ * - Centres directly on the dislocation core.
+ * - Dislocation line xi = s x n runs into the screen along the primary depth line of sight.
+ * - Burgers vector s is projected horizontally to the right across the screen (+X).
+ * - Slip plane normal n is projected vertically upwards (+Y, extra half-plane above slip plane).
+ * - Uses a subtle oblique elevation (+n) and angle (+s) revealing the 3D columns of atoms
+ *   and planes receding into depth along xi, matching standard textbook diagrams (Callister / Hull & Bacon).
  */
 export function applyDislocationView(
   camera: PerspectiveCamera,
@@ -77,17 +79,18 @@ export function applyDislocationView(
   // Target is the dislocation core
   controls.target.copy(corePosNm);
 
-  // Set camera up to the dislocation line xi, ensuring xi is vertical on screen
-  camera.up.copy(xiVec);
+  // Normal vector aligned vertically (+n upward)
+  camera.up.copy(nVec);
 
-  // Oblique view vector: look down the normal with an offset along -s and slight xi tilt
+  // Camera placed predominantly along +xi with subtle oblique angle (+s, +n)
+  // When looking toward target, the right vector (-viewDir x nVec) aligns with +sVec.
   const viewDir = new Vector3()
-    .addScaledVector(sVec, -0.28)
-    .addScaledVector(nVec, -0.88)
-    .addScaledVector(xiVec, 0.38)
+    .addScaledVector(xiVec, 0.90)
+    .addScaledVector(sVec, 0.22)
+    .addScaledVector(nVec, 0.28)
     .normalize();
 
-  camera.position.copy(corePosNm).addScaledVector(viewDir, distance);
+  camera.position.copy(corePosNm).addScaledVector(viewDir, distance * 0.95);
   camera.lookAt(corePosNm);
   controls.update();
 }

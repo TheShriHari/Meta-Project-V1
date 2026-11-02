@@ -1,0 +1,93 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: HPSim
+      - generic [ref=e7]: /
+      - generic [ref=e8]: Intuitive Mechanics
+    - navigation "Chapter progress" [ref=e9]:
+      - 'button "Chapter 1: The Defect" [ref=e11] [cursor=pointer]':
+        - generic [ref=e12]: ✓
+        - generic [ref=e13]: The Defect
+      - 'button "Chapter 2: The Wall" [ref=e16] [cursor=pointer]':
+        - generic [ref=e17]: ✓
+        - generic [ref=e18]: The Wall
+      - 'button "Chapter 3: More Walls, More Strength" [ref=e21] [cursor=pointer]':
+        - generic [ref=e22]: ✓
+        - generic [ref=e23]: More Walls, More Strength
+      - 'button "Chapter 4: The Pattern Has a Name" [ref=e26] [cursor=pointer]':
+        - generic [ref=e27]: ✓
+        - generic [ref=e28]: The Pattern Has a Name
+    - button "Research Mode →" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e118]:
+      - generic [ref=e119]:
+        - generic [ref=e120]:
+          - generic:
+            - generic: "Slip plane {111}"
+            - generic: Burgers vector (b)
+            - generic: Dislocation core (⊥)
+            - generic: Grain boundary
+        - generic: Grain Boundary Interface (Plane)
+        - group "Camera views" [ref=e122]:
+          - button "front" [ref=e123] [cursor=pointer]
+          - button "top" [ref=e124] [cursor=pointer]
+          - button "side" [ref=e125] [cursor=pointer]
+          - button "isometric" [ref=e126] [cursor=pointer]
+          - button "Dislocation View" [ref=e127] [cursor=pointer]
+          - button "Reset" [ref=e128] [cursor=pointer]
+        - complementary "Scene Legend" [ref=e129]:
+          - generic [ref=e130]:
+            - generic [ref=e131]: Scene Legend
+            - button "✕" [ref=e134] [cursor=pointer]
+          - generic [ref=e135]:
+            - generic [ref=e139]:
+              - generic [ref=e140]: Grain 1 Atoms
+              - generic [ref=e141]: Base crystal orientation (#D4A843)
+            - generic [ref=e145]:
+              - generic [ref=e146]: Grain 2 Atoms
+              - generic [ref=e147]: Adjacent grain with tilted orientation (#B8912E, same material)
+            - generic [ref=e151]:
+              - generic [ref=e152]: Displaced Atoms
+              - generic [ref=e153]: Cyan-white highlight indicating displacement magnitude |u|
+            - generic [ref=e157]:
+              - generic [ref=e158]: Reference Lattice
+              - generic [ref=e159]: "Faint white spheres: original undisplaced atom positions"
+            - generic [ref=e163]:
+              - generic [ref=e164]: Dislocation Line (ξ)
+              - generic [ref=e165]: "Pink line: terminating bottom edge of the extra half-plane"
+            - generic [ref=e169]:
+              - generic [ref=e170]: Dislocation Core (⊥)
+              - generic [ref=e171]: Pink sphere marking the defect center on the slip plane
+            - generic [ref=e175]:
+              - generic [ref=e176]: Grain Boundary
+              - generic [ref=e177]: Indigo translucent plane (0x818cf8) with bright violet border
+            - generic [ref=e181]:
+              - generic [ref=e182]: "Slip Plane {111}"
+              - generic [ref=e183]: Translucent amber plane where dislocation glide occurs
+            - generic [ref=e184]:
+              - generic [ref=e185]: ➔
+              - generic [ref=e187]:
+                - generic [ref=e188]: Burgers Vector (b)
+                - generic [ref=e189]: "Amber arrow: slip direction (b ⟂ dislocation line)"
+        - generic [ref=e200]:
+          - generic [ref=e201]: ✓
+          - generic [ref=e202]:
+            - strong [ref=e203]: TRANSMITTED
+            - text: Passed into next grain (m' = 0.96)
+      - generic [ref=e190]:
+        - generic [ref=e204]:
+          - generic [ref=e205]:
+            - generic [ref=e206]:
+              - text: "Grain Misalignment:"
+              - strong [ref=e207]: 15°
+              - text: (Low angle — easier transmission)
+            - 'slider "Grain Misalignment: 15° (Low angle — easier transmission)" [ref=e208] [cursor=pointer]': "15"
+          - button "Stress it →" [ref=e209] [cursor=pointer]
+        - button "More walls, more strength (Multi-grain) →" [ref=e211] [cursor=pointer]
+  - status:
+    - paragraph: Transmitted! The grains are closely aligned, so the dislocation found a compatible path through the boundary.
+  - complementary [ref=e105]:
+    - button "🔬 Experiment Log (2 runs) ▲" [ref=e212] [cursor=pointer]:
+      - generic [ref=e107]: 🔬
+      - generic [ref=e108]: Experiment Log (2 runs)
+      - generic [ref=e109]: ▲

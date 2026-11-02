@@ -11,7 +11,7 @@ import { buildDemo, bestSystemIndex, LOADING_AXES, type Demo } from "../../model
 import { framesToSteps } from "../../core/playback.ts";
 import type { ChapterProps } from "../learning/learningTypes.ts";
 
-const SLOW_SPEED = 0.25;
+const SLOW_SPEED = 0.55;
 const BASE_STEPS_PER_SECOND = 60;
 const MAX_SIM_STEPS = 10000;
 
@@ -55,6 +55,21 @@ export function Chapter1Defect({
     v.setView("front");
     v.setCorePosition(demo.controller.state.pos_m);
 
+    (window as any).__hpsim_glide_debug = {
+      getPosM: () => demo.controller.state.pos_m,
+      getCoreCoords: () => {
+        const core = {
+          x: (demo.geom.p0[0] + demo.controller.state.pos_m * demo.geom.s[0]) * 1e9,
+          y: (demo.geom.p0[1] + demo.controller.state.pos_m * demo.geom.s[1]) * 1e9,
+          z: (demo.geom.p0[2] + demo.controller.state.pos_m * demo.geom.s[2]) * 1e9,
+        };
+        return core;
+      },
+      getCameraPose: () => v.saveCameraState(),
+      getProgress: () => 0,
+      getStatus: () => demo.controller.state.status,
+    };
+
     setNarration("An extra half-plane of atoms ends inside the crystal. Its terminating edge is the dislocation line.");
 
     return () => {
@@ -85,8 +100,28 @@ export function Chapter1Defect({
     for (const l of LAYERS) {
       viewer.setLayer(l, l === "atoms" || l === "ghost" || l === "extraHalfPlane" || l === "slipPlane" || l === "core" || l === "burgers");
     }
-    viewer.setView("front");
+    // View preserved across simulation runs
     viewer.setCorePosition(demo.controller.state.pos_m);
+
+    // Expose real-time telemetry on window for QA and logging
+    (window as any).__hpsim_glide_debug = {
+      getPosM: () => c.state.pos_m,
+      getCoreCoords: () => {
+        const core = {
+          x: (geom.p0[0] + c.state.pos_m * geom.s[0]) * 1e9,
+          y: (geom.p0[1] + c.state.pos_m * geom.s[1]) * 1e9,
+          z: (geom.p0[2] + c.state.pos_m * geom.s[2]) * 1e9,
+        };
+        return core;
+      },
+      getCameraPose: () => viewer.saveCameraState(),
+      getProgress: () =>
+        Math.min(
+          Math.max(((c.state.pos_m - geom.tMin) / totalDistance) * 100, 0),
+          100
+        ),
+      getStatus: () => c.state.status,
+    };
 
     setPhaseStep("running");
     setProgressPercent(0);
@@ -164,12 +199,13 @@ export function Chapter1Defect({
         </div>
 
         {/* Camera Views & Dislocation View */}
-        <div className="views chapter-camera-views" role="group" aria-label="Camera views">
+        <div className="chapter-camera-views chapter-views-bar" role="group" aria-label="Camera views">
           {(["front", "top", "side", "isometric"] as ViewName[]).map((vn) => (
             <button
               key={vn}
               type="button"
               id={`ch1-view-${vn}`}
+              title={`Switch camera to ${vn} view`}
               onClick={() => {
                 setIsDislocationViewActive(false);
                 viewerRef.current?.setView(vn);
@@ -181,6 +217,7 @@ export function Chapter1Defect({
           <button
             type="button"
             id="ch1-view-dislocation"
+            title="Dedicated textbook edge-dislocation perspective"
             onClick={() => {
               const active = viewerRef.current?.toggleDislocationView();
               setIsDislocationViewActive(Boolean(active));
@@ -196,6 +233,7 @@ export function Chapter1Defect({
           <button
             type="button"
             id="ch1-view-reset"
+            title="Reset camera to default view"
             onClick={() => {
               setIsDislocationViewActive(false);
               viewerRef.current?.resetCamera();
@@ -224,6 +262,7 @@ export function Chapter1Defect({
               className="chapter-primary-btn glow"
               onClick={handleApplyStress}
               id="btn-apply-stress"
+              title="Stress it / Apply stress"
             >
               Apply stress &rarr;
             </button>
@@ -266,8 +305,9 @@ export function Chapter1Defect({
               className="chapter-primary-btn pulse"
               onClick={() => onNavigateChapter("wall")}
               id="btn-goto-wall"
+              title="Next: Grain Boundaries"
             >
-              What stops it? &rarr;
+              What stops it? (Grain Boundaries) &rarr;
             </button>
           </div>
         )}

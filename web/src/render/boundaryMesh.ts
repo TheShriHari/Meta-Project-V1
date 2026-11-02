@@ -27,24 +27,24 @@ export function createGrainBoundaryMesh(
   const group = new THREE.Group();
   group.name = "grainBoundaryGroup";
 
-  // Translucent indigo plane: 0x818cf8, opacity 0.12, DoubleSide, depthWrite: false
+  // Translucent indigo plane: 0x6366f1, reduced opacity 0.10, DoubleSide, depthWrite: false
   const planeGeom = new THREE.PlaneGeometry(planeW, planeH);
   const planeMat = new THREE.MeshBasicMaterial({
-    color: 0x818cf8,
+    color: 0x6366f1,
     transparent: true,
-    opacity: 0.12,
+    opacity: 0.10,
     side: THREE.DoubleSide,
     depthWrite: false,
   });
   const planeMesh = new THREE.Mesh(planeGeom, planeMat);
   planeMesh.name = "grainBoundaryPlane";
 
-  // Bright violet-white glowing border: 0xc7d2fe, opacity 0.75 using EdgesGeometry
+  // Bright violet-white glowing border: 0xc7d2fe, opacity 0.80 using EdgesGeometry
   const edgesGeom = new THREE.EdgesGeometry(planeGeom);
   const edgeMat = new THREE.LineBasicMaterial({
     color: 0xc7d2fe,
     transparent: true,
-    opacity: 0.75,
+    opacity: 0.80,
   });
   const borderLines = new THREE.LineSegments(edgesGeom, edgeMat);
   borderLines.name = "grainBoundaryBorder";
@@ -52,10 +52,13 @@ export function createGrainBoundaryMesh(
   group.add(planeMesh);
   group.add(borderLines);
 
-  // Correct matrix transformation: basis = [gbTangent, (0, 0, 1), gbNormal], position = pGb
+  // Normalized basis transformation: basis = [gbTangent, (0, 0, 1), gbNormal], position = pGb
+  const gbTang = gbTangent.clone().normalize();
+  const gbNorm = gbNormal.clone().normalize();
+  const gbUp = new THREE.Vector3(0, 0, 1);
   group.matrixAutoUpdate = false;
   group.matrix
-    .makeBasis(gbTangent, new THREE.Vector3(0, 0, 1), gbNormal)
+    .makeBasis(gbTang, gbUp, gbNorm)
     .setPosition(pGb.x, pGb.y, pGb.z);
   group.matrixWorldNeedsUpdate = true;
 
@@ -81,12 +84,12 @@ export function createSlipPlaneMesh(
   const group = new THREE.Group();
   group.name = "slipPlaneGroup";
 
-  // Translucent warm amber plane: 0xf59e0b, opacity 0.14, DoubleSide, depthWrite: false
+  // Translucent warm amber plane: 0xf59e0b, reduced opacity 0.11, DoubleSide, depthWrite: false
   const planeGeom = new THREE.PlaneGeometry(diag, diag);
   const planeMat = new THREE.MeshBasicMaterial({
     color: 0xf59e0b,
     transparent: true,
-    opacity: 0.14,
+    opacity: 0.11,
     side: THREE.DoubleSide,
     depthWrite: false,
   });
@@ -107,9 +110,12 @@ export function createSlipPlaneMesh(
   group.add(borderLines);
 
   // Matrix transformation: basis = [s, xi, n], position = p0
+  const sNorm = s.clone().normalize();
+  const xiNorm = xi.clone().normalize();
+  const nNorm = n.clone().normalize();
   group.matrixAutoUpdate = false;
   group.matrix
-    .makeBasis(s, xi, n)
+    .makeBasis(sNorm, xiNorm, nNorm)
     .setPosition(p0.x, p0.y, p0.z);
   group.matrixWorldNeedsUpdate = true;
 
