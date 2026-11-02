@@ -1,0 +1,78 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]:
+        - heading "HPSim — See How Dislocations Move" [level=1] [ref=e7]
+        - paragraph [ref=e8]: Watch how tiny defects move through crystals and how grain size affects material strength.
+      - button "Open advanced research simulation controls" [ref=e9] [cursor=pointer]: Advanced Simulation →
+  - main [ref=e10]:
+    - region "3D Dislocation Simulation Viewer" [ref=e11]:
+      - generic [ref=e12]: Arrived at Boundary
+      - generic [ref=e16]:
+        - button "Simulate Another Sample" [ref=e84] [cursor=pointer]
+        - generic [ref=e18]:
+          - generic [ref=e19]:
+            - text: "Sample:"
+            - strong [ref=e20]: Pure Aluminium (FCC)
+          - text: FCC crystal under [001] uniaxial tension, primary slip system active.
+      - generic [ref=e21]:
+        - generic [ref=e22]: ⊥Edge Dislocation (Plane Strain)
+        - paragraph [ref=e23]:
+          - strong [ref=e24]: "Scientific Notice:"
+          - text: The simulator models the analytical Volterra edge-dislocation displacement field and overdamped glide kinetics. Screw dislocation visualization is currently unsupported by the underlying plane-strain continuum engine.
+    - complementary "Hall-Petch Strengthening Relationship" [ref=e25]:
+      - generic [ref=e26]:
+        - generic [ref=e27]:
+          - heading "Hall–Petch Strengthening" [level=3] [ref=e28]
+          - generic [ref=e29]:
+            - text: σ
+            - subscript [ref=e30]: "y"
+            - text: = σ
+            - subscript [ref=e31]: "0"
+            - text: + k
+            - subscript [ref=e32]: "y"
+            - text: · d
+            - superscript [ref=e33]: −½
+        - 'img "Hall-Petch line chart: yield strength vs inverse square root of grain size for Aluminium (99.999% High-Purity Al)" [ref=e34]':
+          - generic [ref=e53]: Yield Strength σ (MPa)
+          - generic [ref=e54]: Inverse Grain Size d (μm)
+          - generic [ref=e55]: "0"
+          - generic [ref=e56]: "18"
+          - generic [ref=e57]: "35"
+          - generic [ref=e58]: "53"
+          - generic [ref=e59]: "0.000"
+          - generic [ref=e60]: "0.111"
+          - generic [ref=e61]: "0.221"
+          - generic [ref=e62]: "0.332"
+        - generic [ref=e63]:
+          - paragraph [ref=e64]:
+            - strong [ref=e65]: "Calibrated model trend:"
+            - text: Derived bottom-up from discrete pile-up mechanics. Calibrated to Hansen (1977) (Aluminium (99.999% High-Purity Al)). Not raw experimental scatter.
+          - paragraph [ref=e66]:
+            - generic [ref=e67]:
+              - text: σ
+              - subscript [ref=e68]: "0"
+              - text: = 10.0 MPa
+            - text: •
+            - generic [ref=e69]:
+              - text: k
+              - subscript [ref=e70]: "y"
+              - text: = 67.0 MPa·μm
+              - superscript [ref=e71]: ½
+            - text: •
+            - generic [ref=e72]: Slope = -0.483 (theory −0.5)
+      - generic [ref=e73]:
+        - heading "What does this show?" [level=4] [ref=e74]
+        - paragraph [ref=e75]:
+          - strong [ref=e76]: "1. Defects Move:"
+          - text: When stress is applied, dislocations glide through the crystal lattice until stopped by a grain boundary.
+        - paragraph [ref=e77]:
+          - strong [ref=e78]: "2. Hall–Petch Relation:"
+          - text: In finer-grained metals (higher
+          - emphasis [ref=e79]:
+            - text: d
+            - superscript [ref=e80]: −½
+          - text: ), dislocations pile up quickly against boundaries, requiring higher stress to cause permanent plastic yield.
+  - contentinfo [ref=e81]:
+    - text: HPSim v1.0 • Dual-Stack Scientific Simulation • 100% Client-Side WebGL
+    - button "Access Full Research Controls (Schmid Glide, Grain Boundary Transmission, 1D Pile-Up, Micrographs) →" [ref=e82] [cursor=pointer]

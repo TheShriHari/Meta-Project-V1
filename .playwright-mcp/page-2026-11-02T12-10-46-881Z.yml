@@ -1,0 +1,590 @@
+- generic [ref=e1274]:
+  - note [ref=e1275]:
+    - generic [ref=e1276]:
+      - heading "HPSim · Dislocation Glide, Transmission, Pile-Up & Hall–Petch Engine" [level=1] [ref=e1277]
+      - generic [ref=e1278]:
+        - button "← Guided Journey" [ref=e1279] [cursor=pointer]
+        - generic [ref=e1280]:
+          - generic [ref=e1281]: "Experiment Preset:"
+          - combobox "Experiment Preset:" [ref=e1282]:
+            - option "1. FCC Single-Crystal Schmid Glide ([001] Al)" [selected]
+            - option "2. Low-Angle vs High-Angle GB Transmission (Phase 4)"
+            - option "3. Eshelby–Frank–Nabarro 1D Dislocation Pile-Up (Phase 5)"
+            - option "4. Emergent Hall–Petch d^(−1/2) Scaling (Phase 6, V-09/V-10)"
+            - option "5. Optical Micrograph ASTM E112 & Chord Rescaling (Phase 7, V-16)"
+        - button "Guided Tour & Quick Start 🎓" [ref=e1283] [cursor=pointer]
+        - button "About / Scientific Limitations" [ref=e1284] [cursor=pointer]
+    - paragraph [ref=e1285]:
+      - strong [ref=e1286]: "Phases 1–8 Complete:"
+      - text: Single-crystal Schmid glide, Lee–Robertson–Birnbaum boundary transmission,
+      - strong [ref=e1287]: 1D Discrete Dislocation Pile-Up
+      - text: (Eshelby–Frank–Nabarro 1951),
+      - strong [ref=e1288]: Emergent Hall–Petch d^(−1/2)
+      - text: derivation, and
+      - strong [ref=e1289]: ASTM E112 Micrograph Chord Rescaling
+      - text: . Continuum isotropic elasticity; explanatory multiscale model, not molecular dynamics.
+  - main [ref=e1290]:
+    - region "3D crystal view" [ref=e1291]:
+      - generic [ref=e1292]:
+        - generic:
+          - generic: Extra half-plane of atoms
+          - generic: "Slip plane {111}"
+          - generic: Burgers vector (b)
+          - generic: Dislocation core (⊥)
+          - generic: Grain boundary
+      - complementary "Scene Legend" [ref=e1294]:
+        - generic [ref=e1295]:
+          - generic [ref=e1296]: Scene Legend
+          - button "✕" [ref=e1299] [cursor=pointer]
+        - generic [ref=e1300]:
+          - generic [ref=e1304]:
+            - generic [ref=e1305]: Crystal Atoms
+            - generic [ref=e1306]: Gold spheres (#D4A843) representing FCC crystal lattice
+          - generic [ref=e1310]:
+            - generic [ref=e1311]: Grain 1 Atoms
+            - generic [ref=e1312]: Base crystal orientation (#D4A843)
+          - generic [ref=e1316]:
+            - generic [ref=e1317]: Grain 2 Atoms
+            - generic [ref=e1318]: Adjacent grain with tilted orientation (#B8912E, same material)
+          - generic [ref=e1322]:
+            - generic [ref=e1323]: Displaced Atoms
+            - generic [ref=e1324]: Cyan-white highlight indicating displacement magnitude |u|
+          - generic [ref=e1328]:
+            - generic [ref=e1329]: Reference Lattice
+            - generic [ref=e1330]: "Faint white spheres: original undisplaced atom positions"
+          - generic [ref=e1335]:
+            - generic [ref=e1336]: Extra Half-Plane
+            - generic [ref=e1337]: Inserted atomic half-plane terminating inside crystal
+          - generic [ref=e1341]:
+            - generic [ref=e1342]: Dislocation Line (ξ)
+            - generic [ref=e1343]: "Pink line: terminating bottom edge of the extra half-plane"
+          - generic [ref=e1347]:
+            - generic [ref=e1348]: Dislocation Core (⊥)
+            - generic [ref=e1349]: Pink sphere marking the defect center on the slip plane
+          - generic [ref=e1353]:
+            - generic [ref=e1354]: Grain Boundary
+            - generic [ref=e1355]: Indigo translucent plane (0x818cf8) with bright violet border
+          - generic [ref=e1359]:
+            - generic [ref=e1360]: "Slip Plane {111}"
+            - generic [ref=e1361]: Translucent amber plane where dislocation glide occurs
+          - generic [ref=e1362]:
+            - generic [ref=e1363]: ➔
+            - generic [ref=e1365]:
+              - generic [ref=e1366]: Burgers Vector (b)
+              - generic [ref=e1367]: "Amber arrow: slip direction (b ⟂ dislocation line)"
+          - generic [ref=e1371]:
+            - generic [ref=e1372]: Atomic Bonds
+            - generic [ref=e1373]: Nearest-neighbour connectivity lines
+      - group "Camera views" [ref=e1374]:
+        - button "front" [ref=e1375] [cursor=pointer]
+        - button "top" [ref=e1376] [cursor=pointer]
+        - button "side" [ref=e1377] [cursor=pointer]
+        - button "isometric" [ref=e1378] [cursor=pointer]
+        - button "Dislocation View" [ref=e1379] [cursor=pointer]
+        - button "reset camera" [ref=e1380] [cursor=pointer]
+    - complementary "Controls" [ref=e1381]:
+      - generic [ref=e1382]:
+        - heading "Grain-Boundary Transmission Phase 4" [level=2] [ref=e1383]
+        - generic [ref=e1384]:
+          - heading "⚠ UNRESOLVED THRESHOLD" [level=3] [ref=e1385]
+          - paragraph [ref=e1386]:
+            - text: Geometric compatibility ($m'$) and driving stress ($\tau_out$) evaluated, but $\tau^*_ref$ is pending calibration under
+            - strong [ref=e1387]: Decision M6
+            - text: .
+          - paragraph [ref=e1388]: Status is explicitly blocked from fabricated pass/fail assertion.
+        - generic [ref=e1389]:
+          - text: "Adjacent Grain 2 Columnar Tilt θ: 15°"
+          - generic [ref=e1390]:
+            - 'button "Adjacent Grain 2 Columnar Tilt θ: 15° 15° (Low-angle) 45° (High-angle) 90° (Orthogonal) 15" [ref=e1391] [cursor=pointer]': 0° (Identical)
+            - button "15° (Low-angle)" [ref=e1392] [cursor=pointer]
+            - button "45° (High-angle)" [ref=e1393] [cursor=pointer]
+            - button "90° (Orthogonal)" [ref=e1394] [cursor=pointer]
+          - slider [ref=e1395]: "15"
+        - generic [ref=e1396]:
+          - text: "Compatibility threshold m'_min: 0.70"
+          - 'slider "Compatibility threshold m''_min: 0.70" [ref=e1397]': "0.7"
+        - generic [ref=e1398]:
+          - checkbox "Supply illustrative τ*_ref demo only" [ref=e1399]
+          - text: Supply illustrative τ*_ref demo only
+        - generic [ref=e1400]:
+          - strong [ref=e1401]: "Gate 0 / Decision M6 Pending:"
+          - text: τ*_ref is uncalibrated. The engine outputs an explicit
+          - code [ref=e1402]: unresolved_threshold
+          - text: outcome rather than guessing an unphysical default.
+        - generic [ref=e1403]: "Grain 2 Candidate Slip Systems (12):"
+        - table [ref=e1405]:
+          - rowgroup [ref=e1406]:
+            - row [ref=e1407]:
+              - columnheader "#" [ref=e1408]
+              - columnheader "Plane/Dir" [ref=e1409]
+              - columnheader "m'" [ref=e1410]
+              - columnheader "|b_r|/b" [ref=e1411]
+              - columnheader "τ_out" [ref=e1412]
+              - columnheader "τ*" [ref=e1413]
+              - columnheader "Reason" [ref=e1414]
+          - rowgroup [ref=e1415]:
+            - row [ref=e1416]:
+              - cell "0" [ref=e1417]
+              - cell "(111)[01-1]" [ref=e1418]
+              - cell "0.362" [ref=e1419]
+              - cell "1.12" [ref=e1420]
+              - cell "16.3" [ref=e1421]
+              - cell "—" [ref=e1422]
+              - cell "m' = 0.3622 < m'_min (0.7000)" [ref=e1423]
+            - row [ref=e1424]:
+              - cell "1" [ref=e1425]
+              - cell "(111)[-101]" [ref=e1426]
+              - cell "0.961" [ref=e1427]
+              - cell "0.18" [ref=e1428]
+              - cell "16.3" [ref=e1429]
+              - cell "—" [ref=e1430]
+              - cell "tau*_ref is unresolved (M6 pending calibration); threshold check blocked" [ref=e1431]
+            - row [ref=e1432]:
+              - cell "2" [ref=e1433]
+              - cell "(111)[1-10]" [ref=e1434]
+              - cell "0.598" [ref=e1435]
+              - cell "0.88" [ref=e1436]
+              - cell "0.0" [ref=e1437]
+              - cell "—" [ref=e1438]
+              - cell "m' = 0.5985 < m'_min (0.7000)" [ref=e1439]
+            - row [ref=e1440]:
+              - cell "3" [ref=e1441]
+              - cell "(-111)[01-1]" [ref=e1442]
+              - cell "0.060" [ref=e1443]
+              - cell "1.12" [ref=e1444]
+              - cell "16.3" [ref=e1445]
+              - cell "—" [ref=e1446]
+              - cell "m' = 0.0596 < m'_min (0.7000)" [ref=e1447]
+            - row [ref=e1448]:
+              - cell "4" [ref=e1449]
+              - cell "(-111)[101]" [ref=e1450]
+              - cell "0.003" [ref=e1451]
+              - cell "1.40" [ref=e1452]
+              - cell "16.3" [ref=e1453]
+              - cell "—" [ref=e1454]
+              - cell "m' = 0.0027 < m'_min (0.7000)" [ref=e1455]
+            - row [ref=e1456]:
+              - cell "5" [ref=e1457]
+              - cell "(-111)[110]" [ref=e1458]
+              - cell "0.057" [ref=e1459]
+              - cell "1.14" [ref=e1460]
+              - cell "0.0" [ref=e1461]
+              - cell "—" [ref=e1462]
+              - cell "m' = 0.0568 < m'_min (0.7000)" [ref=e1463]
+            - row [ref=e1464]:
+              - cell "6" [ref=e1465]
+              - cell "(1-11)[011]" [ref=e1466]
+              - cell "0.318" [ref=e1467]
+              - cell "0.86" [ref=e1468]
+              - cell "16.3" [ref=e1469]
+              - cell "—" [ref=e1470]
+              - cell "m' = 0.3184 < m'_min (0.7000)" [ref=e1471]
+            - row [ref=e1472]:
+              - cell "7" [ref=e1473]
+              - cell "(1-11)[10-1]" [ref=e1474]
+              - cell "0.497" [ref=e1475]
+              - cell "0.18" [ref=e1476]
+              - cell "16.3" [ref=e1477]
+              - cell "—" [ref=e1478]
+              - cell "m' = 0.4973 < m'_min (0.7000)" [ref=e1479]
+            - row [ref=e1480]:
+              - cell "8" [ref=e1481]
+              - cell "(1-11)[110]" [ref=e1482]
+              - cell "0.179" [ref=e1483]
+              - cell "1.14" [ref=e1484]
+              - cell "0.0" [ref=e1485]
+              - cell "—" [ref=e1486]
+              - cell "m' = 0.1789 < m'_min (0.7000)" [ref=e1487]
+            - row [ref=e1488]:
+              - cell "9" [ref=e1489]
+              - cell "(11-1)[011]" [ref=e1490]
+              - cell "0.196" [ref=e1491]
+              - cell "0.86" [ref=e1492]
+              - cell "16.3" [ref=e1493]
+              - cell "—" [ref=e1494]
+              - cell "m' = 0.1955 < m'_min (0.7000)" [ref=e1495]
+            - row [ref=e1496]:
+              - cell "10" [ref=e1497]
+              - cell "(11-1)[101]" [ref=e1498]
+              - cell "0.005" [ref=e1499]
+              - cell "1.40" [ref=e1500]
+              - cell "16.3" [ref=e1501]
+              - cell "—" [ref=e1502]
+              - cell "m' = 0.0053 < m'_min (0.7000)" [ref=e1503]
+            - row [ref=e1504]:
+              - cell "11" [ref=e1505]
+              - cell "(11-1)[1-10]" [ref=e1506]
+              - cell "0.190" [ref=e1507]
+              - cell "0.88" [ref=e1508]
+              - cell "0.0" [ref=e1509]
+              - cell "—" [ref=e1510]
+              - cell "m' = 0.1902 < m'_min (0.7000)" [ref=e1511]
+      - generic [ref=e1512]:
+        - heading "Discrete Dislocation Pile-Up Phase 5" [level=2] [ref=e1513]
+        - generic [ref=e1514]:
+          - strong [ref=e1515]: "1D Continuum Elastic Array:"
+          - text: Straight edge dislocations gliding on a single slip plane under uniform applied shear stress, accumulating against an immovable obstacle at x=0 (Eshelby–Frank–Nabarro 1951). Explanatory discrete model; not molecular dynamics.
+        - generic [ref=e1516]:
+          - heading "✔ EQUILIBRIUM CONVERGED" [level=3] [ref=e1517]
+          - paragraph [ref=e1518]: Exact force equilibrium verified across 8 dislocations (7 mobile + 1 locked). Residual |R_max| = 1.94e-7 Pa.
+        - generic [ref=e1519]:
+          - generic [ref=e1520]:
+            - generic [ref=e1521]: Immovable Obstacle (x=0)
+            - generic [ref=e1522]: Slip Direction s (Positive x) →
+          - img "1D Pile-Up Diagram" [ref=e1524]:
+            - generic [ref=e1526]: ← Applied τ
+            - generic [ref=e1527]: "#1"
+            - generic [ref=e1535]: "#8"
+          - generic [ref=e1537]:
+            - generic [ref=e1538]: 0 nm
+            - generic [ref=e1539]: Pile-up Length L = 373.01 nm
+        - generic [ref=e1540]:
+          - term [ref=e1541]: Obstacle Tip Stress τ_tip
+          - definition [ref=e1542]: 400.0 MPa (×8 stress conc.)
+          - term [ref=e1543]: Discrete Pile-Up Length L
+          - definition [ref=e1544]: 373.01 nm
+          - term [ref=e1545]: EFN Asymptotic Count N_asymp
+          - definition [ref=e1546]: "5.27 (ratio: 0.659)"
+          - term [ref=e1547]: Max Residual Force/Stress
+          - definition [ref=e1548]: 1.94e-7 Pa
+          - term [ref=e1549]: Solver Iterations
+          - definition [ref=e1550]: "1"
+        - generic [ref=e1551]:
+          - text: "Dislocation Count N: 8 (1 locked + 7 mobile)"
+          - 'slider "Dislocation Count N: 8 (1 locked + 7 mobile)" [ref=e1552]': "8"
+        - generic [ref=e1553]:
+          - text: "Applied Shear Stress τ_app: 50 MPa"
+          - 'slider "Applied Shear Stress τ_app: 50 MPa" [ref=e1554]': "50"
+        - generic [ref=e1555]:
+          - text: Material Preset illustrative
+          - generic [ref=e1556]:
+            - button "Material Preset illustrative Copper (μ=48 GPa, ν=0.34)" [ref=e1557] [cursor=pointer]: Aluminium (μ=26 GPa, ν=0.33)
+            - button "Copper (μ=48 GPa, ν=0.34)" [ref=e1558] [cursor=pointer]
+        - generic [ref=e1559]:
+          - checkbox "Test Newton relaxation from perturbed guess (+5% initial error)" [ref=e1560]
+          - text: Test Newton relaxation from perturbed guess (+5% initial error)
+        - table [ref=e1562]:
+          - rowgroup [ref=e1563]:
+            - row [ref=e1564]:
+              - columnheader "#" [ref=e1565]
+              - columnheader "Pos (nm)" [ref=e1566]
+              - columnheader "Spacing d (nm)" [ref=e1567]
+              - columnheader "Residual (Pa)" [ref=e1568]
+          - rowgroup [ref=e1569]:
+            - row [ref=e1570]:
+              - cell "1" [ref=e1571]
+              - cell "0.000" [ref=e1572]
+              - cell "— (locked)" [ref=e1573]
+              - cell "—" [ref=e1574]
+            - row [ref=e1575]:
+              - cell "2" [ref=e1576]
+              - cell "8.153" [ref=e1577]
+              - cell "8.153" [ref=e1578]
+              - cell "-1.94e-7" [ref=e1579]
+            - row [ref=e1580]:
+              - cell "3" [ref=e1581]
+              - cell "27.652" [ref=e1582]
+              - cell "19.498" [ref=e1583]
+              - cell "-1.42e-7" [ref=e1584]
+            - row [ref=e1585]:
+              - cell "4" [ref=e1586]
+              - cell "59.280" [ref=e1587]
+              - cell "31.628" [ref=e1588]
+              - cell "2.98e-8" [ref=e1589]
+            - row [ref=e1590]:
+              - cell "5" [ref=e1591]
+              - cell "104.628" [ref=e1592]
+              - cell "45.348" [ref=e1593]
+              - cell "3.73e-8" [ref=e1594]
+            - row [ref=e1595]:
+              - cell "6" [ref=e1596]
+              - cell "166.602" [ref=e1597]
+              - cell "61.974" [ref=e1598]
+              - cell "3.73e-8" [ref=e1599]
+            - row [ref=e1600]:
+              - cell "7" [ref=e1601]
+              - cell "251.020" [ref=e1602]
+              - cell "84.417" [ref=e1603]
+              - cell "-4.47e-8" [ref=e1604]
+            - row [ref=e1605]:
+              - cell "8" [ref=e1606]
+              - cell "373.009" [ref=e1607]
+              - cell "121.989" [ref=e1608]
+              - cell "0.00e+0" [ref=e1609]
+      - generic [ref=e1610]:
+        - heading "Emergent Hall–Petch Phase 6" [level=2] [ref=e1611]
+        - generic [ref=e1612]:
+          - strong [ref=e1613]: "Discrete Pile-Up Yield Derivation:"
+          - text: For each grain size
+          - emphasis [ref=e1614]: d
+          - text: (source at
+          - emphasis [ref=e1615]: L = d/2
+          - text: ), bisection finds the critical shear stress
+          - emphasis [ref=e1616]: τ_eff,crit
+          - text: where pile-up tip stress
+          - emphasis [ref=e1617]: τ_tip = N·τ_eff ≥ τ*(m')
+          - text: .
+          - emphasis [ref=e1618]:
+            - text: τ*
+            - subscript [ref=e1619]: ref
+          - text: is a
+          - strong [ref=e1620]: CALIBRATION TARGET
+          - text: to match published
+          - emphasis [ref=e1621]: k_y
+          - text: ; the only emergent property is the
+          - emphasis [ref=e1622]: d
+          - superscript [ref=e1623]: −1/2
+          - text: power-law exponent.
+        - generic [ref=e1624]:
+          - heading "✔ V-09 & V-10 BENCHMARKS VERIFIED" [level=3] [ref=e1625]
+          - paragraph [ref=e1626]:
+            - text: Log–log slope
+            - emphasis [ref=e1627]: d(log τ_eff,crit)/d(log d)
+            - text: =
+            - strong [ref=e1628]: "-0.4829"
+            - text: "(V-09 target: −0.50 ± 0.05). Simulated"
+            - emphasis [ref=e1629]: k_y
+            - text: =
+            - strong [ref=e1630]: "67.0"
+            - text: vs analytic EFN
+            - strong [ref=e1631]:
+              - text: 74.0 MPa·μm
+              - superscript [ref=e1632]: 1/2
+            - text: "(diff: 9.5%, V-10 ≤ 15%)."
+        - generic [ref=e1633]:
+          - text: Material System sourced
+          - combobox "Material System sourced" [ref=e1634]:
+            - option "Aluminium (99.999% High-Purity Al) (FCC)" [selected]
+            - option "Copper (99.999% High-Purity Cu) (FCC)"
+            - option "Pure Alpha-Iron (Ti-Stabilised IF Iron) (BCC)"
+            - option "Ferritic Steel (C60 Low-Carbon 56 ppm C) (BCC)"
+        - generic [ref=e1635]:
+          - text: Chart Mode
+          - generic [ref=e1636]:
+            - button "Chart Mode log₁₀(τ_eff,crit) vs log₁₀(d) (V-09)" [ref=e1637] [cursor=pointer]: σ_y vs d^(−1/2) (Hall–Petch)
+            - button "log₁₀(τ_eff,crit) vs log₁₀(d) (V-09)" [ref=e1638] [cursor=pointer]
+        - generic [ref=e1639]:
+          - generic [ref=e1640]:
+            - generic [ref=e1641]: Yield Stress σ_y (MPa) vs d^(−1/2) (μm^(−1/2))
+            - generic [ref=e1642]: calibrated τ*_ref
+          - img "Emergent Hall-Petch Chart" [ref=e1644]:
+            - generic [ref=e1645]: "0"
+            - generic [ref=e1647]: "24"
+            - generic [ref=e1649]: "47"
+            - generic [ref=e1651]: "0.00"
+            - generic [ref=e1653]: "0.17"
+            - generic [ref=e1655]: "0.34"
+            - generic [ref=e1657]: d^(−1/2) [μm^(−1/2)]
+          - generic [ref=e1695]:
+            - generic [ref=e1696]:
+              - generic [ref=e1697]:
+                - strong [ref=e1698]: ● (circle)
+                - text: Discrete Simulation Points (± integer-N plateau)
+              - generic [ref=e1699]:
+                - strong [ref=e1700]: — (solid blue)
+                - text: OLS Fit Line
+              - generic [ref=e1701]:
+                - strong [ref=e1702]: █ (shaded band)
+                - text: 95% Bootstrap CI Band
+            - generic [ref=e1703]:
+              - generic [ref=e1704]:
+                - strong [ref=e1705]: "- - (dashed green)"
+                - text: "Calib. Fit: Hansen (1977) (10.1016/0001-6160(77)90171-7)"
+              - generic [ref=e1706]:
+                - strong [ref=e1707]: ·· (dashed amber)
+                - text: "Held-Out Fit: Hansen (1977) AA1050 (10.1016/0001-6160(77)90171-7)"
+              - generic [ref=e1708]:
+                - strong [ref=e1709]: ··· (dotted purple)
+                - text: Analytic EFN Continuum
+        - generic [ref=e1710]:
+          - term [ref=e1711]: Barrier Threshold τ*_ref (Calibration Target)
+          - definition [ref=e1712]: 80.89 MPa calibration target for k_y
+          - term [ref=e1713]: Simulated Slope k_y (95% CI)
+          - definition [ref=e1714]:
+            - text: 67.0 [67.0, 67.0] MPa·μm
+            - superscript [ref=e1715]: 1/2
+          - term [ref=e1716]: Analytic Continuum k_y (EFN)
+          - definition [ref=e1717]:
+            - text: 74.0 MPa·μm
+            - superscript [ref=e1718]: 1/2
+          - term [ref=e1719]: Calibration Fit k_y (Hansen (1977))
+          - definition [ref=e1720]:
+            - text: 67.0 MPa·μm
+            - superscript [ref=e1721]: 1/2
+          - term [ref=e1722]: Held-Out Error (Hansen (1977) AA1050, V-15)
+          - definition [ref=e1723]:
+            - strong [ref=e1724]: "28.2% unadjusted (HEADLINE, BLIND: no held-out σ₀ used)"
+            - text: "/ 3.8% intercept-adjusted (SECONDARY, NOT BLIND: uses held-out σ₀). Mean over 16-point 10–400 μm sweep. τ*_ref is a CALIBRATION TARGET to match calibration k_y; only the d^(−1/2) power-law exponent is emergent."
+          - term [ref=e1725]: Log–Log Exponent (V-09) / R²
+          - definition [ref=e1726]: "-0.4829 / R²=0.9994"
+        - generic [ref=e1727]:
+          - text: "Sensitivity Override τ*_ref: 80.9 MPa"
+          - 'slider "Sensitivity Override τ*_ref: 80.9 MPa" [ref=e1728]': "81"
+      - generic [ref=e1729]:
+        - heading "Micrograph & Chord Rescaling Phase 7" [level=2] [ref=e1730]
+        - generic [ref=e1731]:
+          - strong [ref=e1732]: "ASTM E112 Intercept Geometry & Parametric Rescaling (V-16):"
+          - text: Precomputed polygon grain boundaries, intercept test lines, and complete chord populations with client-side JSON/CSV import.
+          - generic [ref=e1733]:
+            - strong [ref=e1734]: "Stereological Convention:"
+            - text: ASTM lineal intercept (ℓ̄_ASTM = L_T / P) measures grid test line length per boundary crossing. Arithmetic chord mean (ℓ̄_chord = Σ ℓ_i / n) averages individual chord segments. Both are displayed to prevent stereological ambiguity.
+        - generic [ref=e1735]:
+          - generic [ref=e1736]: D6 Vector-Only Export
+          - generic [ref=e1737]: M3 Sensitivity Study Only (Not Independent Validation)
+        - generic [ref=e1738]:
+          - text: Micrograph / Chord Dataset
+          - combobox "Micrograph / Chord Dataset" [ref=e1739]:
+            - option "Aluminium (99.5%) — Real Segmented Micrograph (140 Contours, ℓ̄_ASTM = 8.11 μm, ℓ̄_chord = 7.85 μm, n = 963)" [selected]
+            - option "SYNTHETIC DEMONSTRATION — NOT MEASURED FROM SOURCE MICROGRAPH (copper look-alike)"
+            - option "SYNTHETIC DEMONSTRATION — NOT MEASURED FROM SOURCE MICROGRAPH (pure_iron look-alike)"
+            - option "SYNTHETIC DEMONSTRATION — NOT MEASURED FROM SOURCE MICROGRAPH (ferritic_steel look-alike)"
+            - option "SYNTHETIC DEMONSTRATION — NOT MEASURED FROM SOURCE MICROGRAPH (aluminium look-alike)"
+        - generic [ref=e1740]:
+          - generic [ref=e1741]:
+            - checkbox "ASTM E112 Intercept Lines" [checked] [ref=e1742]
+            - text: ASTM E112 Intercept Lines
+          - generic [ref=e1743]:
+            - checkbox "Grain Slip Traces" [checked] [ref=e1744]
+            - text: Grain Slip Traces
+        - generic [ref=e1745]:
+          - generic [ref=e1746]:
+            - generic [ref=e1747]: "CC BY-NC-SA 4.0 (DoITPoMS #609) - Local research only; raw image not bundled in web/public/"
+            - generic [ref=e1748]: "Scale Bar: 40 μm"
+          - img "Micrograph Polygon and ASTM E112 Intercept View" [ref=e1750]:
+            - generic [ref=e2181]: 40 μm
+          - generic [ref=e2184]: "standard_watershed: Automated 2D optical watershed segmentation carries ~10-20% boundary delineation uncertainty due to chemical etching contrast and polishing artifacts."
+        - generic [ref=e2185]:
+          - generic [ref=e2186]:
+            - generic [ref=e2187]: Rescaled Chord Distribution (n = 963)
+            - generic [ref=e2188]: ℓ̄ = 8.1 μm, CV = 1.295
+          - img "Chord Length Histogram" [ref=e2190]:
+            - generic [ref=e2198]: 0.8 μm
+            - generic [ref=e2199]: Mean ℓ̄ = 8.1 μm
+            - generic [ref=e2200]: 130.5 μm
+        - generic [ref=e2201]:
+          - text: "Parametric Target Mean Intercept ℓ̄_target: 8.1 μm (scale ×1.03)"
+          - 'slider "Parametric Target Mean Intercept ℓ̄_target: 8.1 μm (scale ×1.03)" [ref=e2202]': "10"
+        - generic [ref=e2203]:
+          - term [ref=e2204]: ASTM E112 Grid Intercept ℓ̄_ASTM (L_T / P)
+          - definition [ref=e2205]: 8.11 μm (932 crossings, L_T = 7560 μm)
+          - term [ref=e2206]: Chord Distribution Sample Mean ℓ̄_chord ± σ (n = 963)
+          - definition [ref=e2207]: 7.85 ± 10.16 μm
+          - term [ref=e2208]: Rescaled Mean ℓ̄ / Std σ_ℓ (V-16)
+          - definition [ref=e2209]: 8.10 ± 10.49 μm
+          - term [ref=e2210]: Coefficient of Variation CV (Invariant)
+          - definition [ref=e2211]: "1.2951"
+          - term [ref=e2212]: Single Mean-Intercept σ_y(ℓ̄)
+          - definition [ref=e2213]: 33.75 MPa
+          - term [ref=e2214]: Chord-Ensemble Mean ⟨σ_y(ℓ_i)⟩ ± SD
+          - definition [ref=e2215]: 41.67 ± 12.79 MPa
+        - button "Import Custom Chord Dataset (.json or .csv) Drag & drop file here or click to browse (100% client-side) Accepts JSON arrays or CSV lines of chord lengths in meters or micrometers (μm). Scale calibration metadata is required for raw pixel values." [ref=e2216] [cursor=pointer]:
+          - strong [ref=e2217]: Import Custom Chord Dataset (.json or .csv)
+          - generic [ref=e2218]: Drag & drop file here or click to browse (100% client-side)
+          - generic [ref=e2219]: Accepts JSON arrays or CSV lines of chord lengths in meters or micrometers (μm). Scale calibration metadata is required for raw pixel values.
+      - generic [ref=e2220]:
+        - heading "Playback" [level=2] [ref=e2221]
+        - generic [ref=e2222]:
+          - button "Play" [ref=e2223] [cursor=pointer]
+          - button "Step" [ref=e2224] [cursor=pointer]
+          - button "Reset" [ref=e2225] [cursor=pointer]
+        - generic [ref=e2226]:
+          - text: Timeline (step 0 of 0)
+          - slider "Timeline (step 0 of 0)" [ref=e2227]: "0"
+        - generic [ref=e2228]:
+          - text: Playback speed ×1 (presentation only)
+          - slider "Playback speed ×1 (presentation only)" [ref=e2229]: "1"
+        - generic [ref=e2230]:
+          - text: "Applied uniaxial stress σ: 40 MPa"
+          - 'slider "Applied uniaxial stress σ: 40 MPa" [ref=e2231]': "40"
+      - generic [ref=e2232]:
+        - heading "Readout illustrative" [level=2] [ref=e2233]
+        - generic [ref=e2234]:
+          - term [ref=e2235]: Resolved shear stress τ_RSS
+          - definition [ref=e2236]: 16.330 MPa
+          - term [ref=e2237]: Critical stress τ_c
+          - definition [ref=e2238]: 5.000 MPa
+          - term [ref=e2239]: Glide velocity v
+          - definition [ref=e2240]: 3.244e+1 m/s
+          - term [ref=e2241]: Core position (along s)
+          - definition [ref=e2242]: 0.0000 nm
+          - term [ref=e2243]: Time
+          - definition [ref=e2244]: 0.00 ps
+          - term [ref=e2245]: State
+          - definition [ref=e2246]: paused (would glide)
+          - term [ref=e2247]: Schmid factor m
+          - definition [ref=e2248]: "0.4082"
+      - generic [ref=e2249]:
+        - heading "Crystal & loading" [level=2] [ref=e2250]
+        - generic [ref=e2251]:
+          - text: Loading axis (crystal frame)
+          - combobox "Loading axis (crystal frame)" [ref=e2252]:
+            - option "[001]" [selected]
+            - option "[011]"
+            - option "[111]"
+            - option "[123]"
+        - generic [ref=e2253]:
+          - text: "Incoming slip system {111}<110>"
+          - 'combobox "Incoming slip system {111}<110>" [ref=e2254]':
+            - option "(1 1 1)[0 1 -1] m=-0.408"
+            - option "(1 1 1)[-1 0 1] m=0.408" [selected]
+            - option "(1 1 1)[1 -1 0] m=0.000"
+            - option "(-1 1 1)[0 1 -1] m=-0.408"
+            - option "(-1 1 1)[1 0 1] m=0.408"
+            - option "(-1 1 1)[1 1 0] m=0.000"
+            - option "(1 -1 1)[0 1 1] m=0.408"
+            - option "(1 -1 1)[1 0 -1] m=-0.408"
+            - option "(1 -1 1)[1 1 0] m=0.000"
+            - option "(1 1 -1)[0 1 1] m=-0.408"
+            - option "(1 1 -1)[1 0 1] m=-0.408"
+            - option "(1 1 -1)[1 -1 0] m=0.000"
+        - generic [ref=e2255]:
+          - text: "Cells per side: 5 (500 atoms)"
+          - 'slider "Cells per side: 5 (500 atoms)" [ref=e2256]': "5"
+      - generic [ref=e2257]:
+        - heading "Layers" [level=2] [ref=e2258]
+        - generic [ref=e2259]:
+          - generic [ref=e2260]:
+            - checkbox "Atoms" [checked] [ref=e2261]
+            - text: Atoms
+          - generic [ref=e2262]:
+            - checkbox "Reference lattice (ideal R0)" [checked] [ref=e2263]
+            - text: Reference lattice (ideal R0)
+          - generic [ref=e2264]:
+            - checkbox "Extra half-plane of atoms" [checked] [ref=e2265]
+            - text: Extra half-plane of atoms
+          - generic [ref=e2266]:
+            - checkbox "NN bonds" [checked] [ref=e2267]
+            - text: NN bonds
+          - generic [ref=e2268]:
+            - checkbox "Unit cell" [checked] [ref=e2269]
+            - text: Unit cell
+          - generic [ref=e2270]:
+            - checkbox "Axes (X red, Y green, Z blue)" [checked] [ref=e2271]
+            - text: Axes (X red, Y green, Z blue)
+          - generic [ref=e2272]:
+            - checkbox "Slip plane" [checked] [ref=e2273]
+            - text: Slip plane
+          - generic [ref=e2274]:
+            - checkbox "Burgers vector" [checked] [ref=e2275]
+            - text: Burgers vector
+          - generic [ref=e2276]:
+            - checkbox "Dislocation line + core" [checked] [ref=e2277]
+            - text: Dislocation line + core
+          - generic [ref=e2278]:
+            - checkbox "Grain boundary plane & adjacent grain" [checked] [ref=e2279]
+            - text: Grain boundary plane & adjacent grain
+          - generic [ref=e2280]:
+            - checkbox "Candidate outgoing slip vectors" [checked] [ref=e2281]
+            - text: Candidate outgoing slip vectors
+      - generic [ref=e2282]:
+        - heading "Parameter provenance" [level=2] [ref=e2283]
+        - paragraph [ref=e2284]:
+          - text: a = 0.4049 nm (Al-like,
+          - emphasis [ref=e2285]: illustrative
+          - text: ), b = a/√2 = 0.2863 nm (computed), ν = 0.33, τ_c = 5 MPa, M_d = 1e+4 1/(Pa·s), Δt = 0.2 ps, r_c = b.
+        - paragraph [ref=e2286]:
+          - strong [ref=e2287]: "Phase 4 Grain Boundary:"
+          - text: Controlled columnar interface between Grain 1 and Grain 2. Decision M6 remains open; τ*_ref is not calibrated.
+        - paragraph [ref=e2288]:
+          - strong [ref=e2289]: "Phase 5 Pile-Up Benchmark:"
+          - text: Discrete edge-dislocation equilibrium benchmarked against Eshelby–Frank–Nabarro (1951) associated Laguerre polynomial roots. Tip stress concentration τ_tip = N·τ_app.

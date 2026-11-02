@@ -1,0 +1,38 @@
+[
+  {
+    "id": "TASK-1",
+    "name": "Coordinator: Shared Architecture & Anti-Overlap Layout Fixes",
+    "description": "Fix camera resetting on Stress it / slider interactions, fix top-left badge and camera buttons overlap, ensure experiment log drawer does not obscure controls, and solidify shared interfaces.",
+    "passes": true
+  },
+  {
+    "id": "TASK-2",
+    "name": "Agent A: Perfect Chapter 1 — The Defect",
+    "description": "Audit and perfect dislocation introduction, atomic visualization, extra half-plane, stress application, slow-motion glide pacing, annotations, and textbook Dislocation View perspective.",
+    "passes": true
+  },
+  {
+    "id": "TASK-3",
+    "name": "Agent B: Perfect Chapter 2 — The Wall",
+    "description": "Audit and perfect grain-boundary visualization, misalignment controls without camera reset, transmission/blocking outcomes, scientific honesty, and interaction states.",
+    "passes": true
+  },
+  {
+    "id": "TASK-4",
+    "name": "Agent C: Perfect Chapter 3 — More Walls, More Strength",
+    "description": "Completely fix polycrystal visualization (non-overlapping Lloyd-relaxed Voronoi), correct grain size narration (no calling 260 μm small), fix prediction logic for both fine and coarse grains, remove stale Chapter 2 messages, and calibrate strength meter.",
+    "passes": true
+  },
+  {
+    "id": "TASK-5",
+    "name": "Agent D: Perfect Chapter 4 — The Pattern Has a Name",
+    "description": "Perfect experiment-log integration, student scatter plot overlaid on calibrated theory curve, term-by-term equation cards, extrapolation test, and seamless bridge to Research Mode.",
+    "passes": true
+  },
+  {
+    "id": "TASK-6",
+    "name": "Agent E: Independent Student UX & Playwright QA Audit",
+    "description": "Conduct end-to-end student journey via Playwright MCP across all 4 chapters and Research Mode on desktop and mobile, capture genuine screenshots, verify 87 unit tests and TypeScript zero errors.",
+    "passes": true
+  }
+]

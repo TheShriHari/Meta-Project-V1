@@ -1,0 +1,174 @@
+This is a genuinely interesting design problem. Let me think through it properly — not as a list of features, but as a learning experience.
+
+---
+
+## The Core Design Principle
+
+**Build intuition before equations. Let students discover what you want them to know.**
+
+The current HPSim shows the answer (the dashboard, the chart, the equation) before the student has any intuition to hang it on. The redesign should work the opposite way: the student *earns* the equation by running experiments that reveal the pattern themselves. By the time σ_y = σ_0 + k_y · d^{−½} appears on screen, it should feel like a name for something they already understood.
+
+The mental model for the UX: **a guided experiment, not a textbook and not a sandbox.**
+
+---
+
+## Structure: Four Scenes, One Journey
+
+Not a dashboard. Not tabs. A linear narrative with four acts, each unlocking the next. Think: a museum installation, or the tutorial levels of a well-designed game.
+
+```
+[Chapter 1] → [Chapter 2] → [Chapter 3] → [Chapter 4]
+ The Defect     The Wall      Many Walls     The Equation
+```
+
+A thin progress bar at the top. Students can go back. The engine runs identically in all four — only what's visible and controllable changes.
+
+---
+
+### Chapter 1 — "The Defect"
+
+*Goal: make the concept of a dislocation feel real and visual before naming it.*
+
+**Layout:** Full-screen 3D crystal. No panel. No controls. Just the crystal and one piece of prose at the bottom of the screen in large type.
+
+**Experience:**
+- The camera zooms slowly into the crystal structure, atoms visible
+- A floating label appears, animated in: *"Something is wrong with this crystal"*
+- An arrow (rendered in the 3D scene, not as a UI overlay) points to the dislocation line
+- After 3 seconds, a second label: *"This line of misaligned atoms is called a dislocation"*
+- One button appears: **"Apply stress →"**
+
+**After they click:**
+- The crystal distorts slightly (stress applied)
+- The dislocation glide begins — slow, smooth, labelled in 3D space: *"← dislocation moving"*
+- A single slider fades in at the bottom: **Stress** (low → high)
+- At high stress, the dislocation moves faster
+- When it exits the crystal: *"The defect left. The crystal deformed permanently."*
+- A second button: **"What stops it? →"**
+
+**What they learned without being told:** Dislocations are real things. Stress makes them move. Movement = permanent deformation.
+
+---
+
+### Chapter 2 — "The Wall"
+
+*Goal: make grain boundaries feel like obstacles, not abstract chemistry.*
+
+**Layout:** Same full-screen 3D viewer. A glowing amber plane cuts through the middle of the crystal — the grain boundary. Right side has a narrow annotation strip (not a panel, just floating labels).
+
+**Experience:**
+- Camera pulls back slightly to reveal two grains meeting at the boundary
+- Label in 3D space on the boundary plane: *"Grain boundary — where two crystals meet at an angle"*
+- Student clicks **"Stress it"** — dislocation moves, hits the boundary, stops
+- The boundary pulses briefly — visual feedback that something happened
+- Label appears: *"Blocked."*
+
+**The key interaction:** A single slider appears: **Grain misalignment angle (0° → 90°)**
+
+- At low angles (nearly aligned grains), the dislocation transmits through — the boundary glows green and the dislocation continues
+- At high angles, it's blocked — the boundary glows red, the dislocation piles up
+- An outcome badge (not a table yet): **TRANSMITTED** or **BLOCKED**
+
+**No jargon.** Not "m' geometric compatibility." Just the angle slider and the visual outcome.
+
+**What they learned:** Grain boundaries can stop dislocations. How misaligned the grains are determines whether the dislocation gets through.
+
+---
+
+### Chapter 3 — "More Walls, More Strength"
+
+*Goal: build the intuition that smaller grains = more boundaries = harder to deform.*
+
+**Layout:** The 3D viewer zooms out to a polycrystal — many grains visible as a Voronoi-like mosaic. On the right: a vertical **Strength Meter** (a simple glowing bar with a needle, no numbers yet). At the bottom: a **Grain Size** slider.
+
+**Experience:**
+- Narration: *"Real metals have millions of grains. Every grain boundary is a wall."*
+- Student drags the grain size slider left (smaller grains) — the crystal subdivides into more grains visually
+- They click **"Stress it"** — dislocations launch from multiple sources, most get blocked quickly
+- The strength meter climbs as grain size shrinks
+- Drag right (larger grains) — fewer boundaries, dislocations travel far, meter drops
+
+**The key moment:** Let them predict. Before they run the simulation, ask: *"Smaller grains: stronger or weaker?"* They click Stronger or Weaker. Then they run it and see. Either way they were right or they learn.
+
+**After 3–4 runs, a faint graph starts appearing** in the corner — just dots so far, no axes labeled. *"You're building something. Keep going."*
+
+**What they learned:** The relationship between grain size and strength is real and consistent. Smaller always = stronger. There's a pattern forming.
+
+---
+
+### Chapter 4 — "The Pattern Has a Name"
+
+*Goal: reveal the Hall-Petch equation as the summary of what the student already discovered.*
+
+**Layout split:** Left: a final summary 3D view (frozen, beautiful, labeled). Right: the Hall-Petch chart — but built entirely from the student's own simulation runs in Chapter 3.
+
+**Experience:**
+- The dots from Chapter 3 animate onto the chart one by one, each with a timestamp: *"Run 1 — 50μm grain," "Run 2 — 20μm grain"...*
+- The curve fits itself to the dots
+- Narration: *"There's a pattern in what you just measured."*
+- The equation fades in over the curve: **σ_y = σ_0 + k_y · d^{−½}**
+- Each term is highlighted as it's explained:
+  - σ_0 → *"Base strength — what the metal has even with no grain boundaries"*
+  - k_y → *"How much grain boundaries matter for this specific metal"*
+  - d^{−½} → *"Inverse square root of grain size — why the curve isn't a straight line"*
+
+**The interactive moment:** Student can hover on any dot on the chart and see the corresponding simulation replay in the left panel. The equation updates to show the actual numbers for that material.
+
+**A "What if?" prompt:** *"Predict: if grain size halved again, where would the next point land?"* Student drags a ghost point onto the chart. Then they run one more simulation and see how close their prediction was.
+
+**The unlock:** A small button appears: **"I want to go deeper →"** — which opens the current advanced dashboard, now positioned as the research tool for people who've built the intuition. The dashboard doesn't feel overwhelming anymore because they know what everything refers to.
+
+---
+
+## Global Design Decisions
+
+**The 3D viewer is always the hero.** Never shrink it below 60% of the screen. All explanation happens either in 3D space (labels, arrows, glowing planes) or in large-type prose at the bottom of the viewer — not in side panels.
+
+**No cold blue dashboard aesthetic.** Use a warmer dark palette: deep slate backgrounds, amber/gold for the crystal atoms (they're material, not space), cyan for the dislocation core, red for blocked boundaries, green for transmitted ones. The current palette reads "developer tool." This should read "science museum installation."
+
+**In-scene annotations, not UI overlays.** Labels for "dislocation," "grain boundary," "slip plane" should be anchored in 3D space and move with the crystal as you orbit it. Not floating CSS text in front of the canvas.
+
+**The narration strip.** One sentence at a time, at the bottom of the 3D viewer, large type (20–24px), appearing with a subtle fade. No scrollable text blocks. No reading walls.
+
+**The experiment log.** A small collapsible drawer in the bottom-left: every simulation the student ran is logged with grain size, material, result. In Chapter 4 these become the data points. It makes the student feel like a real experimenter.
+
+**Responsive rotation.** The 3D crystal should auto-rotate gently when idle (like a product showcase). Click to orbit manually. The rotation stops the moment the simulation starts.
+
+**Sound design (optional but powerful).** A very subtle crystalline click when the dislocation hits a boundary. Nothing game-like — just enough to reinforce the visual event.
+
+---
+
+## Navigation Model
+
+```
+┌─────────────────────────────────────────────────────┐
+│  ●──────────○──────────○──────────○    [Research →] │
+│  Defect    Wall    Strength    Equation              │
+└─────────────────────────────────────────────────────┘
+```
+
+- Filled circle = current chapter
+- Hollow = unlocked but not visited
+- Grayed = locked (must complete previous)
+- **[Research →]** always visible in top right — escape hatch to the advanced dashboard at any point for the student who wants to run ahead
+
+---
+
+## What This Redesign Solves
+
+| Current problem | Redesign fix |
+|---|---|
+| Equation before intuition | Chapter 4 is the last thing they see |
+| Jargon on landing | No technical terms until Chapter 2, and only after the concept is visual |
+| Static chart with no meaning | Student builds the chart themselves |
+| No in-scene labels | All annotations anchor in 3D space |
+| Overwhelming dashboard as entry | Dashboard is the optional exit, not the entry |
+| Student is passive viewer | Student runs experiments, makes predictions, owns the data |
+
+---
+
+## What to Build First
+
+If I were you, I'd prototype Chapter 1 alone as a proof of concept — full screen 3D viewer, in-scene annotations, the narration strip, the single-button flow. Get that feeling right. The rest of the chapters use the same visual language. Once Chapter 1 feels like a museum installation and not a research tool, you'll know the design direction is correct.
+
+The engine you've already built can power all four chapters without modification. The UI layer is the only thing changing.

@@ -1,0 +1,42 @@
+- generic [ref=f2e3]:
+  - banner [ref=f2e4]:
+    - generic [ref=f2e5]:
+      - generic [ref=f2e6]: HPSim
+      - generic [ref=f2e7]: /
+      - generic [ref=f2e8]: Intuitive Mechanics
+    - navigation "Chapter progress" [ref=f2e9]:
+      - 'button "Chapter 1: The Defect" [ref=f2e11] [cursor=pointer]':
+        - generic [ref=f2e12]: ✓
+        - generic [ref=f2e13]: The Defect
+      - 'button "Chapter 2: The Wall" [ref=f2e16] [cursor=pointer]':
+        - generic [ref=f2e17]: ✓
+        - generic [ref=f2e18]: The Wall
+      - 'button "Chapter 3: More Walls, More Strength" [ref=f2e21] [cursor=pointer]':
+        - generic [ref=f2e22]: ✓
+        - generic [ref=f2e23]: More Walls, More Strength
+      - 'button "Chapter 4: The Pattern Has a Name" [ref=f2e26] [cursor=pointer]':
+        - generic [ref=f2e27]: "4"
+        - generic [ref=f2e28]: The Pattern Has a Name
+    - button "Research Mode →" [ref=f2e29] [cursor=pointer]
+  - main [ref=f2e30]:
+    - generic [ref=f2e48]:
+      - generic [ref=f2e49]:
+        - img "Polycrystalline microstructure mosaic" [ref=f2e50]
+        - generic: "Polycrystal Model: ~62 grains visible (Mean size: 50 μm)"
+      - complementary [ref=f2e238]:
+        - heading "Yield Resistance" [level=3] [ref=f2e239]
+        - paragraph [ref=f2e240]: Resistance to dislocation movement
+        - generic [ref=f2e243]:
+          - generic [ref=f2e244]: ◀
+          - generic [ref=f2e245]: 20 MPa
+        - generic:
+          - generic: High Strength
+          - generic: Low Strength
+      - generic [ref=f2e246]: Testing pile-up stress barrier across 62 grains...
+  - status:
+    - paragraph: Stressing polycrystal with 50 μm grains...
+  - complementary [ref=f2e43]:
+    - button "🔬 Experiment Log (1 run) ▲" [ref=f2e273] [cursor=pointer]:
+      - generic [ref=f2e45]: 🔬
+      - generic [ref=f2e46]: Experiment Log (1 run)
+      - generic [ref=f2e47]: ▲

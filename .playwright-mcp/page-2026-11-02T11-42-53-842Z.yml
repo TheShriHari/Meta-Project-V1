@@ -1,0 +1,77 @@
+- generic [ref=f8e3]:
+  - banner [ref=f8e4]:
+    - generic [ref=f8e5]:
+      - generic [ref=f8e6]: HPSim
+      - generic [ref=f8e7]: /
+      - generic [ref=f8e8]: Intuitive Mechanics
+    - navigation "Chapter progress" [ref=f8e9]:
+      - 'button "Chapter 1: The Defect" [active] [ref=f8e11] [cursor=pointer]':
+        - generic [ref=f8e12]: ✓
+        - generic [ref=f8e13]: The Defect
+      - 'button "Chapter 2: The Wall" [ref=f8e16] [cursor=pointer]':
+        - generic [ref=f8e17]: ✓
+        - generic [ref=f8e18]: The Wall
+      - 'button "Chapter 3: More Walls, More Strength" [ref=f8e21] [cursor=pointer]':
+        - generic [ref=f8e22]: ✓
+        - generic [ref=f8e23]: More Walls, More Strength
+      - 'button "Chapter 4: The Pattern Has a Name" [ref=f8e26] [cursor=pointer]':
+        - generic [ref=f8e27]: ✓
+        - generic [ref=f8e28]: The Pattern Has a Name
+    - button "Research Mode →" [ref=f8e29] [cursor=pointer]
+  - main [ref=f8e30]:
+    - generic [ref=f8e575]:
+      - generic [ref=f8e576]:
+        - generic: Defect line (Dislocation core)
+        - generic: Edge Dislocation (⊥) • Single FCC Slip Plane
+        - group "Camera views" [ref=f8e579]:
+          - button "front" [ref=f8e580] [cursor=pointer]
+          - button "top" [ref=f8e581] [cursor=pointer]
+          - button "side" [ref=f8e582] [cursor=pointer]
+          - button "isometric" [ref=f8e583] [cursor=pointer]
+          - button "Dislocation View" [ref=f8e584] [cursor=pointer]
+          - button "Reset" [ref=f8e585] [cursor=pointer]
+        - complementary "Scene Legend" [ref=f8e586]:
+          - generic [ref=f8e587]:
+            - generic [ref=f8e588]: Scene Legend
+            - button "✕" [ref=f8e591] [cursor=pointer]
+          - generic [ref=f8e592]:
+            - generic [ref=f8e596]:
+              - generic [ref=f8e597]: Crystal Atoms
+              - generic [ref=f8e598]: Gold spheres (#D4A843) representing FCC crystal lattice
+            - generic [ref=f8e602]:
+              - generic [ref=f8e603]: Displaced Atoms
+              - generic [ref=f8e604]: Cyan-white highlight indicating displacement magnitude |u|
+            - generic [ref=f8e608]:
+              - generic [ref=f8e609]: Reference Lattice
+              - generic [ref=f8e610]: "Faint white spheres: original undisplaced atom positions"
+            - generic [ref=f8e615]:
+              - generic [ref=f8e616]: Extra Half-Plane
+              - generic [ref=f8e617]: Inserted atomic half-plane terminating inside crystal
+            - generic [ref=f8e621]:
+              - generic [ref=f8e622]: Dislocation Line (ξ)
+              - generic [ref=f8e623]: "Pink line: terminating bottom edge of the extra half-plane"
+            - generic [ref=f8e627]:
+              - generic [ref=f8e628]: Dislocation Core (⊥)
+              - generic [ref=f8e629]: Pink sphere marking the defect center on the slip plane
+            - generic [ref=f8e633]:
+              - generic [ref=f8e634]: "Slip Plane {111}"
+              - generic [ref=f8e635]: Translucent amber plane where dislocation glide occurs
+            - generic [ref=f8e636]:
+              - generic [ref=f8e637]: ➔
+              - generic [ref=f8e639]:
+                - generic [ref=f8e640]: Burgers Vector (b)
+                - generic [ref=f8e641]: "Amber arrow: slip direction (b ⟂ dislocation line)"
+      - generic [ref=f8e643]:
+        - button "Apply stress →" [ref=f8e644] [cursor=pointer]
+        - generic [ref=f8e645]:
+          - generic [ref=f8e646]:
+            - text: "Stress:"
+            - strong [ref=f8e647]: 40 MPa
+          - 'slider "Stress: 40 MPa" [ref=f8e648] [cursor=pointer]': "40"
+  - status:
+    - paragraph: An extra half-plane of atoms ends inside the crystal. Its terminating edge is the dislocation line.
+  - complementary [ref=f8e105]:
+    - button "🔬 Experiment Log (0 runs) ▲" [ref=f8e106] [cursor=pointer]:
+      - generic [ref=f8e107]: 🔬
+      - generic [ref=f8e108]: Experiment Log (0 runs)
+      - generic [ref=f8e109]: ▲

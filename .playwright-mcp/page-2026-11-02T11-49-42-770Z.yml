@@ -1,0 +1,128 @@
+- generic [ref=f10e3]:
+  - banner [ref=f10e4]:
+    - generic [ref=f10e5]:
+      - generic [ref=f10e6]: HPSim
+      - generic [ref=f10e7]: /
+      - generic [ref=f10e8]: Intuitive Mechanics
+    - navigation "Chapter progress" [ref=f10e9]:
+      - 'button "Chapter 1: The Defect" [ref=f10e11] [cursor=pointer]':
+        - generic [ref=f10e12]: ✓
+        - generic [ref=f10e13]: The Defect
+      - 'button "Chapter 2: The Wall" [ref=f10e16] [cursor=pointer]':
+        - generic [ref=f10e17]: ✓
+        - generic [ref=f10e18]: The Wall
+      - 'button "Chapter 3: More Walls, More Strength" [ref=f10e21] [cursor=pointer]':
+        - generic [ref=f10e22]: ✓
+        - generic [ref=f10e23]: More Walls, More Strength
+      - 'button "Chapter 4: The Pattern Has a Name" [active] [ref=f10e26] [cursor=pointer]':
+        - generic [ref=f10e27]: ✓
+        - generic [ref=f10e28]: The Pattern Has a Name
+    - button "Research Mode →" [ref=f10e29] [cursor=pointer]
+  - main [ref=f10e30]:
+    - generic [ref=f10e316]:
+      - region "3D Crystal & Pileup View" [ref=f10e317]:
+        - generic [ref=f10e318]:
+          - generic: Atomic Slip & Pile-up Synthesis
+          - group "Camera views" [ref=f10e321]:
+            - button "front" [ref=f10e322] [cursor=pointer]
+            - button "top" [ref=f10e323] [cursor=pointer]
+            - button "side" [ref=f10e324] [cursor=pointer]
+            - button "isometric" [ref=f10e325] [cursor=pointer]
+            - button "Dislocation View" [ref=f10e326] [cursor=pointer]
+            - button "Reset" [ref=f10e327] [cursor=pointer]
+          - complementary "Scene Legend" [ref=f10e328]:
+            - generic [ref=f10e329]:
+              - generic [ref=f10e330]: Scene Legend
+              - button "✕" [ref=f10e333] [cursor=pointer]
+            - generic [ref=f10e334]:
+              - generic [ref=f10e338]:
+                - generic [ref=f10e339]: Crystal Atoms
+                - generic [ref=f10e340]: Gold spheres (#D4A843) representing FCC crystal lattice
+              - generic [ref=f10e344]:
+                - generic [ref=f10e345]: Grain 1 Atoms
+                - generic [ref=f10e346]: Base crystal orientation (#D4A843)
+              - generic [ref=f10e350]:
+                - generic [ref=f10e351]: Grain 2 Atoms
+                - generic [ref=f10e352]: Adjacent grain with tilted orientation (#B8912E, same material)
+              - generic [ref=f10e356]:
+                - generic [ref=f10e357]: Displaced Atoms
+                - generic [ref=f10e358]: Cyan-white highlight indicating displacement magnitude |u|
+              - generic [ref=f10e362]:
+                - generic [ref=f10e363]: Dislocation Line (ξ)
+                - generic [ref=f10e364]: "Pink line: terminating bottom edge of the extra half-plane"
+              - generic [ref=f10e368]:
+                - generic [ref=f10e369]: Dislocation Core (⊥)
+                - generic [ref=f10e370]: Pink sphere marking the defect center on the slip plane
+              - generic [ref=f10e374]:
+                - generic [ref=f10e375]: Grain Boundary
+                - generic [ref=f10e376]: Indigo translucent plane (0x818cf8) with bright violet border
+              - generic [ref=f10e380]:
+                - generic [ref=f10e381]: "Slip Plane {111}"
+                - generic [ref=f10e382]: Translucent amber plane where dislocation glide occurs
+        - generic [ref=f10e383]:
+          - generic [ref=f10e384]:
+            - generic [ref=f10e385] [cursor=pointer]:
+              - text: σ
+              - subscript [ref=f10e386]: "y"
+            - generic [ref=f10e387]: =
+            - generic [ref=f10e388] [cursor=pointer]:
+              - text: σ
+              - subscript [ref=f10e389]: "0"
+            - generic [ref=f10e390]: +
+            - generic [ref=f10e391] [cursor=pointer]:
+              - text: k
+              - subscript [ref=f10e392]: "y"
+            - generic [ref=f10e393]: ·
+            - generic [ref=f10e394] [cursor=pointer]:
+              - text: d
+              - superscript [ref=f10e395]: −½
+          - paragraph [ref=f10e397]:
+            - text: Click any term above (σ
+            - subscript [ref=f10e398]: "0"
+            - text: ", k"
+            - subscript [ref=f10e399]: "y"
+            - text: ", or d"
+            - superscript [ref=f10e400]: −½
+            - text: ) to see how physics explains it.
+      - region "Hall-Petch Model Chart" [ref=f10e401]:
+        - generic [ref=f10e402]:
+          - generic [ref=f10e403]:
+            - generic [ref=f10e404]:
+              - heading "Why Finer Grains Make Metals Stronger" [level=3] [ref=f10e405]
+              - generic [ref=f10e406]: Hall–Petch Strengthening Trend
+            - generic [ref=f10e407]: Aluminium (99.999% High-Purity Al)
+          - img "Hall Petch Chart" [ref=f10e408]:
+            - generic [ref=f10e411]:
+              - 'generic "Run #1: Grain 150 μm → Strength 15.9 MPa" [ref=f10e412] [cursor=pointer]'
+              - generic [ref=f10e413]: 150 μm
+            - generic [ref=f10e414]:
+              - 'generic "Run #2: Grain 50 μm → Strength 19.9 MPa" [ref=f10e415] [cursor=pointer]'
+              - generic [ref=f10e416]: 50 μm
+            - generic [ref=f10e417]:
+              - 'generic "Run #3: Grain 20 μm → Strength 25.5 MPa" [ref=f10e418] [cursor=pointer]'
+              - generic [ref=f10e419]: 20 μm
+            - generic [ref=f10e420]: Finer grains →
+            - generic [ref=f10e421]: Strength (MPa)
+            - generic [ref=f10e422]: large grains
+            - generic [ref=f10e423]: fine grains
+          - generic [ref=f10e424]:
+            - 'heading "Test Your Intuition: What happens at ultra-fine grain size?" [level=4] [ref=f10e425]'
+            - generic [ref=f10e426]:
+              - generic [ref=f10e427]:
+                - text: "Try grain size:"
+                - strong [ref=f10e428]: 5 μm
+                - 'slider "Try grain size: 5 μm" [ref=f10e429]': "5"
+              - generic [ref=f10e430]:
+                - text: "Predict strength:"
+                - strong [ref=f10e431]: 150 MPa
+                - 'slider "Predict strength: 150 MPa" [ref=f10e432]': "150"
+              - button "Verify with Model" [ref=f10e433] [cursor=pointer]
+          - group [ref=f10e434]:
+            - generic "Model calibration & literature source" [ref=f10e435] [cursor=pointer]
+  - status:
+    - paragraph: "There is an exact mathematical pattern in what you measured: finer grains resist deformation according to the Hall–Petch relationship."
+  - complementary [ref=f10e105]:
+    - button "🔬 Experiment Log (0 runs) ▲" [ref=f10e106] [cursor=pointer]:
+      - generic [ref=f10e107]: 🔬
+      - generic [ref=f10e108]: Experiment Log (0 runs)
+      - generic [ref=f10e109]: ▲

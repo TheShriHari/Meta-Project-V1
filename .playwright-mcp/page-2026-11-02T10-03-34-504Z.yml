@@ -1,0 +1,78 @@
+- generic [ref=e1018]:
+  - banner [ref=e1019]:
+    - generic [ref=e1020]:
+      - generic [ref=e1021]:
+        - heading "HPSim — See How Dislocations Move" [level=1] [ref=e1022]
+        - paragraph [ref=e1023]: Watch how tiny defects move through crystals and how grain size affects material strength.
+      - button "Open advanced research simulation controls" [ref=e1024] [cursor=pointer]: Advanced Simulation →
+  - main [ref=e1025]:
+    - region "3D Dislocation Simulation Viewer" [ref=e1026]:
+      - generic [ref=e1027]: Ready
+      - generic [ref=e1031]:
+        - button "Simulate Now" [ref=e1032] [cursor=pointer]
+        - generic [ref=e1033]:
+          - generic [ref=e1034]:
+            - text: "Sample:"
+            - strong [ref=e1035]: Pure Aluminium (FCC)
+          - text: FCC crystal under [001] uniaxial tension, primary slip system active.
+      - generic [ref=e1036]:
+        - generic [ref=e1037]: ⊥Edge Dislocation (Plane Strain)
+        - paragraph [ref=e1038]:
+          - strong [ref=e1039]: "Scientific Notice:"
+          - text: The simulator models the analytical Volterra edge-dislocation displacement field and overdamped glide kinetics. Screw dislocation visualization is currently unsupported by the underlying plane-strain continuum engine.
+    - complementary "Hall-Petch Strengthening Relationship" [ref=e1040]:
+      - generic [ref=e1041]:
+        - generic [ref=e1042]:
+          - heading "Hall–Petch Strengthening" [level=3] [ref=e1043]
+          - generic [ref=e1044]:
+            - text: σ
+            - subscript [ref=e1045]: "y"
+            - text: = σ
+            - subscript [ref=e1046]: "0"
+            - text: + k
+            - subscript [ref=e1047]: "y"
+            - text: · d
+            - superscript [ref=e1048]: −½
+        - 'img "Hall-Petch line chart: yield strength vs inverse square root of grain size for Aluminium (99.999% High-Purity Al)" [ref=e1049]':
+          - generic [ref=e1068]: Yield Strength σ (MPa)
+          - generic [ref=e1069]: Inverse Grain Size d (μm)
+          - generic [ref=e1070]: "0"
+          - generic [ref=e1071]: "18"
+          - generic [ref=e1072]: "35"
+          - generic [ref=e1073]: "53"
+          - generic [ref=e1074]: "0.000"
+          - generic [ref=e1075]: "0.111"
+          - generic [ref=e1076]: "0.221"
+          - generic [ref=e1077]: "0.332"
+        - generic [ref=e1078]:
+          - paragraph [ref=e1079]:
+            - strong [ref=e1080]: "Calibrated model trend:"
+            - text: Derived bottom-up from discrete pile-up mechanics. Calibrated to Hansen (1977) (Aluminium (99.999% High-Purity Al)). Not raw experimental scatter.
+          - paragraph [ref=e1081]:
+            - generic [ref=e1082]:
+              - text: σ
+              - subscript [ref=e1083]: "0"
+              - text: = 10.0 MPa
+            - text: •
+            - generic [ref=e1084]:
+              - text: k
+              - subscript [ref=e1085]: "y"
+              - text: = 67.0 MPa·μm
+              - superscript [ref=e1086]: ½
+            - text: •
+            - generic [ref=e1087]: Slope = -0.483 (theory −0.5)
+      - generic [ref=e1088]:
+        - heading "What does this show?" [level=4] [ref=e1089]
+        - paragraph [ref=e1090]:
+          - strong [ref=e1091]: "1. Defects Move:"
+          - text: When stress is applied, dislocations glide through the crystal lattice until stopped by a grain boundary.
+        - paragraph [ref=e1092]:
+          - strong [ref=e1093]: "2. Hall–Petch Relation:"
+          - text: In finer-grained metals (higher
+          - emphasis [ref=e1094]:
+            - text: d
+            - superscript [ref=e1095]: −½
+          - text: ), dislocations pile up quickly against boundaries, requiring higher stress to cause permanent plastic yield.
+  - contentinfo [ref=e1096]:
+    - text: HPSim v1.0 • Dual-Stack Scientific Simulation • 100% Client-Side WebGL
+    - button "Access Full Research Controls (Schmid Glide, Grain Boundary Transmission, 1D Pile-Up, Micrographs) →" [ref=e1097] [cursor=pointer]
