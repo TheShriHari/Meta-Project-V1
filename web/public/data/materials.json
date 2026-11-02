@@ -79,11 +79,11 @@
         "status": "calibrated"
       },
       "tau_star_ref_calibrated": {
-        "value": 80885916.12147665,
+        "value": 80885917.80048032,
         "unit": "Pa",
         "source": "Phase 6 discrete pile-up calibration against Hansen (1977)",
         "doi_or_url": "10.1016/0001-6160(77)90171-7",
-        "test_conditions": "1.6-decade grain size sweep (5-200 um), beta=0, m'=1",
+        "test_conditions": "1.6-decade grain size sweep (10-400 um), beta=0, m'=1",
         "status": "calibrated"
       }
     }
@@ -168,11 +168,11 @@
         "status": "calibrated"
       },
       "tau_star_ref_calibrated": {
-        "value": 172257928.15101492,
+        "value": 172257929.72614858,
         "unit": "Pa",
         "source": "Phase 6 discrete pile-up calibration against Hansen & Ralph (1982)",
         "doi_or_url": "10.1016/0001-6160(82)90221-8",
-        "test_conditions": "1.6-decade grain size sweep (5-200 um), beta=0, m'=1",
+        "test_conditions": "1.6-decade grain size sweep (10-400 um), beta=0, m'=1",
         "status": "calibrated"
       }
     }
@@ -257,11 +257,11 @@
         "status": "calibrated"
       },
       "tau_star_ref_calibrated": {
-        "value": 118353190.81981021,
+        "value": 118353186.96539298,
         "unit": "Pa",
         "source": "Phase 6 discrete pile-up calibration against Takeda et al. (2008) IF-Fe",
         "doi_or_url": "10.2355/isijinternational.48.1122",
-        "test_conditions": "1.6-decade grain size sweep (5-200 um), beta=0, m'=1",
+        "test_conditions": "1.6-decade grain size sweep (10-400 um), beta=0, m'=1",
         "status": "calibrated"
       }
     }
@@ -346,11 +346,11 @@
         "status": "calibrated"
       },
       "tau_star_ref_calibrated": {
-        "value": 2115926912.507524,
+        "value": 2115926875.558731,
         "unit": "Pa",
         "source": "Phase 6 discrete pile-up calibration against Takeda et al. (2008) C60",
         "doi_or_url": "10.2355/isijinternational.48.1122",
-        "test_conditions": "1.6-decade grain size sweep (5-200 um), beta=0, m'=1",
+        "test_conditions": "1.6-decade grain size sweep (10-400 um), beta=0, m'=1",
         "status": "calibrated"
       }
     }

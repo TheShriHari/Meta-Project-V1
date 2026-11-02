@@ -1,0 +1,74 @@
+{
+  "micrographs": [
+    {
+      "key": "aluminium",
+      "material_name": "Aluminium (99.5%)",
+      "structure": "FCC",
+      "mean_intercept_um": 8.112,
+      "astm_mean_intercept_um": 8.112,
+      "chord_mean_um": 7.847,
+      "std_intercept_um": 10.162,
+      "total_crossings": 932,
+      "total_chords": 963,
+      "num_grains": 158,
+      "segmentation_policy": "standard_watershed",
+      "fixture_file": "/data/micrographs/aluminium.json"
+    },
+    {
+      "key": "copper",
+      "material_name": "Copper (99.7%)",
+      "structure": "FCC",
+      "mean_intercept_um": 17.267,
+      "astm_mean_intercept_um": 17.267,
+      "chord_mean_um": 16.717,
+      "std_intercept_um": 12.639,
+      "total_crossings": 1011,
+      "total_chords": 1044,
+      "num_grains": 252,
+      "segmentation_policy": "M4_copper_twin_exclusion",
+      "fixture_file": "/data/micrographs/copper.json"
+    },
+    {
+      "key": "ferritic_steel",
+      "material_name": "Ferritic steel (plain carbon)",
+      "structure": "BCC",
+      "mean_intercept_um": 13.139,
+      "astm_mean_intercept_um": 13.139,
+      "chord_mean_um": 11.368,
+      "std_intercept_um": 8.575,
+      "total_crossings": 1129,
+      "total_chords": 1301,
+      "num_grains": 406,
+      "segmentation_policy": "M5_ferrite_only_mask",
+      "fixture_file": "/data/micrographs/ferritic_steel.json"
+    },
+    {
+      "key": "pure_iron",
+      "material_name": "Pure alpha-iron (>99.9%)",
+      "structure": "BCC",
+      "mean_intercept_um": 7.599,
+      "astm_mean_intercept_um": 7.599,
+      "chord_mean_um": 7.261,
+      "std_intercept_um": 6.001,
+      "total_crossings": 817,
+      "total_chords": 855,
+      "num_grains": 137,
+      "segmentation_policy": "standard_watershed",
+      "fixture_file": "/data/micrographs/pure_iron.json"
+    },
+    {
+      "key": "synthetic_voronoi_30um",
+      "material_name": "Synthetic Voronoi Tessellation (30 um Stereology Verification Target)",
+      "structure": "FCC",
+      "mean_intercept_um": 27.907,
+      "astm_mean_intercept_um": 27.907,
+      "chord_mean_um": 25.965,
+      "std_intercept_um": 13.677,
+      "total_crossings": 215,
+      "total_chords": 231,
+      "num_grains": 90,
+      "segmentation_policy": "V11_synthetic_voronoi_target",
+      "fixture_file": "/data/micrographs/synthetic_voronoi_30um.json"
+    }
+  ]
+}

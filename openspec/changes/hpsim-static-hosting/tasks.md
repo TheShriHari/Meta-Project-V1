@@ -78,19 +78,19 @@
 ---
 
 ## Phase 7: Micrograph Preprocessing & Web Data Integration (4–5 days)
-- [ ] **TASK-701**: Implement Python CV pipeline in `src/hpsim/micro/` (scale calibration, CLAHE/denoise, ridge/Canny edge enhancement, watershed segmentation, ASTM E112 intercept method).
-- [ ] **TASK-702**: Verify V-11 (synthetic Voronoi intercept accuracy) and V-12 (segmentation cross-check).
-- [ ] **TASK-703**: Export preprocessed micrograph JSON fixtures (grain boundaries, chord distributions, scale info) to `web/public/data/micrographs/`.
-- [ ] **TASK-704**: Build Micrograph Overlay component in web app (`MicrographView.tsx`) displaying grain outlines, chord sampling, and slip traces.
-- [ ] **TASK-705**: Implement client-side JSON/CSV drag-and-drop data importer (`DataImport.tsx`) for user chord distributions.
+- [x] **TASK-701**: Implement Python CV pipeline in `src/hpsim/micro/` (scale calibration, CLAHE/denoise, ridge/Canny edge enhancement, watershed segmentation, ASTM E112 intercept method).
+- [x] **TASK-702**: Verify V-11 (synthetic Voronoi intercept accuracy) and V-12 (segmentation cross-check).
+- [x] **TASK-703**: Export preprocessed micrograph JSON fixtures (grain boundaries, chord distributions, scale info) to `web/public/data/micrographs/`.
+- [x] **TASK-704**: Build Micrograph Overlay component in web app (`MicrographView.tsx`) displaying grain outlines, chord sampling, and slip traces.
+- [x] **TASK-705**: Implement client-side JSON/CSV drag-and-drop data importer (`DataImport.tsx`) for user chord distributions.
 - **GATE 7**: V-11, V-12, V-16 evaluated; QA overlays approved; web app successfully loads precomputed micrograph fixtures and custom JSON files; approved by human.
 
 ---
 
 ## Phase 8: Final Packaging, Static Deployment & Documentation (4–5 days)
-- [ ] **TASK-801**: Wire complete React web application layout with Material selector, Preset manager, 3D viewport, 2D charts, Event Log, and About/Limitations modal.
-- [ ] **TASK-802**: Generate offline scientific validation report (`docs/validation_report.md`) from Python test suite.
-- [ ] **TASK-803**: Create static-host smoke tests verifying all asset paths and JSON fixtures in `dist/` build.
+- [x] **TASK-801**: Wire complete React web application layout with Material selector, Preset manager, 3D viewport, 2D charts, Event Log, and About/Limitations modal.
+- [x] **TASK-802**: Generate offline scientific validation report (`docs/validation_report.md`) from Python test suite.
+- [x] **TASK-803**: Create static-host smoke tests verifying all asset paths and JSON fixtures in `dist/` build.
 - [ ] **TASK-804**: Deploy production build to Vercel and verify GitHub Pages secondary deployment.
-- [ ] **TASK-805**: Record 3-minute demonstration walkthrough video and complete user guide (`docs/user_guide.md`).
+- [x] **TASK-805**: Record 3-minute demonstration walkthrough video and complete user guide (`docs/user_guide.md`).
 - **GATE 8**: Levels 1–10 test ladder green; production URLs operational on Vercel and GitHub Pages; final human sign-off.

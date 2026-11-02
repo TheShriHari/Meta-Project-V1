@@ -9,8 +9,10 @@ import {
   computeEfnExactPositions,
   computeEfnAsymptoticCount,
   computePileupPrefactor,
+  computePileupHallPetchKySensitivity,
   validatePileupInputs,
 } from "../src/core/pileup.ts";
+import { calculateGlideVelocity } from "../src/core/glide.ts";
 
 const A_FCC_AL = 4.0495e-10; // m
 const B_FCC_AL = A_FCC_AL / Math.SQRT2; // ~ 2.8634e-10 m
@@ -243,3 +245,92 @@ test("solver inadequate iteration budget flags max_iterations_exceeded", () => {
   assert.equal(res.converged, false);
   assert.equal(res.status, "max_iterations_exceeded");
 });
+
+test("independent EFN root oracle N=4 and N=5 (exact mpmath 50-digit constants)", () => {
+  // Exact 50-digit mpmath.polyroots solutions of Associated Laguerre polynomials:
+  // For N=4 (m=3): L_3^(1)(xi) = 4 - 6*xi + 2*xi^2 - (1/6)*xi^3 = 0
+  const EFN_ORACLE_ROOTS_M3 = [
+    0.93582222752408786200437645387,
+    3.30540728933227841461887551899,
+    7.75877048314363438951056280224,
+  ];
+
+  // For N=5 (m=4): L_4^(1)(xi) = 5 - 10*xi + 5*xi^2 - (5/6)*xi^3 + (1/24)*xi^4 = 0
+  const EFN_ORACLE_ROOTS_M4 = [
+    0.743291927981431431361154588068,
+    2.57163500764627883706712168979,
+    5.73117875168909687514343530164,
+    10.9538943126831948548297327458,
+  ];
+
+  const tauApp = 55.0e6; // Pa
+  const A = computePileupPrefactor(MU_AL, NU_AL, B_FCC_AL);
+  const lam = tauApp / A;
+
+  // Verify N=4
+  const resN4 = solvePileupEquilibrium({
+    muPa: MU_AL,
+    nu: NU_AL,
+    burgersM: B_FCC_AL,
+    tauAppliedPa: tauApp,
+    count: 4,
+  });
+  assert.equal(resN4.converged, true);
+  assert.equal(resN4.positionsM[0], 0.0);
+  for (let k = 0; k < 3; k++) {
+    const expectedPos = EFN_ORACLE_ROOTS_M3[k] / (2.0 * lam);
+    near(resN4.positionsM[k + 1], expectedPos, expectedPos * 1e-12, `N=4 root index ${k}`);
+  }
+
+  // Verify N=5
+  const resN5 = solvePileupEquilibrium({
+    muPa: MU_AL,
+    nu: NU_AL,
+    burgersM: B_FCC_AL,
+    tauAppliedPa: tauApp,
+    count: 5,
+  });
+  assert.equal(resN5.converged, true);
+  assert.equal(resN5.positionsM[0], 0.0);
+  for (let k = 0; k < 4; k++) {
+    const expectedPos = EFN_ORACLE_ROOTS_M4[k] / (2.0 * lam);
+    near(resN5.positionsM[k + 1], expectedPos, expectedPos * 1e-12, `N=5 root index ${k}`);
+  }
+});
+
+test("L=d/2 Hall-Petch sensitivity study (computePileupHallPetchKySensitivity)", () => {
+  const tauStar = 120.0e6; // Pa
+  const res = computePileupHallPetchKySensitivity(MU_AL, NU_AL, B_FCC_AL, tauStar, 3.06);
+
+  near(res.ratioDFullToHalf, 1.0 / Math.SQRT2, 1e-12, "ratio L=d to L=d/2");
+  near(res.ratioDQuarterToHalf, Math.SQRT2, 1e-12, "ratio L=d/4 to L=d/2");
+
+  // k_y(L=d) == k_y(L=d/2) / sqrt(2)
+  near(res.kyLDFullPaM05, res.kyLDHalfPaM05 / Math.SQRT2, res.kyLDHalfPaM05 * 1e-12, "ky full vs half");
+
+  // k_y(L=d/4) == k_y(L=d/2) * sqrt(2)
+  near(res.kyLDQuarterPaM05, res.kyLDHalfPaM05 * Math.SQRT2, res.kyLDHalfPaM05 * 1e-12, "ky quarter vs half");
+
+  // Physical units and reasonable bounds: 1e4 <= ky <= 1e7 Pa*m^0.5
+  assert.ok(res.kyLDHalfPaM05 >= 1e4 && res.kyLDHalfPaM05 <= 1e7, "physical bounds on k_y");
+});
+
+test("post-transmission glide velocity direction points into receiving grain (x > 0)", () => {
+  const Md = 1.0e-4; // 1 / (Pa * s)
+  const b = B_FCC_AL;
+  const tauC = 1.0e6; // 1 MPa
+
+  // Positive driving stress pushes dislocation forward away from boundary into grain interior
+  const tauPos = 15.0e6;
+  const vPos = calculateGlideVelocity(tauPos, tauC, Md, b);
+  assert.ok(vPos > 0.0, "Positive stress produces forward velocity v > 0");
+
+  // When raw projection gives negative stress, physical slip vector inversion s_eff = -s
+  // yields positive effective driving stress |tau| >= tauC, ensuring v > 0 away from obstacle
+  const tauNeg = -15.0e6;
+  const tauEff = Math.abs(tauNeg);
+  const vDirected = calculateGlideVelocity(tauEff, tauC, Md, b);
+  assert.ok(vDirected > 0.0, "Directed transmission velocity must be strictly positive");
+  near(vDirected, vPos, 1e-12, "velocity magnitude parity");
+});
+

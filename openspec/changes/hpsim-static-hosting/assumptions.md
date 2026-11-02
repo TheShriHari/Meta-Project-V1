@@ -67,5 +67,12 @@
 - **A-P6-2 (Single-Parameter Calibration & Provenance Guardrails):** $\tau^*_{\text{ref}}$ (with $\beta = 0, m' = 1$) is calibrated strictly on each material's primary high-purity verified literature fit in `data/literature/hall_petch_verified_fits.csv` and evaluated without refitting on the held-out secondary dataset (`V-15`). In `src/hpsim/materials/materials.yaml`, `tau_star_ref` retains `value: null` to preserve raw literature provenance, while calibrated values are stored in `CALIBRATED_MATERIALS` and `web/public/data/materials.json` (`tau_star_ref_calibrated`).
 - **A-P6-3 (Solute Segregation Limitation in Iron/Steel):** The 39.4% slope increase between Ti-stabilized IF-iron ($k_y = 114\,\text{MPa}\cdot\mu\text{m}^{1/2}$) and Base iron with 5 ppm free carbon ($k_y = 188\,\text{MPa}\cdot\mu\text{m}^{1/2}$) is explicitly analyzed as an unmodeled grain-boundary carbon segregation mechanism per `spec.md` §10.2 (`V-15`).
 
+## 8. Phase 7 & Phase 8 Authorization Record (2026-10-29)
+
+- **Authorized:** Phase 7 (Micrograph Preprocessing & Web Data Integration) and Phase 8 (Final Packaging, Validation Report & Static Build Verification).
+- **A-P7-1 (Micrograph CV Policies & Licence Guardrails):** Implemented offline Python CV pipeline (`src/hpsim/micro/`) with synthetic Voronoi stereological verification (`V-11`), automated vs reference-line intercept cross-checks (`V-12`), seeded uniform $\mathrm{SO}(3)$ orientations (`V-13`), and chord rescaling (`V-16`). Enforced `M4` Cu annealing twin exclusion, `M5` steel pearlite masking ($13.4\%$ masked), and `D6` prohibition on bundling raw CC BY-NC-SA 4.0 DoITPoMS `.jpg` files in `web/public/`.
+- **A-P8-1 (Full V&V Report & Honest Held-Out Disclosure):** Generated `docs/validation_report.md` (`scripts/generate_validation_report.py`), `docs/limitations.md`, and `docs/user_guide.md`, reporting all 17 checks (`V-01`–`V-17`) and disclosing both specimen-$\sigma_0$-adjusted ($3.34\%\text{–}12.89\%$) and unadjusted-$\sigma_0$ ($12.7\%\text{–}28.9\%$) held-out literature comparisons alongside physical explanations of grain-boundary carbon segregation and solid-solution friction shifts.
+
+
 
 

@@ -20,6 +20,7 @@ from hpsim.core.hallpetch import (
     run_hall_petch_sweep,
     evaluate_literature_calibration_and_validation,
     VERIFIED_MATERIAL_SPECS,
+    CALIBRATION_PROTOCOL,
 )
 from hpsim.materials.loader import load_materials_database
 
@@ -27,6 +28,40 @@ from hpsim.materials.loader import load_materials_database
 def main():
     os.makedirs("tests/golden", exist_ok=True)
     os.makedirs("web/public/data", exist_ok=True)
+
+    cal_val_report = evaluate_literature_calibration_and_validation()
+
+    # 0. Hand-derived analytical oracles (closed form; solver NOT used for expected values).
+    #    A = mu b / (2 pi (1-nu)); N=1: back stress at source = A/L, emission of 2nd dislocation iff
+    #    tau_eff > tau_src + A/L. N=2: x1 = A/tau_eff, back = A/L + A/(L - A/tau_eff).
+    import math
+
+    analytic_oracle_cases = []
+    for oid, mu, nu_, b, L_, tsrc, factor in [
+        ("oracle_n1_al", 26.0e9, 0.345, 2.86343e-10, 10.0e-6, 0.5e6, 0.999),
+        ("oracle_n2_al", 26.0e9, 0.345, 2.86343e-10, 10.0e-6, 0.0, 1.5),
+    ]:
+        A = mu * b / (2.0 * math.pi * (1.0 - nu_))
+        if oid.startswith("oracle_n1"):
+            tau_eff = tsrc + factor * A / L_
+            exp = {"count": 1, "positions_m": [0.0], "back_stress_pa": A / L_}
+        else:
+            tau_eff = factor * A / L_
+            x1 = A / tau_eff
+            exp = {
+                "count": 2,
+                "positions_m": [0.0, x1],
+                "back_stress_pa": A / L_ + A / (L_ - x1),
+            }
+        analytic_oracle_cases.append(
+            {
+                "id": oid,
+                "provenance": "closed-form hand derivation computed in generator; independent of solve_pileup_with_source",
+                "inputs": {"mu_pa": mu, "nu": nu_, "burgers_m": b, "tau_eff_pa": tau_eff,
+                           "source_distance_m": L_, "tau_src_pa": tsrc},
+                "expected": exp,
+            }
+        )
 
     # 1. Source shut-off test cases
     source_shutoff_cases = []
@@ -78,7 +113,7 @@ def main():
             }
         )
 
-    # 2. Yield-onset bisection cases (5 configurations)
+    # 2. Yield-onset bisection cases (5 configurations using exact calibrated tau_star_ref_pa)
     yield_onset_cases = []
     onset_configs = [
         {
@@ -87,7 +122,7 @@ def main():
             "nu": 0.345,
             "burgers_m": 2.86343e-10,
             "grain_size_m": 25.0e-6,
-            "tau_star_ref_pa": 85.468e6,
+            "tau_star_ref_pa": cal_val_report["aluminium"]["calibrated_tau_star_ref_pa"],
             "m_prime": 1.0,
             "beta": 0.0,
             "tau_c_pa": 0.8e6,
@@ -100,7 +135,7 @@ def main():
             "nu": 0.345,
             "burgers_m": 2.86343e-10,
             "grain_size_m": 25.0e-6,
-            "tau_star_ref_pa": 85.468e6,
+            "tau_star_ref_pa": cal_val_report["aluminium"]["calibrated_tau_star_ref_pa"],
             "m_prime": 0.6,
             "beta": 1.0,
             "tau_c_pa": 0.8e6,
@@ -113,7 +148,7 @@ def main():
             "nu": 0.343,
             "burgers_m": 2.55620e-10,
             "grain_size_m": 50.0e-6,
-            "tau_star_ref_pa": 185.075e6,
+            "tau_star_ref_pa": cal_val_report["copper"]["calibrated_tau_star_ref_pa"],
             "m_prime": 1.0,
             "beta": 0.0,
             "tau_c_pa": 0.65e6,
@@ -126,7 +161,7 @@ def main():
             "nu": 0.291,
             "burgers_m": 2.48246e-10,
             "grain_size_m": 20.0e-6,
-            "tau_star_ref_pa": 123.53e6,
+            "tau_star_ref_pa": cal_val_report["pure_iron"]["calibrated_tau_star_ref_pa"],
             "m_prime": 1.0,
             "beta": 0.0,
             "tau_c_pa": 27.5e6,
@@ -139,7 +174,7 @@ def main():
             "nu": 0.290,
             "burgers_m": 2.48289e-10,
             "grain_size_m": 15.0e-6,
-            "tau_star_ref_pa": 2296.45e6,
+            "tau_star_ref_pa": cal_val_report["ferritic_steel"]["calibrated_tau_star_ref_pa"],
             "m_prime": 1.0,
             "beta": 0.0,
             "tau_c_pa": 35.0e6,
@@ -181,15 +216,15 @@ def main():
             }
         )
 
-    # 3. Full Hall-Petch sweep parity case (Aluminium 12 points from 5 um to 200 um)
-    sweep_d_m = [float(x) for x in np.geomspace(5.0e-6, 200.0e-6, 12)]
+    # 3. Full Hall-Petch sweep parity case (Aluminium 16 points from 10 um to 400 um)
+    sweep_d_m = [float(x) for x in np.geomspace(10.0e-6, 400.0e-6, 16)]
     sweep_inp = {
         "mu_pa": 26.0e9,
         "nu": 0.345,
         "burgers_m": 2.86343e-10,
         "tau_c_pa": 0.8e6,
         "taylor_factor": 3.06,
-        "tau_star_ref_pa": 85.468e6,
+        "tau_star_ref_pa": cal_val_report["aluminium"]["calibrated_tau_star_ref_pa"],
         "grain_sizes_m": sweep_d_m,
         "sigma_0_offset_pa": 10.0e6,
         "bootstrap_samples": 200,
@@ -210,11 +245,17 @@ def main():
         )
     )
 
-    cal_val_report = evaluate_literature_calibration_and_validation()
-
     fixture_payload = {
         "phase": 6,
         "description": "Emergent Hall-Petch derivation, source shut-off, yield-onset bisection, and V-09/V-10/V-15 benchmarks",
+        "provenance": {
+            "analytic_oracle_cases": "closed form, independent of solver",
+            "source_shutoff_cases / yield_onset_cases / sweep_case": "REGRESSION fixtures generated by the Python solver (parity only, not independent evidence of correctness)",
+            "yield_onset_cases.tau_star_ref_pa": "calibrated to a literature Hall-Petch slope (calibration target, not emergent)",
+            "calibration_validation_summary": "headline held-out metric = unadjusted; adjusted is NOT blind",
+        },
+        "calibration_protocol": CALIBRATION_PROTOCOL,
+        "analytic_oracle_cases": analytic_oracle_cases,
         "source_shutoff_cases": source_shutoff_cases,
         "yield_onset_cases": yield_onset_cases,
         "sweep_case": {
@@ -261,7 +302,7 @@ def main():
                 "unit": "Pa",
                 "source": f"Phase 6 discrete pile-up calibration against {cv['calibration_source']}",
                 "doi_or_url": VERIFIED_MATERIAL_SPECS[mat_key]["calibration_fit"]["doi"],
-                "test_conditions": "1.6-decade grain size sweep (5-200 um), beta=0, m'=1",
+                "test_conditions": "1.6-decade grain size sweep (10-400 um), beta=0, m'=1",
                 "status": "calibrated",
             }
         materials_json[mat_key] = {
@@ -281,7 +322,7 @@ def main():
         print(
             f"  {k:15s}: tau*_ref={v['calibrated_tau_star_ref_pa']/1e6:7.2f} MPa | "
             f"k_y_sim={v['simulated_k_y_pa_m05']/1e3:6.1f} vs target={v['calibration_target_k_y_pa_m05']/1e3:6.1f} MPa*um^0.5 | "
-            f"slope={v['log_log_slope']:.4f} | V15 held-out mean err={v['held_out_mean_rel_error']*100:.1f}%"
+            f"slope={v['log_log_slope']:.4f} | V15 held-out UNADJUSTED mean err={v['held_out_unadjusted_mean_rel_error']*100:.1f}% (intercept-adjusted, not blind: {v['held_out_intercept_adjusted_mean_rel_error']*100:.1f}%)"
         )
 
 

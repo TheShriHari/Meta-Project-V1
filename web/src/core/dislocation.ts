@@ -44,11 +44,11 @@ export function makeDislocationGeometry(s: Vec3, n: Vec3, a_m: number, boxSize_m
   return { s, n, p0, yPlane, tMin: lo + a_m, tMax: hi - a_m };
 }
 
-/** Returns a NEW Float64Array of displaced positions (metres); `ideal` is never modified. */
+/** Computes displaced positions (metres) into `out`; `ideal` is never modified. Defaults to a new array if `out` is omitted. */
 export function displacedPositions(
-  ideal: Float64Array, g: DislocationGeometry, pos_m: number, f: FieldParams
+  ideal: Float64Array, g: DislocationGeometry, pos_m: number, f: FieldParams,
+  out: Float64Array = new Float64Array(ideal.length)
 ): Float64Array {
-  const out = new Float64Array(ideal.length);
   const { s, n, p0 } = g;
   for (let i = 0; i < ideal.length; i += 3) {
     const dx = ideal[i] - p0[0], dy = ideal[i + 1] - p0[1], dz = ideal[i + 2] - p0[2];

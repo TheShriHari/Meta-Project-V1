@@ -20,6 +20,17 @@ import {
   CALIBRATED_MATERIALS,
   type HallPetchSweepResult,
 } from "../core/hallpetch.ts";
+import {
+  BUILTIN_MICROGRAPH_PRESETS,
+  computeChordStats,
+  rescaleChords,
+  parseUserChordDataset,
+  parseSegmentedMicrographFixture,
+  evaluateChordEnsembleHallPetch,
+  type MicrographPreset,
+  type ParsedUserChordDataset,
+} from "../core/micrograph.ts";
+import { resolveAssetUrl } from "../core/paths.ts";
 
 const BASE_STEPS_PER_SECOND = 60;
 const MAX_HISTORY = 20000;
@@ -40,6 +51,118 @@ const MISORIENTATION_PRESETS = [
   { label: "15° (Low-angle)", deg: 15 },
   { label: "45° (High-angle)", deg: 45 },
   { label: "90° (Orthogonal)", deg: 90 },
+];
+
+export interface ExperimentPresetSpec {
+  id: string;
+  label: string;
+  axisKey: string;
+  stressMpa: number;
+  grain2TiltDeg: number;
+  mPrimeMin: number;
+  useIllustrativeTauStar: boolean;
+  illustrativeTauStarRefMpa: number;
+  illustrativeTauTipMpa: number;
+  pileupN: number;
+  pileupStressMpa: number;
+  pileupMaterial: "Al" | "Cu";
+  hpMaterialKey: string;
+  micrographKey: string;
+  targetMeanUm: number;
+  targetCardId: string;
+}
+
+const EXPERIMENT_PRESETS: ExperimentPresetSpec[] = [
+  {
+    id: "exp1_fcc_glide",
+    label: "1. FCC Single-Crystal Schmid Glide ([001] Al)",
+    axisKey: "[001]",
+    stressMpa: 45,
+    grain2TiltDeg: 15,
+    mPrimeMin: 0.7,
+    useIllustrativeTauStar: false,
+    illustrativeTauStarRefMpa: 50,
+    illustrativeTauTipMpa: 80,
+    pileupN: 8,
+    pileupStressMpa: 50,
+    pileupMaterial: "Al",
+    hpMaterialKey: "aluminium",
+    micrographKey: "aluminium",
+    targetMeanUm: 34.5,
+    targetCardId: "card-controls",
+  },
+  {
+    id: "exp2_gb_transmission",
+    label: "2. Low-Angle vs High-Angle GB Transmission (Phase 4)",
+    axisKey: "[001]",
+    stressMpa: 60,
+    grain2TiltDeg: 15,
+    mPrimeMin: 0.7,
+    useIllustrativeTauStar: true,
+    illustrativeTauStarRefMpa: 45,
+    illustrativeTauTipMpa: 85,
+    pileupN: 10,
+    pileupStressMpa: 60,
+    pileupMaterial: "Al",
+    hpMaterialKey: "aluminium",
+    micrographKey: "aluminium",
+    targetMeanUm: 34.5,
+    targetCardId: "card-transmission",
+  },
+  {
+    id: "exp3_efn_pileup",
+    label: "3. Eshelby–Frank–Nabarro 1D Dislocation Pile-Up (Phase 5)",
+    axisKey: "[111]",
+    stressMpa: 55,
+    grain2TiltDeg: 45,
+    mPrimeMin: 0.75,
+    useIllustrativeTauStar: false,
+    illustrativeTauStarRefMpa: 50,
+    illustrativeTauTipMpa: 80,
+    pileupN: 12,
+    pileupStressMpa: 65,
+    pileupMaterial: "Cu",
+    hpMaterialKey: "copper",
+    micrographKey: "copper",
+    targetMeanUm: 48.2,
+    targetCardId: "card-pileup",
+  },
+  {
+    id: "exp4_hall_petch",
+    label: "4. Emergent Hall–Petch d^(−1/2) Scaling (Phase 6, V-09/V-10)",
+    axisKey: "[001]",
+    stressMpa: 40,
+    grain2TiltDeg: 15,
+    mPrimeMin: 0.7,
+    useIllustrativeTauStar: false,
+    illustrativeTauStarRefMpa: 50,
+    illustrativeTauTipMpa: 80,
+    pileupN: 8,
+    pileupStressMpa: 50,
+    pileupMaterial: "Al",
+    hpMaterialKey: "pure_iron",
+    micrographKey: "pure_iron",
+    targetMeanUm: 31.8,
+    targetCardId: "card-hallpetch",
+  },
+  {
+    id: "exp5_micrograph_rescaling",
+    label: "5. Optical Micrograph ASTM E112 & Chord Rescaling (Phase 7, V-16)",
+    axisKey: "[001]",
+    stressMpa: 40,
+    grain2TiltDeg: 15,
+    mPrimeMin: 0.7,
+    useIllustrativeTauStar: false,
+    illustrativeTauStarRefMpa: 50,
+    illustrativeTauTipMpa: 80,
+    pileupN: 8,
+    pileupStressMpa: 50,
+    pileupMaterial: "Al",
+    hpMaterialKey: "ferritic_steel",
+    micrographKey: "ferritic_steel",
+    targetMeanUm: 26.4,
+    targetCardId: "card-micrograph",
+  },
 ];
 
 export function App() {
@@ -138,9 +261,9 @@ export function App() {
   const isHpCustom = hpCustomTauStarMpa !== null;
 
   const hpSweep: HallPetchSweepResult = useMemo(() => {
-    const nPts = 12;
-    const logMin = Math.log10(5.0e-6);
-    const logMax = Math.log10(200.0e-6);
+    const nPts = 16;
+    const logMin = Math.log10(10.0e-6);
+    const logMax = Math.log10(400.0e-6);
     const grainSizesM: number[] = [];
     for (let i = 0; i < nPts; i++) {
       grainSizesM.push(Math.pow(10, logMin + (i / (nPts - 1)) * (logMax - logMin)));
@@ -159,15 +282,142 @@ export function App() {
     });
   }, [hpSpec, activeTauStarPa]);
 
-  const hpHeldOutMeanRelErr = useMemo(() => {
+  const { hpHeldOutAdjustedErr, hpHeldOutUnadjustedErr } = useMemo(() => {
     const held = hpSpec.heldOutFit;
-    let sumRel = 0.0;
+    const cal = hpSpec.calibrationFit;
+    let sumAdj = 0.0;
+    let sumUnadj = 0.0;
     for (const pt of hpSweep.points) {
       const litPa = held.sigma0Pa + held.kyPaM05 * pt.invSqrtDM05;
-      sumRel += Math.abs(pt.sigmaYPa - litPa) / litPa;
+      const simUnadjPa = pt.sigmaYPa;
+      const simAdjPa = pt.sigmaYPa - cal.sigma0Pa + held.sigma0Pa;
+      sumAdj += Math.abs(simAdjPa - litPa) / litPa;
+      sumUnadj += Math.abs(simUnadjPa - litPa) / litPa;
     }
-    return sumRel / hpSweep.points.length;
+    return {
+      hpHeldOutAdjustedErr: sumAdj / hpSweep.points.length,
+      hpHeldOutUnadjustedErr: sumUnadj / hpSweep.points.length,
+    };
   }, [hpSpec, hpSweep]);
+
+  // Phase 7: Micrograph Segmentation, Chord Rescaling & Client-Side Importer state
+  const [micrographKey, setMicrographKey] = useState<string>("aluminium");
+  const [userDataset, setUserDataset] = useState<ParsedUserChordDataset | null>(null);
+  const [importError, setImportError] = useState<string | null>(null);
+  const [isDragOver, setIsDragOver] = useState(false);
+  const [showIntercepts, setShowIntercepts] = useState(true);
+  const [showSlipTraces, setShowSlipTraces] = useState(true);
+  const [targetMeanUm, setTargetMeanUm] = useState<number>(8.1);
+  const [loadedFixturesMap, setLoadedFixturesMap] = useState<Record<string, MicrographPreset>>({});
+  const fileInputRef = useRef<HTMLInputElement | null>(null);
+
+  // Phase 8: Top-Bar Experiment Preset, Guided Tour & Scientific Limitations Panel state
+  const [experimentPresetId, setExperimentPresetId] = useState<string>("exp1_fcc_glide");
+  const [showLimitations, setShowLimitations] = useState<boolean>(false);
+  const [showTour, setShowTour] = useState<boolean>(false);
+  const isFileProtocol = typeof window !== "undefined" && window.location?.protocol === "file:";
+
+  // Fetch real segmented micrograph fixture from web/public/data/micrographs/<key>.json
+  useEffect(() => {
+    if (micrographKey === "custom_upload" || loadedFixturesMap[micrographKey]) return;
+    let cancelled = false;
+    fetch(resolveAssetUrl(`data/micrographs/${micrographKey}.json`))
+      .then((res) => {
+        if (!res.ok) return null;
+        return res.json();
+      })
+      .then((data) => {
+        if (cancelled || !data || typeof data !== "object") return;
+        try {
+          const parsedPreset = parseSegmentedMicrographFixture(data as Record<string, unknown>);
+          setLoadedFixturesMap((prev) => ({ ...prev, [micrographKey]: parsedPreset }));
+        } catch {
+          // Keep synchronous fallback preset if fixture parsing fails
+        }
+      })
+      .catch(() => {
+        // Silent fallback to built-in deterministic geometry in offline/test environments
+      });
+    return () => {
+      cancelled = true;
+    };
+  }, [micrographKey, loadedFixturesMap]);
+
+  const activeMicrographPreset: MicrographPreset =
+    loadedFixturesMap[micrographKey] ??
+    BUILTIN_MICROGRAPH_PRESETS[micrographKey] ??
+    BUILTIN_MICROGRAPH_PRESETS.aluminium;
+
+  const baseChordsM: number[] = useMemo(() => {
+    if (micrographKey === "custom_upload" && userDataset) {
+      return userDataset.chordsM;
+    }
+    return activeMicrographPreset.chordsM;
+  }, [micrographKey, userDataset, activeMicrographPreset]);
+
+  const baseChordStats = useMemo(() => computeChordStats(baseChordsM), [baseChordsM]);
+
+  const rescaledChords = useMemo(
+    () => rescaleChords(baseChordsM, Math.max(targetMeanUm, 1.0) * 1e-6),
+    [baseChordsM, targetMeanUm]
+  );
+
+  const micrographMaterialSpec = useMemo(() => {
+    const matKey =
+      micrographKey === "custom_upload" ? hpMaterialKey : activeMicrographPreset.materialKey;
+    return CALIBRATED_MATERIALS[matKey] ?? CALIBRATED_MATERIALS.aluminium;
+  }, [micrographKey, hpMaterialKey, activeMicrographPreset]);
+
+  const chordEnsembleHp = useMemo(() => {
+    return evaluateChordEnsembleHallPetch({
+      chordsM: rescaledChords.chordsM,
+      muPa: micrographMaterialSpec.muPa,
+      nu: micrographMaterialSpec.nu,
+      burgersM: micrographMaterialSpec.burgersM,
+      tauCPa: micrographMaterialSpec.tauCPa,
+      taylorFactor: micrographMaterialSpec.taylorFactor,
+      tauStarRefPa: micrographMaterialSpec.calibratedTauStarRefPa,
+      sigma0OffsetPa: micrographMaterialSpec.calibrationFit.sigma0Pa,
+    });
+  }, [rescaledChords, micrographMaterialSpec]);
+
+  const handleChordFileText = (text: string, filename: string) => {
+    try {
+      const parsed = parseUserChordDataset(text, filename);
+      setUserDataset(parsed);
+      setMicrographKey("custom_upload");
+      setTargetMeanUm(Number((parsed.stats.meanM * 1e6).toFixed(1)));
+      setImportError(null);
+    } catch (err) {
+      setImportError((err as Error).message);
+    }
+  };
+
+  const applyExperimentPreset = (presetId: string) => {
+    setExperimentPresetId(presetId);
+    const p = EXPERIMENT_PRESETS.find((x) => x.id === presetId);
+    if (!p) return;
+    setPlaying(false);
+    setAxisKey(p.axisKey);
+    setSystemIndex(bestSystemIndex(LOADING_AXES[p.axisKey]));
+    setStressMpa(p.stressMpa);
+    setGrain2TiltDeg(p.grain2TiltDeg);
+    setMPrimeMin(p.mPrimeMin);
+    setUseIllustrativeTauStar(p.useIllustrativeTauStar);
+    setIllustrativeTauStarRefMpa(p.illustrativeTauStarRefMpa);
+    setIllustrativeTauTipMpa(p.illustrativeTauTipMpa);
+    setPileupN(p.pileupN);
+    setPileupStressMpa(p.pileupStressMpa);
+    setPileupMaterial(p.pileupMaterial);
+    setHpMaterialKey(p.hpMaterialKey);
+    setHpCustomTauStarMpa(null);
+    setMicrographKey(p.micrographKey);
+    setTargetMeanUm(p.targetMeanUm);
+    setTimeout(() => {
+      const el = document.getElementById(p.targetCardId);
+      el?.scrollIntoView({ behavior: "smooth", block: "start" });
+    }, 40);
+  };
 
   const demo = useMemo(
     () =>
@@ -309,13 +559,149 @@ export function App() {
   return (
     <div className="app">
       <header className="banner" role="note">
-        <h1>HPSim · Dislocation Glide, Transmission & Discrete Pile-Up Engine</h1>
+        <div className="banner-top">
+          <h1>HPSim · Dislocation Glide, Transmission, Pile-Up & Hall–Petch Engine</h1>
+          <div className="banner-actions">
+            <label style={{ margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
+              <span style={{ fontSize: "11.5px", color: "#93c5fd", fontWeight: 600 }}>
+                Experiment Preset:
+              </span>
+              <select
+                id="select-experiment-preset"
+                value={experimentPresetId}
+                onChange={(e) => applyExperimentPreset(e.target.value)}
+              >
+                {EXPERIMENT_PRESETS.map((p) => (
+                  <option key={p.id} value={p.id}>
+                    {p.label}
+                  </option>
+                ))}
+              </select>
+            </label>
+            <button
+              id="btn-tour-modal"
+              onClick={() => setShowTour((s) => !s)}
+              aria-expanded={showTour}
+              style={{ background: showTour ? "#3730a3" : undefined, borderColor: "#6366f1", fontWeight: 600 }}
+            >
+              {showTour ? "Hide Guided Tour" : "Guided Tour & Quick Start 🎓"}
+            </button>
+            <button
+              id="btn-about-modal"
+              onClick={() => setShowLimitations((s) => !s)}
+              aria-expanded={showLimitations}
+            >
+              {showLimitations ? "Hide Limitations" : "About / Scientific Limitations"}
+            </button>
+          </div>
+        </div>
         <p>
-          <strong>Phase 4 & Phase 5:</strong> Grain-boundary transmission (geometric compatibility) and
-          <strong> 1D Discrete Dislocation Pile-Up Engine</strong> (Eshelby–Frank–Nabarro 1951 benchmark).
-          Continuum isotropic elasticity. Material parameter <strong>τ*_ref (Decision M6) remains unresolved</strong>.
-          Explanatory model; not molecular dynamics.
+          <strong>Phases 1–8 Complete:</strong> Single-crystal Schmid glide, Lee–Robertson–Birnbaum boundary
+          transmission, <strong>1D Discrete Dislocation Pile-Up</strong> (Eshelby–Frank–Nabarro 1951),{" "}
+          <strong>Emergent Hall–Petch d^(−1/2)</strong> derivation, and <strong>ASTM E112 Micrograph Chord Rescaling</strong>.
+          Continuum isotropic elasticity; explanatory multiscale model, not molecular dynamics.
         </p>
+        {isFileProtocol && (
+          <div className="file-proto-warning" id="banner-file-protocol-warning" role="alert">
+            <span style={{ fontSize: "16px" }}>⚠</span>
+            <span>
+              <strong>Running via local file:// protocol detected:</strong> Modern browser security policies prevent
+              fetching dynamic JSON fixtures directly from the filesystem. Please start a local web server (e.g.{" "}
+              <code>npm run preview</code> in <code>web/</code> or <code>python -m http.server</code>) to enable real micrograph
+              loading and full interactive stereological features.
+            </span>
+          </div>
+        )}
+        {showTour && (
+          <div className="quickstart-panel" id="panel-tour" role="region" aria-label="Student Guided Tour and Quick Start">
+            <h3>
+              <span>🎓 Student Guided Tour & Simulator Quick Start</span>
+              <button
+                style={{ padding: "2px 8px", fontSize: "11px" }}
+                onClick={() => setShowTour(false)}
+              >
+                Close ✕
+              </button>
+            </h3>
+            <div className="quickstart-grid">
+              <div className="quickstart-col">
+                <h4>1. Simulation Phases Flow</h4>
+                <ul>
+                  <li><strong>Phases 1–3 (Single Glide):</strong> Apply shear stress τ to an FCC/BCC crystal. Dislocation glides when |τ_RSS| &gt; τ_c. Use Play, Step, Seek, or Replay.</li>
+                  <li><strong>Phase 4 (Boundary Transmission):</strong> Lee–Robertson–Birnbaum (LRB) geometric compatibility m&apos; ≥ m&apos;_min, outgoing resolved shear stress, and obstacle barrier τ*.</li>
+                  <li><strong>Phase 5 (Discrete Pile-Up):</strong> Frank–Read source emits dislocations. EFN eigensolver finds equilibrium positions; tip stress τ_tip = N · τ_eff.</li>
+                  <li><strong>Phase 6 (Emergent Hall–Petch):</strong> Yield onset bisection across grain sizes d ∈ [10, 400] μm. Exponent −0.5 emerges from discrete dislocation mechanics!</li>
+                  <li><strong>Phase 7 (Micrograph Stereology):</strong> ASTM E112 grid lines compute ℓ̄_ASTM = L_T / P and chord distribution from real segmented micrographs.</li>
+                </ul>
+              </div>
+              <div className="quickstart-col">
+                <h4>2. Key Quantities, Controls & Units</h4>
+                <ul>
+                  <li><strong>Shear & Friction Stresses (τ_app, τ_c, τ_eff, τ*):</strong> Reported in <strong>MPa</strong> (10⁶ Pa).</li>
+                  <li><strong>Interaction Prefactor (A):</strong> Prefactor A = μb / [2π(1−ν)] in <strong>Pa·m</strong> (= N·m⁻¹).</li>
+                  <li><strong>Grain Size & Intercepts (d, ℓ̄):</strong> Measured in <strong>μm</strong> (10⁻⁶ m).</li>
+                  <li><strong>Hall–Petch Slope (k_y):</strong> Units are <strong>MPa·μm¹/²</strong> (= 10³ Pa·m¹/²).</li>
+                  <li><strong>Playback:</strong> Play / Pause toggles continuous glide; Step advances by one Δt; Reset returns to origin.</li>
+                </ul>
+              </div>
+              <div className="quickstart-col">
+                <h4>3. Outcomes & Provenance Legend</h4>
+                <ul>
+                  <li><strong style={{ color: "#10b981" }}>✔ TRANSMITTED:</strong> Solid green border; dislocation slips into Grain 2 on optimal slip system.</li>
+                  <li><strong style={{ color: "#ef4444" }}>✕ PINNED:</strong> Double red border; dislocation arrested by grain boundary obstacle.</li>
+                  <li><strong style={{ color: "#f59e0b" }}>⚠ UNRESOLVED THRESHOLD:</strong> Dashed amber border; τ*_ref pending literature calibration under Decision M6.</li>
+                  <li><strong>Measured vs Synthetic:</strong> Real micrographs provide true grain boundaries; synthetic Voronoi presets provide V-11 parametric sensitivity targets.</li>
+                  <li><strong>Calibrated vs Blind:</strong> k_y slope is a calibration target; held-out blind predictions use ZERO held-out parameters.</li>
+                </ul>
+              </div>
+            </div>
+          </div>
+        )}
+        {showLimitations && (
+          <div className="limitations-panel" id="panel-limitations" role="region" aria-label="Scientific Limitations">
+            <h3>
+              <span>Scientific Scope, Physical Assumptions & Explicit Limitations (Phase 8 Audit)</span>
+              <button
+                style={{ padding: "2px 8px", fontSize: "11px" }}
+                onClick={() => setShowLimitations(false)}
+              >
+                Close ✕
+              </button>
+            </h3>
+            <div className="limitations-grid">
+              <div className="limitations-item">
+                <strong>1. Continuum Linear Isotropic Elasticity:</strong> Dislocation stress fields use Volterra
+                singular solutions with core regularisation <em>r_c = b</em>; atomistic core reconstructions and
+                Peierls–Nabarro potentials are not modelled.
+              </div>
+              <div className="limitations-item">
+                <strong>2. 1D Single-Ended Pile-Up (L = d/2):</strong> Each grain is represented by a single-ended
+                Frank–Read pile-up of straight parallel edge dislocations rather than 3D forest hardening or
+                multi-slip dislocation dynamics.
+              </div>
+              <div className="limitations-item">
+                <strong>3. Decision M6 One-Parameter Barrier Calibration:</strong> Reference obstacle strength{" "}
+                <em>τ*_ref</em> is calibrated against one literature Hall–Petch dataset per material and validated on a
+                held-out source (V-15), while Phase 4 single-boundary exploration keeps <em>τ*_ref</em> optional/uncalibrated.
+              </div>
+              <div className="limitations-item">
+                <strong>4. Decision M3 Parametric Chord Rescaling:</strong> Rescaling a single micrograph&apos;s chord
+                distribution <em>ℓ_i · (d_target / ℓ̄)</em> is a sensitivity study on grain-size dispersion, not an
+                independent experimental validation across multiple heat-treated specimens.
+              </div>
+              <div className="limitations-item">
+                <strong>5. Decisions M4, M5 & D6 Micrograph Policy:</strong> Annealing twins in Cu are filtered (M4),
+                pearlite colonies in Fe–C are masked to proeutectoid α-ferrite (M5), and DoITPoMS educational
+                micrographs are shipped strictly as vector/chord geometry without raw image redistribution (D6).
+              </div>
+              <div className="limitations-item">
+                <strong>6. Quasi-Static Room-Temperature Regime:</strong> Strain-rate sensitivity, thermal activation,
+                grain-boundary sliding, and nanocrystalline inverse Hall–Petch breakdown (<em>d &lt; 20 nm</em>) are
+                outside the valid domain.
+              </div>
+            </div>
+          </div>
+        )}
       </header>
       <main className="layout">
         <section className="viewport" aria-label="3D crystal view">
@@ -722,8 +1108,8 @@ export function App() {
             <div className="callout">
               <strong>Discrete Pile-Up Yield Derivation:</strong> For each grain size <em>d</em> (source at{" "}
               <em>L = d/2</em>), bisection finds the critical shear stress <em>τ_eff,crit</em> where pile-up tip stress{" "}
-              <em>τ_tip = N·τ_eff ≥ τ*(m&apos;)</em>. The <em>d</em><sup>−1/2</sup> strengthening law emerges from the
-              discrete force-balance equilibria.
+              <em>τ_tip = N·τ_eff ≥ τ*(m&apos;)</em>. <em>τ*<sub>ref</sub></em> is a <strong>CALIBRATION TARGET</strong> to match
+              published <em>k_y</em>; the only emergent property is the <em>d</em><sup>−1/2</sup> power-law exponent.
             </div>
 
             {/* V-09 & V-10 Benchmark Status Box */}
@@ -748,9 +1134,22 @@ export function App() {
             {/* Material & Plot Mode Controls */}
             <label>
               Material System{" "}
-              <span className={`tag ${hpSpec.tauCStatus === "sourced" ? "sourced" : "unresolved"}`}>
-                {hpSpec.tauCStatus}
+              <span
+                id="badge-hp-tauc-status"
+                className={`tag ${hpSpec.tauCStatus === "sourced" ? "sourced" : "unresolved"}`}
+              >
+                {hpSpec.tauCStatus === "needs_citation" ? "unresolved citation" : hpSpec.tauCStatus}
               </span>
+              {hpMaterialKey === "ferritic_steel" && (
+                <span
+                  id="badge-hp-m6-ferritic"
+                  className="tag unresolved"
+                  style={{ marginLeft: "4px" }}
+                  title="Decision M6: tau_c CRSS estimated, awaiting peer-reviewed single-crystal citation"
+                >
+                  Decision M6: unresolved citation
+                </span>
+              )}
               <select
                 id="hp-material"
                 value={hpMaterialKey}
@@ -851,6 +1250,7 @@ export function App() {
 
                     return (
                       <svg
+                        id="svg-hallpetch"
                         viewBox={`0 0 ${W} ${H}`}
                         width="100%"
                         height={H}
@@ -912,18 +1312,18 @@ export function App() {
                           d^(−1/2) [μm^(−1/2)]
                         </text>
 
-                        {/* Held-out literature line (amber dashed) */}
+                        {/* Held-out literature line (amber short-dash) */}
                         <line
                           x1={toX(x0)}
                           y1={toY(heldY0)}
                           x2={toX(x1)}
                           y2={toY(heldY1)}
                           stroke="#f59e0b"
-                          strokeWidth="1.3"
-                          strokeDasharray="2 2"
+                          strokeWidth="1.5"
+                          strokeDasharray="2 3"
                         />
 
-                        {/* Calibration literature line (green dashed) */}
+                        {/* Calibration literature line (green long-dash) */}
                         <line
                           x1={toX(x0)}
                           y1={toY(calY0)}
@@ -931,7 +1331,7 @@ export function App() {
                           y2={toY(calY1)}
                           stroke="#10b981"
                           strokeWidth="1.5"
-                          strokeDasharray="4 2"
+                          strokeDasharray="6 3"
                         />
 
                         {/* Analytic EFN continuum line (purple dotted) */}
@@ -945,7 +1345,16 @@ export function App() {
                           strokeDasharray="1.5 2.5"
                         />
 
-                        {/* Simulated OLS regression line (cyan solid) */}
+                        {/* 95% Bootstrap CI shaded band (shaded polygon) */}
+                        <polygon
+                          points={`${toX(x0)},${toY((hpSweep.sigma0Ci95LowPa + hpSweep.kyCi95LowPaM05 * (x0 * 1e3)) / 1e6)} ${toX(x1)},${toY((hpSweep.sigma0Ci95LowPa + hpSweep.kyCi95LowPaM05 * (x1 * 1e3)) / 1e6)} ${toX(x1)},${toY((hpSweep.sigma0Ci95HighPa + hpSweep.kyCi95HighPaM05 * (x1 * 1e3)) / 1e6)} ${toX(x0)},${toY((hpSweep.sigma0Ci95HighPa + hpSweep.kyCi95HighPaM05 * (x0 * 1e3)) / 1e6)}`}
+                          fill="rgba(56, 189, 248, 0.16)"
+                          stroke="rgba(56, 189, 248, 0.35)"
+                          strokeWidth="0.75"
+                          strokeDasharray="3 2"
+                        />
+
+                        {/* Simulated OLS regression line (solid blue) */}
                         <line
                           x1={toX(x0)}
                           y1={toY(fitY0)}
@@ -955,20 +1364,25 @@ export function App() {
                           strokeWidth="2"
                         />
 
-                        {/* Discrete pile-up simulation points */}
+                        {/* Discrete pile-up simulation points + integer-N quantization plateau error bars */}
                         {hpSweep.points.map((pt, i) => {
                           const cx = toX(pt.invSqrtDM05 * 1e-3);
                           const cy = toY(pt.sigmaYPa / 1e6);
+                          const halfPlatMpa = (0.5 * hpSpec.taylorFactor * pt.plateauWidthPa) / 1e6;
+                          const pyTop = toY(pt.sigmaYPa / 1e6 + halfPlatMpa);
+                          const pyBot = toY(Math.max(0, pt.sigmaYPa / 1e6 - halfPlatMpa));
                           return (
-                            <circle
-                              key={i}
-                              cx={cx}
-                              cy={cy}
-                              r="2.8"
-                              fill="#0284c7"
-                              stroke="#e0f2fe"
-                              strokeWidth="1"
-                            />
+                            <g key={i}>
+                              <line x1={cx} y1={pyTop} x2={cx} y2={pyBot} stroke="#bae6fd" strokeWidth="1" />
+                              <circle
+                                cx={cx}
+                                cy={cy}
+                                r="2.8"
+                                fill="#0284c7"
+                                stroke="#e0f2fe"
+                                strokeWidth="1"
+                              />
+                            </g>
                           );
                         })}
                       </svg>
@@ -991,6 +1405,7 @@ export function App() {
 
                     return (
                       <svg
+                        id="svg-hallpetch"
                         viewBox={`0 0 ${W} ${H}`}
                         width="100%"
                         height={H}
@@ -1039,19 +1454,56 @@ export function App() {
                 })()}
               </div>
 
-              {/* Legend with symbols + color (NFR-08 accessible) */}
-              <div style={{ display: "flex", flexWrap: "wrap", gap: "8px", fontSize: "10.5px", color: "#cbd5e1" }}>
-                <span>● Discrete Pile-Up + OLS Fit (cyan)</span>
-                <span>⋯ Analytic EFN Continuum (purple)</span>
-                <span>-- Calib. Fit: {hpSpec.calibrationFit.sourceId} (green)</span>
-                <span>-- Held-Out: {hpSpec.heldOutFit.sourceId} (amber)</span>
+              {/* Legend with symbols + line patterns + color (NFR-08 accessible) */}
+              <div
+                id="hp-plot-legend"
+                style={{
+                  display: "flex",
+                  flexDirection: "column",
+                  gap: "4px",
+                  fontSize: "10px",
+                  color: "#cbd5e1",
+                  marginTop: "6px",
+                  background: "rgba(15, 23, 42, 0.6)",
+                  padding: "6px 8px",
+                  borderRadius: "4px",
+                  border: "1px solid #334155",
+                }}
+              >
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                  <span>
+                    <strong>● (circle)</strong> Discrete Simulation Points (± integer-N plateau)
+                  </span>
+                  <span>
+                    <strong style={{ color: "#38bdf8" }}>— (solid blue)</strong> OLS Fit Line
+                  </span>
+                  <span>
+                    <strong style={{ color: "#38bdf8" }}>█ (shaded band)</strong> 95% Bootstrap CI Band
+                  </span>
+                </div>
+                <div style={{ display: "flex", flexWrap: "wrap", gap: "10px" }}>
+                  <span>
+                    <strong style={{ color: "#10b981" }}>- - (dashed green)</strong> Calib. Fit: {hpSpec.calibrationFit.sourceId} ({hpSpec.calibrationFit.doi})
+                  </span>
+                  <span>
+                    <strong style={{ color: "#f59e0b" }}>·· (dashed amber)</strong> Held-Out Fit: {hpSpec.heldOutFit.sourceId} ({hpSpec.heldOutFit.doi})
+                  </span>
+                  <span>
+                    <strong style={{ color: "#a855f7" }}>··· (dotted purple)</strong> Analytic EFN Continuum
+                  </span>
+                </div>
               </div>
             </div>
 
             {/* Key Hall-Petch Readouts */}
             <dl style={{ margin: "8px 0" }}>
-              <dt>Barrier Threshold τ*_ref</dt>
-              <dd id="ro-hp-taustar">{(activeTauStarPa / 1e6).toFixed(2)} MPa</dd>
+              <dt>Barrier Threshold τ*_ref (Calibration Target)</dt>
+              <dd id="ro-hp-taustar">
+                {(activeTauStarPa / 1e6).toFixed(2)} MPa{" "}
+                <span className="tag calibrated" style={{ fontSize: "9px" }}>
+                  calibration target for k_y
+                </span>
+              </dd>
               <dt>Simulated Slope k_y (95% CI)</dt>
               <dd id="ro-hp-ky">
                 {(hpSweep.fittedKyPaM05 / 1e3).toFixed(1)} [
@@ -1066,8 +1518,13 @@ export function App() {
               <dd id="ro-hp-ky-cal">
                 {(hpSpec.calibrationFit.kyPaM05 / 1e3).toFixed(1)} MPa·μm<sup>1/2</sup>
               </dd>
-              <dt>Held-Out Mean Error ({hpSpec.heldOutFit.sourceId}, V-15)</dt>
-              <dd id="ro-hp-v15">{(hpHeldOutMeanRelErr * 100).toFixed(1)}%</dd>
+              <dt>Held-Out Error ({hpSpec.heldOutFit.sourceId}, V-15)</dt>
+              <dd id="ro-hp-v15">
+                <strong>{(hpHeldOutUnadjustedErr * 100).toFixed(1)}% unadjusted (HEADLINE, BLIND: no held-out σ₀ used)</strong>{" "}
+                / {(hpHeldOutAdjustedErr * 100).toFixed(1)}% intercept-adjusted (SECONDARY, NOT BLIND: uses held-out σ₀).
+                Mean over 16-point 10–400 μm sweep. τ*_ref is a CALIBRATION TARGET to match calibration k_y;
+                only the d^(−1/2) power-law exponent is emergent.
+              </dd>
               <dt>Log–Log Exponent (V-09) / R²</dt>
               <dd id="ro-hp-slope">
                 {hpSweep.logLogSlope.toFixed(4)} / R²={hpSweep.rSquared.toFixed(4)}
@@ -1097,8 +1554,463 @@ export function App() {
             </label>
           </div>
 
+          {/* Phase 7 Micrograph Analysis, Chord Rescaling & Client-Side Importer */}
+          <div className="card" id="card-micrograph">
+            <h2>
+              Micrograph & Chord Rescaling <span className="tag phase7">Phase 7</span>
+            </h2>
+
+            <div className="callout">
+              <strong>ASTM E112 Intercept Geometry & Parametric Rescaling (V-16):</strong> Precomputed polygon
+              grain boundaries, intercept test lines, and complete chord populations with client-side JSON/CSV import.
+              <div style={{ marginTop: "4px", fontSize: "11px", color: "#93c5fd" }}>
+                <strong>Stereological Convention:</strong> ASTM lineal intercept (ℓ̄_ASTM = L_T / P) measures grid test line
+                length per boundary crossing. Arithmetic chord mean (ℓ̄_chord = Σ ℓ_i / n) averages individual chord segments.
+                Both are displayed to prevent stereological ambiguity.
+              </div>
+            </div>
+
+            {/* Policy & Provenance Badges */}
+            <div style={{ display: "flex", flexWrap: "wrap", gap: "4px", marginBottom: "8px" }}>
+              <span className="tag calibrated" id="badge-d6-vector">
+                D6 Vector-Only Export
+              </span>
+              {micrographKey === "copper" && (
+                <span className="tag phase4" id="badge-m4-twin">
+                  M4 Twin Exclusion
+                </span>
+              )}
+              {micrographKey === "ferritic_steel" && (
+                <span className="tag phase5" id="badge-m5-ferrite">
+                  M5 Ferrite-Only Mask
+                </span>
+              )}
+              {micrographKey === "synthetic_voronoi_30um" && (
+                <span className="tag sourced" id="badge-v11-voronoi">
+                  V-11 Synthetic Benchmark
+                </span>
+              )}
+              <span className="tag illustrative" id="badge-m3-sensitivity">
+                M3 Sensitivity Study Only (Not Independent Validation)
+              </span>
+            </div>
+
+            {/* Micrograph Selector */}
+            <label>
+              Micrograph / Chord Dataset
+              <select
+                id="select-micrograph"
+                value={micrographKey}
+                onChange={(e) => {
+                  const nextKey = e.target.value;
+                  setMicrographKey(nextKey);
+                  if (nextKey === "custom_upload" && userDataset) {
+                    setTargetMeanUm(Number((userDataset.stats.meanM * 1e6).toFixed(1)));
+                  } else {
+                    const preset = loadedFixturesMap[nextKey] ?? BUILTIN_MICROGRAPH_PRESETS[nextKey];
+                    if (preset) {
+                      const initialUm = preset.populationStats
+                        ? preset.populationStats.astmMeanInterceptUm
+                        : preset.stats.meanM * 1e6;
+                      setTargetMeanUm(Number(initialUm.toFixed(1)));
+                    }
+                  }
+                }}
+              >
+                {Object.keys(BUILTIN_MICROGRAPH_PRESETS).map((k) => {
+                  const m = loadedFixturesMap[k] ?? BUILTIN_MICROGRAPH_PRESETS[k];
+                  return (
+                    <option key={m.key} value={m.key}>
+                      {m.name}
+                    </option>
+                  );
+                })}
+                {userDataset && (
+                  <option value="custom_upload">
+                    Uploaded: {userDataset.name} ({userDataset.chordsM.length} chords)
+                  </option>
+                )}
+              </select>
+            </label>
+
+            {/* Layer toggles for MicrographView */}
+            <div className="row" style={{ marginTop: "4px", marginBottom: "6px" }}>
+              <label className="check" style={{ margin: 0, flex: 1 }}>
+                <input
+                  id="chk-micrograph-intercepts"
+                  type="checkbox"
+                  checked={showIntercepts}
+                  onChange={(e) => setShowIntercepts(e.target.checked)}
+                />{" "}
+                ASTM E112 Intercept Lines
+              </label>
+              <label className="check" style={{ margin: 0, flex: 1 }}>
+                <input
+                  id="chk-micrograph-sliptraces"
+                  type="checkbox"
+                  checked={showSlipTraces}
+                  onChange={(e) => setShowSlipTraces(e.target.checked)}
+                />{" "}
+                Grain Slip Traces
+              </label>
+            </div>
+
+            {/* Interactive SVG Micrograph Polygon & Intercept View (MicrographView) */}
+            <div className="pileup-box" id="micrograph-view">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "11px",
+                  color: "#94a3b8",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>
+                  {micrographKey === "custom_upload" && userDataset
+                    ? `Custom Chord Sample: ${userDataset.name}`
+                    : activeMicrographPreset.source}
+                </span>
+                <span>Scale Bar: {activeMicrographPreset.scaleBarUm} μm</span>
+              </div>
+
+              <div className="pileup-svg-wrap">
+                {(() => {
+                  const W = 320;
+                  const H = 240;
+                  const scaleX = W / activeMicrographPreset.widthUm;
+                  const scaleY = H / activeMicrographPreset.heightUm;
+
+                  return (
+                    <svg
+                      viewBox={`0 0 ${W} ${H}`}
+                      width="100%"
+                      height="195"
+                      aria-label="Micrograph Polygon and ASTM E112 Intercept View"
+                    >
+                      {/* Grain Polygons */}
+                      {activeMicrographPreset.grains.map((g) => {
+                        const pts = g.verticesUm
+                          .map(([ux, uy]) => `${(ux * scaleX).toFixed(1)},${(uy * scaleY).toFixed(1)}`)
+                          .join(" ");
+                        const hue = (g.eulerDeg[0] + g.id * 29) % 360;
+                        const fill = `hsla(${hue}, 52%, 34%, 0.65)`;
+                        const stroke = "#94a3b8";
+
+                        const cx = g.centroidUm[0] * scaleX;
+                        const cy = g.centroidUm[1] * scaleY;
+                        const rad = (g.slipTraceAngleDeg * Math.PI) / 180;
+                        const traceHalfLen = Math.min(11, Math.max(5, g.equivalentDiameterUm * scaleX * 0.25));
+                        const tx1 = cx - Math.cos(rad) * traceHalfLen;
+                        const ty1 = cy - Math.sin(rad) * traceHalfLen;
+                        const tx2 = cx + Math.cos(rad) * traceHalfLen;
+                        const ty2 = cy + Math.sin(rad) * traceHalfLen;
+
+                        return (
+                          <g key={g.id}>
+                            <polygon
+                              points={pts}
+                              fill={fill}
+                              stroke={stroke}
+                              strokeWidth="1.2"
+                            />
+                            {showSlipTraces && (
+                              <line
+                                x1={tx1}
+                                y1={ty1}
+                                x2={tx2}
+                                y2={ty2}
+                                stroke="rgba(226, 232, 240, 0.55)"
+                                strokeWidth="1"
+                              />
+                            )}
+                          </g>
+                        );
+                      })}
+
+                      {/* ASTM E112 Intercept Test Lines & Boundary Crossing Ticks */}
+                      {showIntercepts &&
+                        activeMicrographPreset.interceptLines.map((line) => {
+                          const isH = line.orientation === "horizontal";
+                          const x1 = isH ? 0 : line.positionUm * scaleX;
+                          const y1 = isH ? line.positionUm * scaleY : 0;
+                          const x2 = isH ? W : line.positionUm * scaleX;
+                          const y2 = isH ? line.positionUm * scaleY : H;
+
+                          return (
+                            <g key={line.id}>
+                              <line
+                                x1={x1}
+                                y1={y1}
+                                x2={x2}
+                                y2={y2}
+                                stroke="#38bdf8"
+                                strokeWidth="1.2"
+                                strokeDasharray="4 2"
+                              />
+                              {line.crossingsUm.map(([cxUm, cyUm], cIdx) => {
+                                const px = cxUm * scaleX;
+                                const py = cyUm * scaleY;
+                                return (
+                                  <line
+                                    key={cIdx}
+                                    x1={isH ? px : px - 3.5}
+                                    y1={isH ? py - 3.5 : py}
+                                    x2={isH ? px : px + 3.5}
+                                    y2={isH ? py + 3.5 : py}
+                                    stroke="#ef4444"
+                                    strokeWidth="1.6"
+                                  />
+                                );
+                              })}
+                            </g>
+                          );
+                        })}
+
+                      {/* Scale Bar Overlay */}
+                      {(() => {
+                        const barPx = activeMicrographPreset.scaleBarUm * scaleX;
+                        return (
+                          <g transform={`translate(${W - barPx - 12}, ${H - 18})`}>
+                            <rect
+                              x="-4"
+                              y="-10"
+                              width={barPx + 8}
+                              height="16"
+                              rx="3"
+                              fill="rgba(7, 11, 22, 0.82)"
+                              stroke="#475569"
+                              strokeWidth="0.8"
+                            />
+                            <line x1="0" y1="2" x2={barPx} y2="2" stroke="#f8fafc" strokeWidth="2.2" />
+                            <text
+                              x={barPx / 2}
+                              y="-2"
+                              fill="#f8fafc"
+                              fontSize="8"
+                              textAnchor="middle"
+                            >
+                              {activeMicrographPreset.scaleBarUm} μm
+                            </text>
+                          </g>
+                        );
+                      })()}
+                    </svg>
+                  );
+                })()}
+              </div>
+              <div style={{ fontSize: "10.5px", color: "#94a3b8" }}>
+                {activeMicrographPreset.methodologyNote}
+              </div>
+            </div>
+
+            {/* Interactive SVG Chord Length Histogram */}
+            <div className="pileup-box">
+              <div
+                style={{
+                  display: "flex",
+                  justifyContent: "space-between",
+                  fontSize: "11px",
+                  color: "#94a3b8",
+                  marginBottom: "4px",
+                }}
+              >
+                <span>Rescaled Chord Distribution (n = {rescaledChords.chordsM.length})</span>
+                <span>
+                  ℓ̄ = {(rescaledChords.meanM * 1e6).toFixed(1)} μm, CV = {rescaledChords.cv.toFixed(3)}
+                </span>
+              </div>
+
+              <div className="pileup-svg-wrap">
+                {(() => {
+                  const W = 320;
+                  const H = 120;
+                  const padL = 30;
+                  const padR = 12;
+                  const padT = 10;
+                  const padB = 24;
+                  const plotW = W - padL - padR;
+                  const plotH = H - padT - padB;
+
+                  const chordsUm = rescaledChords.chordsM.map((c) => c * 1e6);
+                  const minUm = Math.min(...chordsUm);
+                  const maxUm = Math.max(...chordsUm, minUm + 1.0);
+                  const numBins = 8;
+                  const binWidth = (maxUm - minUm) / numBins;
+                  const bins = new Array<number>(numBins).fill(0);
+                  for (const val of chordsUm) {
+                    const b = Math.min(numBins - 1, Math.floor((val - minUm) / binWidth));
+                    bins[b]++;
+                  }
+                  const maxCount = Math.max(...bins, 1);
+                  const meanUm = rescaledChords.meanM * 1e6;
+                  const meanX =
+                    padL + Math.max(0, Math.min(1, (meanUm - minUm) / (maxUm - minUm))) * plotW;
+
+                  return (
+                    <svg
+                      viewBox={`0 0 ${W} ${H}`}
+                      width="100%"
+                      height={H}
+                      aria-label="Chord Length Histogram"
+                    >
+                      <line x1={padL} y1={padT} x2={padL} y2={padT + plotH} stroke="#475569" />
+                      <line
+                        x1={padL}
+                        y1={padT + plotH}
+                        x2={padL + plotW}
+                        y2={padT + plotH}
+                        stroke="#475569"
+                      />
+                      {bins.map((cnt, bIdx) => {
+                        const bw = plotW / numBins;
+                        const bh = (cnt / maxCount) * plotH;
+                        const bx = padL + bIdx * bw + 1.5;
+                        const by = padT + plotH - bh;
+                        return (
+                          <rect
+                            key={bIdx}
+                            x={bx}
+                            y={by}
+                            width={Math.max(2, bw - 3)}
+                            height={bh}
+                            fill="#0d9488"
+                            stroke="#5eead4"
+                            strokeWidth="0.8"
+                          />
+                        );
+                      })}
+                      {/* Mean chord vertical indicator */}
+                      <line
+                        x1={meanX}
+                        y1={padT}
+                        x2={meanX}
+                        y2={padT + plotH}
+                        stroke="#f59e0b"
+                        strokeWidth="1.6"
+                        strokeDasharray="3 2"
+                      />
+                      <text x={padL} y={H - 5} fill="#94a3b8" fontSize="8">
+                        {minUm.toFixed(1)} μm
+                      </text>
+                      <text x={padL + plotW / 2} y={H - 5} fill="#fde68a" fontSize="8" textAnchor="middle">
+                        Mean ℓ̄ = {meanUm.toFixed(1)} μm
+                      </text>
+                      <text x={padL + plotW} y={H - 5} fill="#94a3b8" fontSize="8" textAnchor="end">
+                        {maxUm.toFixed(1)} μm
+                      </text>
+                    </svg>
+                  );
+                })()}
+              </div>
+            </div>
+
+            {/* Parametric Chord Rescaling Slider (#slider-target-mean-d) */}
+            <label>
+              Parametric Target Mean Intercept ℓ̄_target: {targetMeanUm.toFixed(1)} μm (scale ×
+              {rescaledChords.scaleFactor.toFixed(2)})
+              <input
+                id="slider-target-mean-d"
+                type="range"
+                min={10}
+                max={150}
+                step={0.5}
+                value={targetMeanUm}
+                onChange={(e) => setTargetMeanUm(Number(e.target.value))}
+              />
+            </label>
+
+            {/* Chord Statistics & Ensemble Hall-Petch Comparison Readouts */}
+            <dl style={{ margin: "8px 0" }}>
+              <dt>ASTM E112 Grid Intercept ℓ̄_ASTM (L_T / P)</dt>
+              <dd id="ro-chord-astm" style={{ color: "#38bdf8", fontWeight: 600 }}>
+                {activeMicrographPreset.populationStats
+                  ? `${activeMicrographPreset.populationStats.astmMeanInterceptUm.toFixed(2)} μm (${activeMicrographPreset.populationStats.totalCrossings} crossings, L_T = ${activeMicrographPreset.populationStats.totalLineLengthUm.toFixed(0)} μm)`
+                  : `${(activeMicrographPreset.stats.meanM * 1e6).toFixed(2)} μm`}
+              </dd>
+              <dt>Chord Distribution Sample Mean ℓ̄_chord ± σ (n = {baseChordsM.length})</dt>
+              <dd id="ro-chord-raw">
+                {(baseChordStats.meanM * 1e6).toFixed(2)} ± {(baseChordStats.stdM * 1e6).toFixed(2)} μm
+              </dd>
+              <dt>Rescaled Mean ℓ̄ / Std σ_ℓ (V-16)</dt>
+              <dd id="ro-chord-rescaled">
+                {(rescaledChords.meanM * 1e6).toFixed(2)} ± {(rescaledChords.stdM * 1e6).toFixed(2)} μm
+              </dd>
+              <dt>Coefficient of Variation CV (Invariant)</dt>
+              <dd id="ro-chord-cv">{rescaledChords.cv.toFixed(4)}</dd>
+              <dt>Single Mean-Intercept σ_y(ℓ̄)</dt>
+              <dd id="ro-chord-sigmay-mean" style={{ color: "#38bdf8" }}>
+                {(chordEnsembleHp.meanInterceptSigmaYPa / 1e6).toFixed(2)} MPa
+              </dd>
+              <dt>Chord-Ensemble Mean ⟨σ_y(ℓ_i)⟩ ± SD</dt>
+              <dd id="ro-chord-sigmay-ens" style={{ color: "#6ee7b7" }}>
+                {(chordEnsembleHp.ensembleMeanSigmaYPa / 1e6).toFixed(2)} ±{" "}
+                {(chordEnsembleHp.ensembleStdSigmaYPa / 1e6).toFixed(2)} MPa
+              </dd>
+            </dl>
+
+            {/* Client-Side Drag-and-Drop / File-Picker Importer (#dropzone-chord-import) */}
+            <div
+              id="dropzone-chord-import"
+              className={`dropzone ${isDragOver ? "dragover" : ""}`}
+              role="button"
+              tabIndex={0}
+              onClick={() => fileInputRef.current?.click()}
+              onKeyDown={(e) => {
+                if (e.key === "Enter" || e.key === " ") {
+                  e.preventDefault();
+                  fileInputRef.current?.click();
+                }
+              }}
+              onDragOver={(e) => {
+                e.preventDefault();
+                setIsDragOver(true);
+              }}
+              onDragLeave={() => setIsDragOver(false)}
+              onDrop={(e) => {
+                e.preventDefault();
+                setIsDragOver(false);
+                const file = e.dataTransfer.files?.[0];
+                if (!file) return;
+                const reader = new FileReader();
+                reader.onload = () => {
+                  handleChordFileText(String(reader.result ?? ""), file.name);
+                };
+                reader.readAsText(file);
+              }}
+            >
+              <strong>Import Custom Chord Dataset (.json or .csv)</strong>
+              <div style={{ marginTop: "3px", color: "#93c5fd" }}>
+                Drag & drop file here or click to browse (100% client-side)
+              </div>
+              <div style={{ marginTop: "4px", fontSize: "10.5px", color: "#cbd5e1" }}>
+                Accepts JSON arrays or CSV lines of chord lengths in meters or micrometers (μm). Scale calibration metadata is required for raw pixel values.
+              </div>
+              <input
+                ref={fileInputRef}
+                id="input-chord-file"
+                type="file"
+                accept=".json,.csv,.txt"
+                onChange={(e) => {
+                  const file = e.target.files?.[0];
+                  if (!file) return;
+                  const reader = new FileReader();
+                  reader.onload = () => {
+                    handleChordFileText(String(reader.result ?? ""), file.name);
+                  };
+                  reader.readAsText(file);
+                }}
+              />
+            </div>
+            {importError && (
+              <div className="callout warning" id="chord-import-error" style={{ marginTop: "6px" }}>
+                <strong>Import Error:</strong> {importError}
+              </div>
+            )}
+          </div>
+
           {/* Existing Playback Card */}
-          <div className="card">
+          <div className="card" id="card-controls">
             <h2>Playback</h2>
             <div className="row">
               <button

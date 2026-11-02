@@ -16,8 +16,8 @@ Build and validate `hpsim` across 8 phases: from audited literature/micrograph d
 - [x] **Phase 4: Grain Boundary Transmission & Explainable Event Log** - Livingston–Gorczyca $m'$, residual Burgers vector $|\mathbf{b}_r|$, outgoing RSS $\tau_{\text{out}}$ (`V-06`), and two-grain 3D boundary scene
 - [x] **Phase 5: Discrete Dislocation Pile-Up Engine** - 1D pile-up equilibrium solver, Golub–Welsch EFN Laguerre benchmark, tip stress identity $\tau_{\text{tip}} = N\tau_{\text{eff}}$ (`V-07`, `V-08`), and interactive 1D pile-up SVG card
 - [x] **Phase 6: Emergent Hall–Petch Derivation** - Source-shutoff pile-up yield-onset bisection, grain-size sweep, emergent $d^{-1/2}$ scaling (`V-09`), analytic $k_y$ consistency (`V-10`), $\tau^*_{\text{ref}}$ calibration & literature comparison (`V-15`), and interactive `HallPetchChart`
-- [ ] **Phase 7: Micrograph Preprocessing & Web Data Integration** - Offline Python CV pipeline (`src/hpsim/micro/`), synthetic Voronoi intercept validation (`V-11`), real micrograph segmentation & QA overlays (`V-12`), chord rescaling (`V-16`), and web micrograph overlay + JSON/CSV importer
-- [ ] **Phase 8: Final Packaging, Validation Report & Static Build Verification** - Complete multi-panel web app integration, deterministic experiment presets, auto-generated `docs/validation_report.md` & `docs/limitations.md`, and full 10-level test ladder verification
+- [x] **Phase 7: Micrograph Preprocessing & Web Data Integration** - Offline Python CV pipeline (`src/hpsim/micro/`), synthetic Voronoi intercept validation (`V-11`), real micrograph segmentation & QA overlays (`V-12`), chord rescaling (`V-16`), and web micrograph overlay + JSON/CSV importer
+- [x] **Phase 8: Final Packaging, Validation Report & Static Build Verification** - Complete multi-panel web app integration, deterministic experiment presets, auto-generated `docs/validation_report.md` & `docs/limitations.md`, and full 10-level test ladder verification
 
 ## Phase Details
 
@@ -104,10 +104,10 @@ Plans:
   1. Synthetic Voronoi microstructures of known mean grain size recover mean lineal intercept $\bar{\ell}$ within 10% across $\ge 3$ sizes and seeds (`V-11`), and rescaled chord distributions match target mean within $10^{-9}$ relative while preserving coefficient of variation (`V-16`).
   2. Real micrographs in `data/micrographs/` are calibrated, segmented (respecting `M4` Cu twin exclusion and `M5` steel ferrite-only masking), produce QA boundary overlays in `docs/screenshots/`, and compare automated vs manual intercept counts on $\ge 3$ reference lines (`V-12`).
   3. Sanitized/open-licensed micrograph geometry and chord distributions are exported to `web/public/data/micrographs/` (never bundling raw CC BY-NC-SA DoITPoMS images), and the web UI displays the interactive Micrograph Overlay (`MicrographView`) plus client-side JSON/CSV drag-and-drop import (`DataImport`) feeding the Hall–Petch simulator.
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 07-01: TBD
+- [x] 07-01: Offline Python micrograph CV pipeline (`V-11`, `V-12`, `V-13`, `V-16`), QA overlays, sanitized JSON fixtures, and interactive `MicrographView` + `DataImport`
 
 ### Phase 8: Final Packaging, Validation Report & Static Build Verification
 **Goal**: Wire all simulation layers, presets, and documentation into the unified web application and Python CLI/report generator, auto-generate `docs/validation_report.md`, `docs/limitations.md`, and `docs/user_guide.md`, and pass all 10 levels of the verification ladder.
@@ -117,10 +117,10 @@ Plans:
   1. Auto-generated `docs/validation_report.md` and `docs/limitations.md` report all benchmarks `V-01` through `V-17` with exact numbers, tolerances, and honest provenance status.
   2. Deterministic experiment presets run via Python CLI (`scripts/run_presets.py`) and one-click web UI selector, with prominent About & Scientific Limitations modal.
   3. Full test ladder (Python `pytest`, scientific data audit, Node/TS parity tests, `tsc --noEmit`, `vite build` with base-path portability, and headless Playwright browser smoke/console checks) passes with 0 errors.
-**Plans**: TBD
+**Plans**: 1 plan
 
 Plans:
-- [ ] 08-01: TBD
+- [x] 08-01: Canonical preset runner (`scripts/run_presets.py`), automated V&V report (`docs/validation_report.md`), limitations & user guide, static smoke tests, and unified web UI packaging
 
 ## Progress
 
@@ -132,5 +132,23 @@ Plans:
 | 4. Grain Boundary Transmission & Explainable Event Log | 1/1 | Complete | 2026-10-21 |
 | 5. Discrete Dislocation Pile-Up Engine | 1/1 | Complete | 2026-10-21 |
 | 6. Emergent Hall–Petch Derivation | 1/1 | Complete | 2026-10-29 |
-| 7. Micrograph Preprocessing & Web Data Integration | 0/1 | Not started | - |
-| 8. Final Packaging, Validation Report & Static Build Verification | 0/1 | Not started | - |
+| 7. Micrograph Preprocessing & Web Data Integration | 1/1 | Complete | 2026-10-29 |
+| 8. Final Packaging, Validation Report & Static Build Verification | 1/1 | Complete | 2026-10-29 |
+
+### Phase 9: One-Click Beginner Experience
+**Goal**: Replace the default HPSim landing screen with a beginner-friendly interface: a clean page with title, one-sentence description, and a single **Simulate Now** button that automatically selects a sample, randomly picks edge or screw dislocation type, selects a compatible FCC slip system, and starts a slow-motion animation — while also displaying a simple Hall–Petch line plot from the existing `runHallPetchSweep` / `CALIBRATED_MATERIALS` API. Move the existing dense research dashboard into an **Advanced Simulation** route, keeping all existing scientific functionality intact.
+**Depends on**: Phase 8
+**Requirements**: [FR-01, FR-02, FR-03, FR-04, FR-08, FR-08B]
+**Success Criteria** (what must be TRUE):
+  1. Opening HPSim renders the beginner screen (not the existing dashboard) as the default route.
+  2. One **Simulate Now** button drives the full experience with zero user inputs required.
+  3. The animation uses the existing `SimulationController` / `Viewer` engine at a slow render speed; no disconnected decorative animation.
+  4. Edge and screw dislocation types are correctly labelled and scientifically distinguished; if the engine only supports edge, the limitation is declared and screw is not mislabelled.
+  5. The Hall–Petch line is drawn from `runHallPetchSweep` output on an aluminium or copper preset, labelled as a calibrated model trend with source provenance.
+  6. The advanced dashboard (all Phases 1–8 UI) remains fully functional and accessible via a visible link.
+  7. All existing Python (`pytest`) and Node.js (`.test.mjs`) tests continue to pass.
+  8. `tsc --noEmit` and `vite build` pass cleanly.
+**Plans**: 0 plans
+
+Plans:
+- [ ] 09-01: Beginner landing screen, one-click simulation, slow-motion playback, and Hall–Petch line chart

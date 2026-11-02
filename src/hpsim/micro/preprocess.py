@@ -27,6 +27,14 @@ def preprocess_micrograph(
     """
     Apply CLAHE contrast normalization, bilateral edge-preserving filter, Sobel gradient
     extraction, and Decision M5 ferrite-only masking (for ferritic_steel).
+
+    Segmentation Uncertainty & Limitations:
+      - Optical metallographs exhibit uneven chemical etching, polishing scratches, and
+        intragranular relief that introduce +/-10-20% uncertainty in automated watershed
+        grain boundary delineation compared to manual EBSD or expert tracing.
+      - Decision M5 (`ferritic_steel`): Dark pearlite colonies are isolated via intensity
+        percentile thresholding and morphological opening so only the bright primary ferrite
+        matrix is analyzed for grain size.
     """
     if gray.ndim != 2:
         raise ValueError("preprocess_micrograph expects a 2D grayscale image")

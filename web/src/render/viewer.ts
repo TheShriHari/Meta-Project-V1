@@ -15,6 +15,20 @@ const NM = 1e9;
 export type Layer = "atoms" | "bonds" | "cell" | "axes" | "slipPlane" | "burgers" | "core" | "boundary" | "outgoingCandidates";
 export const LAYERS: Layer[] = ["atoms", "bonds", "cell", "axes", "slipPlane", "burgers", "core", "boundary", "outgoingCandidates"];
 
+function disposeHierarchy(obj?: THREE.Object3D) {
+  if (!obj) return;
+  obj.traverse((child) => {
+    if ((child as THREE.Mesh).geometry) {
+      (child as THREE.Mesh).geometry.dispose();
+    }
+    const mat = (child as THREE.Mesh).material;
+    if (mat) {
+      if (Array.isArray(mat)) mat.forEach((m) => m.dispose());
+      else mat.dispose();
+    }
+  });
+}
+
 export class Viewer {
   private renderer: THREE.WebGLRenderer;
   private scene = new THREE.Scene();
@@ -64,8 +78,10 @@ export class Viewer {
 
   loadStructure(demo: Demo) {
     this.demo = demo;
+    disposeHierarchy(this.content);
     this.content.clear();
     const { ideal, a_m, box_m, geom } = demo;
+    this.renderPositions = new Float64Array(ideal.length);
     const nAtoms = ideal.length / 3;
     const S = (v: number) => v * NM;
 
@@ -223,7 +239,10 @@ export class Viewer {
   /** Recompute DISPLAYED coordinates from the ideal lattice; never modifies physics state or ideal data. */
   setCorePosition(pos_m: number) {
     const d = this.demo; if (!d || !this.atoms || !this.bonds) return;
-    const r = displacedPositions(d.ideal, d.geom, pos_m, d.field);
+    if (this.renderPositions.length !== d.ideal.length) {
+      this.renderPositions = new Float64Array(d.ideal.length);
+    }
+    const r = displacedPositions(d.ideal, d.geom, pos_m, d.field, this.renderPositions);
     this.renderPositions = r;
     for (let i = 0; i < r.length / 3; i++) {
       this.dummy.position.set(r[3 * i] * NM, r[3 * i + 1] * NM, r[3 * i + 2] * NM);
@@ -259,8 +278,14 @@ export class Viewer {
     const visibleBoundary = this.layers.boundary ? this.layers.boundary.visible : true;
     const visibleCandidates = this.layers.outgoingCandidates ? this.layers.outgoingCandidates.visible : true;
 
-    if (this.layers.boundary) this.content.remove(this.layers.boundary);
-    if (this.layers.outgoingCandidates) this.content.remove(this.layers.outgoingCandidates);
+    if (this.layers.boundary) {
+      disposeHierarchy(this.layers.boundary);
+      this.content.remove(this.layers.boundary);
+    }
+    if (this.layers.outgoingCandidates) {
+      disposeHierarchy(this.layers.outgoingCandidates);
+      this.content.remove(this.layers.outgoingCandidates);
+    }
 
     // Build new boundary group
     const boundaryGroup = new THREE.Group();
@@ -357,6 +382,7 @@ export class Viewer {
 
   dispose() {
     cancelAnimationFrame(this.raf); this.ro.disconnect(); this.controls.dispose();
+    disposeHierarchy(this.content);
     this.renderer.dispose(); this.renderer.domElement.remove();
   }
 }

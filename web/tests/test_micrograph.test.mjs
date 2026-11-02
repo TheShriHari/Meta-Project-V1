@@ -4,14 +4,20 @@
 
 import test from "node:test";
 import assert from "node:assert/strict";
+import fs from "node:fs";
+import path from "node:path";
+import { fileURLToPath } from "node:url";
 import {
   computeChordStats,
   rescaleChords,
   parseUserChordDataset,
+  parseSegmentedMicrographFixture,
   evaluateChordEnsembleHallPetch,
   BUILTIN_MICROGRAPH_PRESETS,
 } from "../src/core/micrograph.ts";
 import { CALIBRATED_MATERIALS } from "../src/core/hallpetch.ts";
+
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 
 test("rescaleChords satisfies V-16: target mean within 1e-9 and CV invariant within 1e-12", () => {
   const rawChordsM = [12e-6, 18e-6, 25e-6, 31e-6, 42e-6, 15e-6, 22e-6, 29e-6];
@@ -74,4 +80,39 @@ test("BUILTIN_MICROGRAPH_PRESETS provides all 5 presets and parseUserChordDatase
   }
   assert.throws(() => parseUserChordDataset(""), /empty/i);
   assert.throws(() => parseUserChordDataset(JSON.stringify({ chords: [-5, 10] })), /Non-positive/i);
+});
+
+test("parseSegmentedMicrographFixture parses all 5 real segmented fixtures and enforces exact image-specific counts", () => {
+  const expectedCounts = {
+    aluminium: { chords: 963, crossings: 932, astmUm: 8.112, chordUm: 7.847 },
+    copper: { chords: 1044, crossings: 1011, astmUm: 17.267, chordUm: 16.717 },
+    ferritic_steel: { chords: 1301, crossings: 1129, astmUm: 13.139, chordUm: 11.368 },
+    pure_iron: { chords: 855, crossings: 817, astmUm: 7.599, chordUm: 7.261 },
+    synthetic_voronoi_30um: { chords: 231, crossings: 215, astmUm: 27.907, chordUm: 25.965 },
+  };
+
+  for (const [key, exp] of Object.entries(expectedCounts)) {
+    const filePath = path.resolve(__dirname, `../public/data/micrographs/${key}.json`);
+    const raw = JSON.parse(fs.readFileSync(filePath, "utf8"));
+    const parsed = parseSegmentedMicrographFixture(raw);
+    assert.equal(parsed.key, key);
+    // The synthetic Voronoi verification target is NOT a real micrograph measurement.
+    assert.equal(parsed.isRealSegmentedFixture, key !== "synthetic_voronoi_30um");
+    assert.ok(parsed.grains.length >= 70, `Expected >= 70 segmented grains for ${key}`);
+
+    // Exact pipeline counts and complete chord population (no [:250] truncation slice)
+    assert.equal(parsed.chordsM.length, exp.chords, `Expected ${exp.chords} chords for ${key}, got ${parsed.chordsM.length}`);
+    assert.equal(parsed.populationStats?.totalChords, exp.chords);
+    assert.equal(parsed.populationStats?.totalCrossings, exp.crossings);
+    assert.equal(parsed.populationStats?.astmMeanInterceptUm, exp.astmUm);
+    assert.equal(parsed.populationStats?.chordMeanUm, exp.chordUm);
+
+    // Enriched population statistics presence
+    assert.ok(parsed.populationStats?.stdInterceptUm != null && parsed.populationStats.stdInterceptUm > 0);
+    assert.ok(parsed.populationStats?.chordCv != null && parsed.populationStats.chordCv > 0);
+    assert.ok(parsed.populationStats?.p10Um != null && parsed.populationStats.p10Um > 0);
+    assert.ok(parsed.populationStats?.p50Um != null && parsed.populationStats.p50Um > 0);
+    assert.ok(parsed.populationStats?.p90Um != null && parsed.populationStats.p90Um > 0);
+    assert.ok(parsed.populationStats?.totalLineLengthUm != null && parsed.populationStats.totalLineLengthUm > 0);
+  }
 });

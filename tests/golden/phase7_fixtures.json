@@ -1,0 +1,154 @@
+{
+  "description": "Phase 7 golden parity vectors for chord rescaling (V-16), seeded orientations (V-13), and chord-ensemble Hall-Petch evaluation.",
+  "rescale_cases": [
+    {
+      "input_chords_m": [
+        1.2e-05,
+        1.8e-05,
+        2.5e-05,
+        3.1e-05,
+        4.4e-05,
+        5.2e-05
+      ],
+      "target_mean_m": 2.5e-05,
+      "expected_chords_m": [
+        9.890109890109892e-06,
+        1.4835164835164836e-05,
+        2.0604395604395608e-05,
+        2.5549450549450554e-05,
+        3.6263736263736266e-05,
+        4.2857142857142856e-05
+      ],
+      "expected_mean_m": 2.5e-05,
+      "expected_std_m": 1.1525371957913753e-05,
+      "expected_cv": 0.46101487831655014,
+      "expected_scale_factor": 0.8241758241758242
+    },
+    {
+      "input_chords_m": [
+        1.2e-05,
+        1.8e-05,
+        2.5e-05,
+        3.1e-05,
+        4.4e-05,
+        5.2e-05
+      ],
+      "target_mean_m": 6e-05,
+      "expected_chords_m": [
+        2.373626373626374e-05,
+        3.560439560439561e-05,
+        4.945054945054945e-05,
+        6.131868131868132e-05,
+        8.703296703296704e-05,
+        0.00010285714285714286
+      ],
+      "expected_mean_m": 6e-05,
+      "expected_std_m": 2.7660892698993004e-05,
+      "expected_cv": 0.4610148783165501,
+      "expected_scale_factor": 1.978021978021978
+    }
+  ],
+  "chord_ensemble_hall_petch_case": {
+    "chords_m": [
+      9.890109890109892e-06,
+      1.4835164835164836e-05,
+      2.0604395604395608e-05,
+      2.5549450549450554e-05,
+      3.6263736263736266e-05,
+      4.2857142857142856e-05
+    ],
+    "mu_pa": 48000000000.0,
+    "nu": 0.34,
+    "burgers_m": 2.56e-10,
+    "tau_c_pa": 8170000.0,
+    "taylor_factor": 3.06,
+    "tau_star_ref_pa": 195000000.0,
+    "sigma_0_offset_pa": 25000000.0,
+    "expected": {
+      "mean_chord_m": 2.5e-05,
+      "ensemble_mean_sigma_y_pa": 55056926.619399466,
+      "ensemble_std_sigma_y_pa": 7265199.646320384,
+      "mean_intercept_sigma_y_pa": 52980222.467423186,
+      "chord_yields_pa": [
+        67621428.57148024,
+        60315655.461865075,
+        55534358.32019143,
+        52378497.25306977,
+        48180905.82406988,
+        46310714.28572048
+      ]
+    }
+  },
+  "micrograph_summary": [
+    {
+      "key": "aluminium",
+      "material_name": "Aluminium (99.5%)",
+      "structure": "FCC",
+      "mean_intercept_um": 8.112,
+      "astm_mean_intercept_um": 8.112,
+      "chord_mean_um": 7.847,
+      "std_intercept_um": 10.162,
+      "total_crossings": 932,
+      "total_chords": 963,
+      "num_grains": 158,
+      "segmentation_policy": "standard_watershed",
+      "fixture_file": "/data/micrographs/aluminium.json"
+    },
+    {
+      "key": "copper",
+      "material_name": "Copper (99.7%)",
+      "structure": "FCC",
+      "mean_intercept_um": 17.267,
+      "astm_mean_intercept_um": 17.267,
+      "chord_mean_um": 16.717,
+      "std_intercept_um": 12.639,
+      "total_crossings": 1011,
+      "total_chords": 1044,
+      "num_grains": 252,
+      "segmentation_policy": "M4_copper_twin_exclusion",
+      "fixture_file": "/data/micrographs/copper.json"
+    },
+    {
+      "key": "ferritic_steel",
+      "material_name": "Ferritic steel (plain carbon)",
+      "structure": "BCC",
+      "mean_intercept_um": 13.139,
+      "astm_mean_intercept_um": 13.139,
+      "chord_mean_um": 11.368,
+      "std_intercept_um": 8.575,
+      "total_crossings": 1129,
+      "total_chords": 1301,
+      "num_grains": 406,
+      "segmentation_policy": "M5_ferrite_only_mask",
+      "fixture_file": "/data/micrographs/ferritic_steel.json"
+    },
+    {
+      "key": "pure_iron",
+      "material_name": "Pure alpha-iron (>99.9%)",
+      "structure": "BCC",
+      "mean_intercept_um": 7.599,
+      "astm_mean_intercept_um": 7.599,
+      "chord_mean_um": 7.261,
+      "std_intercept_um": 6.001,
+      "total_crossings": 817,
+      "total_chords": 855,
+      "num_grains": 137,
+      "segmentation_policy": "standard_watershed",
+      "fixture_file": "/data/micrographs/pure_iron.json"
+    },
+    {
+      "key": "synthetic_voronoi_30um",
+      "material_name": "Synthetic Voronoi Tessellation (30 um Stereology Verification Target)",
+      "structure": "FCC",
+      "mean_intercept_um": 27.907,
+      "astm_mean_intercept_um": 27.907,
+      "chord_mean_um": 25.965,
+      "std_intercept_um": 13.677,
+      "total_crossings": 215,
+      "total_chords": 231,
+      "num_grains": 90,
+      "segmentation_policy": "V11_synthetic_voronoi_target",
+      "fixture_file": "/data/micrographs/synthetic_voronoi_30um.json"
+    }
+  ]
+}

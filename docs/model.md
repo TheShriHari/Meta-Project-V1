@@ -305,44 +305,63 @@ The Phase 5 discrete dislocation pile-up engine models a one-dimensional array o
 - **Driving Stress:** A uniform, positive resolved shear stress $\tau_{\text{app}}$ drives all mobile dislocations inward (in the $-x$ direction) toward the obstacle at $x = 0$.
 - **Model Exclusions:** No dislocation climb, no cross-slip, no thermal fluctuations, no source-generation kinetics (Frank-Read sources), no finite line curvature / 3D bow-out, no anisotropic elasticity, no multiple intersecting slip systems, and no atomistic/molecular-dynamics effects. It is a continuum-elasticity discrete-dislocation model.
 
-### 12.2 Governing Equations & Sign Conventions
-For identical edge dislocations of Burgers vector magnitude $b$, shear modulus $\mu$, and Poisson ratio $\nu$, the characteristic isotropic elastic interaction parameter is:
-$$A = \frac{\mu b}{2\pi (1 - \nu)} \quad [\text{units: } \text{Pa}\cdot\text{m}]$$
+### 12.2 Governing Equations, Prefactors & Sign Conventions
+For identical edge dislocations of Burgers vector magnitude $b$ [$\text{m}$], shear modulus $\mu \equiv G$ [$\text{Pa}$], and Poisson ratio $\nu$ [dimensionless], the characteristic isotropic elastic interaction parameter is:
+$$A = \frac{\mu b}{2\pi (1 - \nu)} \quad [\text{units: } \text{Pa}\cdot\text{m} = \text{N}/\text{m}]$$
 
-The shear stress exerted at position $x_i$ by another dislocation at position $x_j$ is:
-$$\tau_{i \leftarrow j} = \frac{A}{x_i - x_j}$$
-- For $x_i > x_j$, $\tau_{i \leftarrow j} > 0$, exerting a repulsive force in the $+x$ direction (pushing dislocation $i$ away from dislocation $j$ and away from the obstacle).
-- For $x_i < x_j$, $\tau_{i \leftarrow j} < 0$, repelling dislocation $i$ in the $-x$ direction.
-- The external applied shear stress $\tau_{\text{app}} > 0$ drives dislocations in the $-x$ direction toward the obstacle.
+**Literature Conventions Reconciled ($A$ vs $A'$ and $G$ vs $\mu$):**
+- In force-per-unit-length formulations (e.g. Cottrell 1953, `spec.md` §5.6), the glide force per unit dislocation line length between parallel edge dislocations separated by distance $x$ [$\text{m}$] is $f(x) = \frac{G b^2}{2\pi(1-\nu) x}$ [$\text{N}/\text{m}$]. Defining energy/force prefactor $A_{\text{force}} = \frac{G b^2}{2\pi(1-\nu)}$ [$\text{N}$], dividing by Burgers vector $b$ yields the resolved shear stress balance with prefactor $A' = \frac{A_{\text{force}}}{b} = \frac{G b}{2\pi(1-\nu)}$ [$\text{Pa}\cdot\text{m}$].
+- In stress formulations (Eshelby, Frank & Nabarro 1951; Hirth & Lothe 1982 Eq. 3-43; Hull & Bacon 2011 Eq. 4.14; `src/hpsim/core/pileup.py`), the shear stress field directly on the glide plane ($y = 0$) at distance $x$ from an edge dislocation is $\tau(x) = \frac{A}{x}$ with $A = \frac{\mu b}{2\pi(1-\nu)}$ [$\text{Pa}\cdot\text{m}$].
+- In linear isotropic elasticity, $\mu \equiv G$ denotes the shear modulus [$\text{Pa}$]. Thus:
+  $$A_{\text{EFN}} = A_{\text{pileup.py}} = A'_{\text{spec.md}} = \frac{\mu b}{2\pi(1-\nu)} \quad [\text{Pa}\cdot\text{m}]$$
+  This is purely a notation distinction; the underlying numerical value and dimensions are strictly identical across specification and implementation.
+
+The shear stress exerted at position $x_i$ [$\text{m}$] by another dislocation at position $x_j$ [$\text{m}$] is:
+$$\tau_{i \leftarrow j} = \frac{A}{x_i - x_j} \quad [\text{units: } \text{Pa}]$$
+- For $x_i > x_j$, $\tau_{i \leftarrow j} > 0$ [$\text{Pa}$], exerting a repulsive force in the $+x$ direction (pushing dislocation $i$ away from dislocation $j$ and away from the obstacle).
+- For $x_i < x_j$, $\tau_{i \leftarrow j} < 0$ [$\text{Pa}$], repelling dislocation $i$ in the $-x$ direction.
+- The external applied shear stress $\tau_{\text{app}} > 0$ [$\text{Pa}$] drives dislocations in the $-x$ direction toward the obstacle.
 
 The net stress residual $R_i$ on mobile dislocation $i \in \{1, \dots, N-1\}$ is:
-$$R_i(x_1, \dots, x_{N-1}) = \frac{A}{x_i} + \sum_{j \neq i, j=1}^{N-1} \frac{A}{x_i - x_j} - \tau_{\text{app}} = 0$$
+$$R_i(x_1, \dots, x_{N-1}) = \frac{A}{x_i} + \sum_{j \neq i, j=1}^{N-1} \frac{A}{x_i - x_j} - \tau_{\text{app}} = 0 \quad [\text{units: } \text{Pa}]$$
 
 ### 12.3 Eshelby–Frank–Nabarro (EFN 1951) Benchmark
 **Primary Reference:**
 > J. D. Eshelby, F. C. Frank, and F. R. N. Nabarro, "The equilibrium of linear arrays of dislocations," *Philosophical Magazine*, 42 (1951), pp. 351–364. DOI: [10.1080/14786445108561060](https://doi.org/10.1080/14786445108561060).
 
 EFN proved that the polynomial whose zeros are the equilibrium positions $f(x) = \prod_{k=1}^{N-1} (x - x_k)$ satisfies the differential equation:
-$$x f'' + 2(1 - \lambda x) f' + 2 (N - 1) \lambda f = 0, \quad \text{where } \lambda = \frac{\tau_{\text{app}}}{A} = \frac{2\pi(1-\nu)\tau_{\text{app}}}{\mu b}$$
+$$x f'' + 2(1 - \lambda x) f' + 2 (N - 1) \lambda f = 0, \quad \text{where } \lambda = \frac{\tau_{\text{app}}}{A} = \frac{2\pi(1-\nu)\tau_{\text{app}}}{\mu b} \quad [\text{units: } \text{m}^{-1}]$$
 
-Substituting the dimensionless variable $\xi = 2\lambda x$ transforms this into the defining differential equation for the associated Laguerre polynomial $L_{N-1}^{(1)}(\xi) = 0$:
+Substituting the dimensionless variable $\xi = 2\lambda x$ [dimensionless] transforms this into the defining differential equation for the associated Laguerre polynomial $L_{N-1}^{(1)}(\xi) = 0$:
 $$\xi \frac{d^2 L_m^{(1)}}{d\xi^2} + (2 - \xi) \frac{d L_m^{(1)}}{d\xi} + m L_m^{(1)} = 0 \quad (m = N - 1)$$
 
 Therefore, the exact equilibrium positions are:
-$$x_0 = 0.0 \quad (\text{locked}), \quad x_k = \frac{\xi_k}{2\lambda} = \frac{\xi_k \mu b}{4\pi(1 - \nu)\tau_{\text{app}}} \quad (k = 1, \dots, N - 1)$$
+$$x_0 = 0.0 \quad (\text{locked}), \quad x_k = \frac{\xi_k}{2\lambda} = \frac{\xi_k \mu b}{4\pi(1 - \nu)\tau_{\text{app}}} \quad (k = 1, \dots, N - 1) \quad [\text{units: } \text{m}]$$
 where $\xi_1 < \xi_2 < \dots < \xi_{N-1}$ are the exact real, positive zeros of $L_{N-1}^{(1)}(\xi)$.
 
 #### Exact Closed-Form Solutions for Small $N$:
-- **$N = 2$ (1 locked, 1 mobile):**
-  $$L_1^{(1)}(\xi) = 2 - \xi = 0 \implies \xi_1 = 2 \implies x_1 = \frac{A}{\tau_{\text{app}}} = \frac{\mu b}{2\pi(1-\nu)\tau_{\text{app}}}$$
-- **$N = 3$ (1 locked, 2 mobile):**
+- **$N = 2$ (1 locked, 1 mobile; $m = 1$):**
+  $$L_1^{(1)}(\xi) = 2 - \xi = 0 \implies \xi_1 = 2 \implies x_1 = \frac{A}{\tau_{\text{app}}} = \frac{\mu b}{2\pi(1-\nu)\tau_{\text{app}}} \quad [\text{m}]$$
+- **$N = 3$ (1 locked, 2 mobile; $m = 2$):**
   $$L_2^{(1)}(\xi) = \frac{1}{2}(\xi^2 - 6\xi + 6) = 0 \implies \xi = 3 \pm \sqrt{3}$$
-  $$x_1 = \frac{3 - \sqrt{3}}{2\lambda}, \quad x_2 = \frac{3 + \sqrt{3}}{2\lambda}$$
+  $$x_1 = \frac{3 - \sqrt{3}}{2\lambda}, \quad x_2 = \frac{3 + \sqrt{3}}{2\lambda} \quad [\text{m}]$$
+- **$N = 4$ (1 locked, 3 mobile; $m = 3$):**
+  $$L_3^{(1)}(\xi) = 4 - 6\xi + 2\xi^2 - \frac{1}{6}\xi^3 = 0$$
+  High-precision roots (mpmath $\text{dps}=50$): $\xi_1 \approx 0.93582223$, $\xi_2 \approx 3.30540729$, $\xi_3 \approx 7.75877048$.
+- **$N = 5$ (1 locked, 4 mobile; $m = 4$):**
+  $$L_4^{(1)}(\xi) = 5 - 10\xi + 5\xi^2 - \frac{5}{6}\xi^3 + \frac{1}{24}\xi^4 = 0$$
+  High-precision roots (mpmath $\text{dps}=50$): $\xi_1 \approx 0.74329193$, $\xi_2 \approx 2.57163501$, $\xi_3 \approx 5.73117875$, $\xi_4 \approx 10.95389431$.
 
 #### Classical Eshelby Tip Stress Theorem:
 The total concentrated stress acting on the locked obstacle dislocation at $x=0$ is:
-$$\tau_{\text{tip}} = \tau_{\text{app}} + \sum_{k=1}^{N-1} \frac{A}{x_k} = N \tau_{\text{app}}$$
+$$\tau_{\text{tip}} = \tau_{\text{app}} + \sum_{k=1}^{N-1} \frac{A}{x_k} = N \tau_{\text{app}} \quad [\text{units: } \text{Pa}]$$
 The obstacle experiences an exact stress magnification factor equal to the total dislocation count $N$.
+
+#### Grain Boundary Transmission Interface Convention:
+When a dislocation transmits across an obstacle boundary at $x = 0$ into an adjacent grain:
+- The receiving slip channel coordinate $x$ is defined such that $x > 0$ extends into the receiving grain interior.
+- Post-transmission glide velocity $v = M_d b \operatorname{sgn}(\tau_{\text{RSS}}) \max(|\tau_{\text{RSS}}| - \tau_c, 0)$ [$\text{m/s}$] must be positive ($v > 0$) to glide forward into the receiving grain away from the boundary.
+- If raw geometric projection produces $\tau_{\text{RSS}} < 0$, the physical slip direction vector is flipped ($\mathbf{s}_{\text{eff}} = -\mathbf{s}_{\text{out}}$) to produce effective driving stress $|\tau_{\text{RSS}}| \ge \tau_c$, guaranteeing $v > 0$ directed away from the interface.
 
 ### 12.4 Golub–Welsch Jacobi Matrix Algorithm
 To compute the exact Laguerre roots $\xi_k$ unconditionally without numerical search, HPSim implements the Golub–Welsch (1969) algorithm:
@@ -351,7 +370,7 @@ The zeros of orthogonal polynomial $L_m^{(1)}(\xi)$ are the eigenvalues of the s
 - Sub/super-diagonal: $T_{j+1, j} = T_{j, j+1} = \sqrt{(j + 1)(j + 2)}$ for $j = 0, \dots, m-2$.
 
 The eigenvalues of $T$ are computed via:
-- **Python:** `numpy.linalg.eigvalsh(T)` (LAPACK `dstev`/`dsteqr`).
+- **Python:** `scipy.linalg.eigh_tridiagonal(diag, subdiag, eigvals_only=True)` (tridiagonal solver; LAPACK driver not verified), then `np.sort`.
 - **TypeScript:** Pure TypeScript tridiagonal QL algorithm with implicit Wilkinson shift (`tridiagonalEigenvalues`).
 
 The eigenvalues are guaranteed real, strictly positive, and monotonic, matching across runtimes to $< 10^{-13}$.
@@ -377,7 +396,7 @@ In addition to the analytical Golub–Welsch solver, HPSim provides a damped New
 - **Convergence / Failure Status States:**
   - `"converged"`: Max residual $\max_i |R_i| \le \text{tolerance\_pa}$.
   - `"max_iterations_exceeded"`: Iteration budget reached without meeting tolerance.
-  - `"invalid_input"`: Physical parameter out of bounds ($\mu \le 0, \nu \notin (-1, 0.5), b \le 0, \tau_{\text{app}} \le 0, N < 2$).
+  - (NOT PRODUCED: both implementations THROW ValueError/Error instead; the status literal is declared but unused) invalid input: Physical parameter out of bounds ($\mu \le 0, \nu \notin (-1, 0.5), b \le 0, \tau_{\text{app}} \le 0, N < 2$).
   - `"numerical_failure"`: Singular Jacobian matrix encountered.
 
 ### 12.7 Cross-Runtime Parity & Provenance
@@ -419,6 +438,44 @@ In the continuum limit ($N \to \infty$), substituting $N_{\text{asymp}}(L = d / 
 $$\tau_{\text{eff,crit,cont}}(d) = \left[ \frac{2 \mu b \tau^*}{\pi (1 - \nu)} \right]^{1/2} d^{-1/2}, \quad k_{y,\text{analytic}} = M_T \left[ \frac{2 \mu b \tau^*}{\pi (1 - \nu)} \right]^{1/2}$$
 - **Log–Log Exponent (`V-09`):** A linear regression of $\log_{10}(\tau_{\text{eff,crit}})$ against $\log_{10}(d)$ over $\ge 1.5$ decades of grain size recovers the theoretical $-0.5$ power-law exponent within $\pm 0.05$.
 - **Discrete Integer-$N$ Step Plateaus (`V-10`):** Because the physical dislocation count $N \in \mathbb{Z}^+$ is an integer, $\tau_{\text{eff,crit}}(d)$ exhibits discrete quantization steps of width $\Delta \tau_{\text{plateau}} = \tau^* / N_{\text{crit}} - \tau^* / (N_{\text{crit}} + 1)$, and the discrete fitted slope $k_y$ agrees with $k_{y,\text{analytic}}$ within $15\%$ across the multi-dislocation pile-up regime.
+
+### 13.4 Sensitivity to Source Location Scale ($L = c \cdot d$)
+In the standard Hall–Petch model, dislocation sources are assumed at grain centers ($L = d / 2$, $c = 1/2$). For general source distance $L = c \cdot d$ ($c \in (0, 1]$):
+$$\tau_{\text{eff,crit,cont}}(d) = \left[ \frac{\mu b \tau^*}{\pi (1 - \nu) c} \right]^{1/2} d^{-1/2}, \quad k_y(c) = M_T \left[ \frac{\mu b \tau^*}{\pi (1 - \nu) c} \right]^{1/2} \quad [\text{units: } \text{Pa}\cdot\text{m}^{1/2}]$$
+- **Baseline ($L = d / 2$, $c = 1/2$):** $k_y(d/2) = M_T \left[ \frac{2 \mu b \tau^*}{\pi (1 - \nu)} \right]^{1/2}$.
+- **Transgranular Full-Grain Slip ($L = d$, $c = 1$):** $k_y(d) = M_T \left[ \frac{\mu b \tau^*}{\pi (1 - \nu)} \right]^{1/2} = \frac{1}{\sqrt{2}} k_y(d/2) \approx 0.7071 \, k_y(d/2)$.
+- **Near-Boundary Source ($L = d / 4$, $c = 1/4$):** $k_y(d/4) = M_T \left[ \frac{4 \mu b \tau^*}{\pi (1 - \nu)} \right]^{1/2} = \sqrt{2} \, k_y(d/2) \approx 1.4142 \, k_y(d/2)$.
+This sensitivity is computed and exposed via `compute_pileup_hall_petch_ky_sensitivity` in both Python and TypeScript cores.
+
+---
+
+## 14. Micrograph Preprocessing, Stereological Intercept Analysis & Chord-Distribution Rescaling (Phase 7)
+
+The micrograph geometric analysis pipeline (`src/hpsim/micro/`) bridges optical metallography and synthetic verification tessellations with the discrete dislocation pile-up engine.
+
+### 14.1 Scale-Bar Physical Calibration
+For each micrograph in `data/micrographs/metadata.csv` with physical scale-bar length $L_{\text{bar}}$ ($\mu\text{m}$) spanning $N_{\text{bar}}$ pixels, the isotropic pixel physical size in SI meters is:
+$$\Delta x_{\text{px}} = \frac{L_{\text{bar}} \times 10^{-6}}{N_{\text{bar}}} \quad [\text{m/px}]$$
+Images are cropped cleanly to remove embedded scale-bar legend strips without spatial resampling, preserving exact physical calibration.
+
+### 14.2 Preprocessing, Watershed Segmentation & Material Policies (`M4`, `M5`)
+1. **Contrast Normalization & Edge Preservation (`preprocess.py`):** Local contrast is normalized via Contrast-Limited Adaptive Histogram Equalization (CLAHE), denoised with an edge-preserving bilateral filter, and converted to a Sobel gradient magnitude topography $\|\nabla I\|$.
+2. **Decision M4 — Copper Annealing Twin Exclusion (`segment.py`):** Annealed FCC copper (`copper_cu997_doitpoms436.jpg`) contains straight intragranular $\Sigma 3$ annealing twin lamellae. Morphological opening and enlarged distance-transform seed spacing suppress thin intragranular twin traces so parent grains are not artificially split.
+3. **Decision M5 — Ferritic Steel Pearlite Masking (`preprocess.py`, `segment.py`):** Hypoeutectoid ferritic–pearlitic steel (`ferritic_steel_fe202.jpg`) contains dark pearlite colonies (`~15.6%` area fraction). An intensity-percentile + morphological-opening foreground mask $M_{\text{fg}}(x,y) \in \{0, 1\}$ isolates the bright primary $\alpha$-ferrite matrix (`labels > 0`) while assigning pearlite colonies to background (`labels == 0`).
+4. **Segmentation Uncertainty Limitations:** Automated 2D optical watershed segmentation is subject to $\pm 10\text{--}20\%$ boundary delineation uncertainty due to uneven chemical etching, polishing scratches, and low-angle boundary contrast. Diagnostic QA overlays (`docs/screenshots/*_qa_overlay.png`) and reference test-line intersection cross-checks (`V-12`) are generated to bound and audit segmentation error.
+
+### 14.3 ASTM E112 Lineal Intercept & Stereological Voronoi Verification (`V-11`, `V-12`)
+Across a grid of horizontal and vertical test lines of total foreground length $L_{\text{tot}} = \sum_k L_{\text{fg},k}$ intersecting $N_{\text{cross}}$ intergranular boundaries (after removing 1-pixel digital staircase jitter), the ASTM E112 mean lineal intercept is:
+$$\bar{\ell} = \frac{L_{\text{tot}}}{N_{\text{cross}}} = \frac{1}{N_L}$$
+By stereological theory (Underwood 1970), for a planar 2D tessellation with boundary perimeter per unit area $L_A$, the theoretical mean intercept satisfies $\bar{\ell}_{\text{true}} = \frac{\pi}{2 L_A}$. For a 2-step Lloyd-relaxed centroidal Voronoi tessellation with seed density $\lambda = N_{\text{seeds}} / A_{\text{tot}}$, $\bar{\ell}_{\text{true}} = c_{\text{Lloyd}} \lambda^{-1/2}$ ($c_{\text{Lloyd}} \approx 0.835$).
+- **Important Note (`V-11`):** Synthetic Voronoi tessellations are **mathematical stereology verification targets** used solely to verify that `compute_lineal_intercepts` recovers $\bar{\ell}_{\text{true}}$ within $\le 10\%$ across multiple grain sizes ($15, 30, 60\,\mu\text{m}$) and random seeds (`11, 29, 47`). They do **not** represent real experimental microstructures.
+
+### 14.4 Seeded 3D Crystal Orientations (`V-13`) & Chord-Distribution Rescaling (`V-16`)
+- **Seeded Orientations (`orientations.py`, `V-13`):** Because 2D optical micrographs lack crystallographic EBSD Euler angles, each segmented grain $i$ is deterministically assigned a uniform random rotation matrix $\mathbf{R}_i \in \mathrm{SO}(3)$ via Arvo's algorithm seeded by a hash of `(seed, grain_id)`, along with its projected 2D slip-plane trace angle $\theta_i = \operatorname{atan2}(R_{i,10}, R_{i,00})$.
+- **Affine Chord Rescaling (`rescale.py`, `V-16`):** To sweep mean grain size $\bar{d}_{\text{target}}$ while preserving a micrograph's empirical chord-length distribution shape $\{c_k\}_{k=1}^M$, each chord is rescaled via:
+$$c'_k = c_k \frac{\bar{d}_{\text{target}}}{\bar{c}}, \quad \text{preserving } \mathrm{CV} = \frac{\sigma_{c'}}{\bar{c}'} = \frac{\sigma_c}{\bar{c}}$$
+Evaluating the discrete pile-up Hall–Petch solver across the ensemble $\{c'_k\}$ captures the Jensen's-inequality shift between the ensemble mean yield stress $\langle \sigma_y(c'_k) \rangle$ and the single mean-intercept evaluation $\sigma_y(\bar{d}_{\text{target}})$.
+
 
 
 

@@ -1,4 +1,4 @@
-# HPSim Phase 5 Report: Discrete Dislocation Pile-Up Engine & Eshelby–Frank–Nabarro Benchmark
+﻿# HPSim Phase 5 Report: Discrete Dislocation Pile-Up Engine & Eshelby–Frank–Nabarro Benchmark
 
 **Milestone:** Phase 5 (Discrete Dislocation Pile-Up Engine)  
 **Quality Gate Status:** Stopped at Quality Gate 5 (Awaiting Explicit Human Review)  
@@ -71,7 +71,7 @@ Both Python and TypeScript verify $\tau_{\text{tip}} = N \tau_{\text{app}}$ to m
 To compute exact roots unconditionally across arbitrary $N$ without numerical root search, HPSim implements the Golub–Welsch (1969) algorithm:
 - The zeros of $L_m^{(1)}(\xi)$ are the eigenvalues of the symmetric tridiagonal Jacobi matrix $T \in \mathbb{R}^{m \times m}$ ($m = N - 1$):
   $$T_{j, j} = 2j + 2 \quad (j=0..m-1), \quad T_{j+1, j} = T_{j, j+1} = \sqrt{(j+1)(j+2)} \quad (j=0..m-2)$$
-- In Python: `numpy.linalg.eigvalsh(T)`.
+- In Python: `scipy.linalg.eigh_tridiagonal` (tridiagonal, not dense eigvalsh).
 - In TypeScript: Pure TypeScript tridiagonal QL algorithm with implicit Wilkinson shift (`tridiagonalEigenvalues`).
 - Max discrepancy between Python and TypeScript roots: $< 9.95 \times 10^{-14}$.
 

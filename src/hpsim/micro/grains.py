@@ -1,9 +1,9 @@
-"""
+﻿"""
 src/hpsim/micro/grains.py - Grain polygon extraction, area, equivalent circular diameter, and centroids.
 """
 
 from dataclasses import dataclass
-from typing import List, Tuple
+from typing import List, Optional, Sequence, Tuple
 import cv2
 import numpy as np
 
@@ -82,3 +82,39 @@ def extract_grains(
     # Sort largest grains first for deterministic display truncation
     records.sort(key=lambda r: (-r.area_px, r.grain_id))
     return records
+
+
+def build_measurement_report(
+    measured: dict,
+    diagnostics: dict,
+    synthetic_geometry_truth_m: Optional[float] = None,
+    rescaled_sensitivity: Optional[dict] = None,
+    extra_review_reasons: Sequence[str] = (),
+) -> dict:
+    """
+    Keep four provenance classes in separate keys so none can masquerade as another:
+      image_measured          - computed from the supplied label map / micrograph
+      synthetic_geometry_truth- exact geometry of a synthetic tessellation (None for real images)
+      rescaled_sensitivity    - chords rescaled to a target mean; SENSITIVITY INPUT ONLY
+      manual_review           - required flag + reasons (diagnostics + caller-supplied, e.g.
+                                ferritic-steel pearlite/carbide uncertain regions)
+    Grain orientations are seeded random SO(3), not measured (disclosed here).
+    """
+    reasons = list(diagnostics.get("reasons", [])) + list(extra_review_reasons)
+    return {
+        "image_measured": dict(measured),
+        "segmentation_diagnostics": dict(diagnostics),
+        "synthetic_geometry_truth": (
+            None
+            if synthetic_geometry_truth_m is None
+            else {"mean_intercept_m": float(synthetic_geometry_truth_m), "provenance": "synthetic_geometry"}
+        ),
+        "rescaled_sensitivity": (
+            None if rescaled_sensitivity is None else {**rescaled_sensitivity, "sensitivity_only": True}
+        ),
+        "manual_review": {
+            "required": bool(reasons) or bool(diagnostics.get("manual_review_required", False)),
+            "reasons": reasons,
+        },
+        "orientations": "seeded random SO(3); not measured",
+    }

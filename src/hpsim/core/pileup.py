@@ -1,24 +1,58 @@
 """
 src/hpsim/core/pileup.py - Discrete edge-dislocation pile-up engine & EFN benchmark.
 
-Physical Model:
+Physical Model (spec.md §5.6, §5.7; docs/model.md §12):
   1D array of identical like-signed edge dislocations gliding on a single slip plane.
   The leading dislocation (index 0) is locked at an impenetrable obstacle at x = 0.
   The remaining N-1 mobile dislocations (indices 1..N-1) accumulate at positions
   0 < x_1 < x_2 < ... < x_{N-1} under uniform applied shear stress tau_applied_pa.
 
+Isotropic Edge-Dislocation Theory & Interaction Prefactor (Hirth & Lothe 1982, Hull & Bacon 2011, EFN 1951):
+  In isotropic linear elasticity, the resolved shear stress on the glide plane (y = 0)
+  at distance x from an edge dislocation is:
+    tau(x) = mu * b / [2*pi*(1 - nu) * x]   [units: Pa]
+  where:
+    mu (or G): shear modulus [Pa] (spec.md uses G, model.md uses mu; mu == G)
+    b: Burgers vector magnitude [m]
+    nu: Poisson's ratio [dimensionless]
+    x: distance along slip plane [m]
+
+  Interaction prefactor A:
+    A = mu * b / [2*pi*(1 - nu)]   [units: Pa * m = N / m]
+  Note on literature conventions (A vs A'):
+    - In force-per-unit-length formulations (e.g. Cottrell 1953, spec.md §5.6), the
+      interaction force per unit length is f(x) = A_force / x with A_force = G*b^2 / [2*pi*(1-nu)] [N].
+      Dividing by b yields stress balance with prefactor A' = A_force / b = G*b / [2*pi*(1-nu)] [Pa*m].
+    - In stress formulations (Eshelby, Frank & Nabarro 1951, Hirth & Lothe 1982 Eq. 3-43),
+      this stress prefactor is denoted directly as A = mu*b / [2*pi*(1-nu)] [Pa*m].
+    - Therefore, A_EFN == A_pileup == A'_spec. This is purely a notation distinction;
+      both represent the exact same physical quantity (mu*b / [2*pi*(1-nu)] in Pa*m).
+
 Inter-dislocation interaction:
-  tau_{i <- j} = A / (x_i - x_j),  where A = mu * b / [2*pi*(1 - nu)].
-  Repulsive force pushes dislocation i outward (positive x) for x_i > x_j.
+  tau_{i <- j} = A / (x_i - x_j)   [units: Pa]
+  Repulsive stress pushes dislocation i outward (positive x) for x_i > x_j.
   Applied stress drives dislocations inward (-x direction) toward obstacle.
 
 Equilibrium condition for mobile dislocations:
-  R_i = sum_{j != i} [ A / (x_i - x_j) ] - tau_app = 0   for all mobile i.
+  R_i = sum_{j != i} [ A / (x_i - x_j) ] - tau_app = 0   [units: Pa]  for all mobile i = 1..N-1.
 
-Analytical Benchmark:
-  J. D. Eshelby, F. C. Frank, and F. R. N. Nabarro (1951), Phil. Mag. 42, 351-364.
-  Exact equilibrium positions correspond to the roots of L'_{N}(2*lambda*x) = 0,
-  where L_N is the Laguerre polynomial and lambda = tau_app / A.
+Analytical Benchmark (Eshelby, Frank & Nabarro 1951, Phil. Mag. 42, 351-364):
+  Exact equilibrium positions correspond to the roots of L'_{N}(2*lambda*x) = -L_{N-1}^{(1)}(2*lambda*x) = 0,
+  where L_{N-1}^{(1)} is the associated Laguerre polynomial,
+  lambda = tau_app / A   [units: 1 / m],
+  and dimensionless root xi_k = 2 * lambda * x_k.
+  Thus x_k = xi_k / (2 * lambda)   [units: m].
+
+Obstacle Tip Stress (Eshelby Theorem):
+  tau_tip = tau_app + sum_{k=1}^{N-1} [ A / x_k ] = N * tau_app   [units: Pa].
+
+Grain Boundary Transmission Interface Convention:
+  When a dislocation transmits across an obstacle boundary at x = 0 into an adjacent grain,
+  the receiving slip channel coordinate is oriented such that x > 0 extends into the grain interior.
+  Post-transmission glide velocity v = M_d * b * sign(tau_RSS) * max(|tau_RSS| - tau_c, 0) [m/s]
+  must be positive (v > 0) to glide away from the interface into the receiving grain interior.
+  When the geometric projection produces tau_RSS < 0, the physical slip direction vector must be
+  inverted (s_eff = -s_out) so the effective driving stress is |tau_RSS| >= tau_c, ensuring v > 0.
 """
 
 from dataclasses import dataclass
@@ -346,4 +380,63 @@ def solve_pileup_equilibrium(inputs: PileupInputs) -> PileupResult:
         max_position_error_m=err,
         pileup_length_m=float(full_pos[-1]),
     )
+
+
+@dataclass(frozen=True)
+class PileupLengthSensitivityResult:
+    """Analytical Hall-Petch slope k_y sensitivity to pile-up source distance L relative to grain size d."""
+    ky_L_d_half_pa_m05: float       # Standard baseline: L = d / 2 (source at grain centre)
+    ky_L_d_full_pa_m05: float       # Transgranular slip: L = d (source across full grain)
+    ky_L_d_quarter_pa_m05: float    # Near-boundary source: L = d / 4
+    ratio_d_full_to_half: float     # Theoretical 1 / sqrt(2) ~ 0.70710678
+    ratio_d_quarter_to_half: float  # Theoretical sqrt(2) ~ 1.41421356
+    formula_L_d_half: str = "M_T * sqrt(2 * mu * b * tau_star / [pi * (1 - nu)])"
+    formula_L_d_full: str = "M_T * sqrt(mu * b * tau_star / [pi * (1 - nu)])"
+    formula_L_d_quarter: str = "M_T * sqrt(4 * mu * b * tau_star / [pi * (1 - nu)])"
+
+
+def compute_pileup_hall_petch_ky_sensitivity(
+    mu_pa: float,
+    nu: float,
+    burgers_m: float,
+    tau_star_pa: float,
+    taylor_factor: float = 3.06,
+) -> PileupLengthSensitivityResult:
+    """
+    Compute analytical Hall-Petch slope k_y sensitivity to pile-up length scale L = c * d (spec.md §5.7).
+
+    From continuum EFN theory:
+      tau_tip = N * tau_eff = [pi * (1 - nu) * L * tau_eff^2] / (mu * b)   [units: Pa]
+    Setting tau_tip = tau* at yield onset with L = c * d:
+      tau_eff,crit(d) = sqrt( mu * b * tau* / [pi * (1 - nu) * c * d] )     [units: Pa]
+      sigma_y(d) = sigma_0 + M_T * tau_eff,crit(d) = sigma_0 + k_y * d^(-1/2)
+      k_y(c) = M_T * sqrt( mu * b * tau* / [pi * (1 - nu) * c] )   [units: Pa * m^(1/2)]
+
+    Cases:
+      - c = 1/2 (L = d/2): k_y = M_T * sqrt(2 * mu * b * tau* / [pi * (1 - nu)])
+      - c = 1   (L = d):   k_y = M_T * sqrt(mu * b * tau* / [pi * (1 - nu)]) = k_y(d/2) / sqrt(2)
+      - c = 1/4 (L = d/4): k_y = M_T * sqrt(4 * mu * b * tau* / [pi * (1 - nu)]) = k_y(d/2) * sqrt(2)
+    """
+    if mu_pa <= 0.0 or not (-1.0 < nu < 0.5) or burgers_m <= 0.0:
+        raise ValueError("Invalid elastic or Burgers parameters in compute_pileup_hall_petch_ky_sensitivity")
+    if tau_star_pa <= 0.0:
+        raise ValueError(f"Barrier stress tau_star_pa must be positive, got {tau_star_pa}")
+    if taylor_factor <= 0.0:
+        raise ValueError(f"Taylor factor must be positive, got {taylor_factor}")
+
+    # Base factor: M_T * sqrt(mu * b * tau* / [pi * (1 - nu)])
+    base = taylor_factor * np.sqrt((mu_pa * burgers_m * tau_star_pa) / (np.pi * (1.0 - nu)))
+
+    ky_d_half = float(base * np.sqrt(2.0))
+    ky_d_full = float(base * 1.0)
+    ky_d_quarter = float(base * 2.0)
+
+    return PileupLengthSensitivityResult(
+        ky_L_d_half_pa_m05=ky_d_half,
+        ky_L_d_full_pa_m05=ky_d_full,
+        ky_L_d_quarter_pa_m05=ky_d_quarter,
+        ratio_d_full_to_half=float(1.0 / np.sqrt(2.0)),
+        ratio_d_quarter_to_half=float(np.sqrt(2.0)),
+    )
+
 

@@ -4,11 +4,11 @@ with Decision M4 (copper annealing twin exclusion) and Decision M5 (ferritic ste
 """
 
 from dataclasses import dataclass
-from typing import Tuple
+from typing import Dict, Tuple
 import cv2
 import numpy as np
 from scipy import ndimage
-from scipy.spatial import cKDTree
+from scipy.spatial import Voronoi, cKDTree
 
 from hpsim.micro.preprocess import PreprocessedMicrograph
 
@@ -32,8 +32,29 @@ def generate_synthetic_voronoi_labels(
     lloyd_iterations: int = 2,
 ) -> Tuple[np.ndarray, float]:
     """
+    Returns (labels, geometry_mean_intercept_m). The second value is the mean intercept
+    computed from the EXACT Voronoi edge length inside the window (l = pi*A/(2*L), isotropy
+    assumed) -- NOT the design input target_grain_size_m, which is only a generator setting.
+
     Generate a 2D centroidal Voronoi grain label map (1..N) calibrated to target_grain_size_m
     as the true mean lineal intercept length (V-11).
+
+    IMPORTANT SCIENTIFIC NOTE:
+      Synthetic Voronoi tessellations are mathematical stereology verification targets (V-11)
+      used exclusively to validate the ASTM E112 lineal intercept measurement algorithm against
+      known ground-truth geometry. They do NOT represent real experimental microstructures.
+
+    (Provenance: synthetic_geometry. The calibration below only sets the SEED COUNT; the
+    returned truth is measured from geometry, so V-11 tests the estimator, not the design.)
+
+    Stereological Calibration Relation (Underwood 1970 / ASTM E112):
+      For a planar 2D tessellation with boundary length per unit area L_A, the exact stereological
+      mean lineal intercept is:
+          l_bar_true = pi / (2 * L_A) = 1 / N_L
+      For a 2-step Lloyd-relaxed centroidal Voronoi tessellation with seed density lambda = N_seeds / A_tot,
+      dimensionless stereological calibration yields l_bar_true = c_lloyd / sqrt(lambda) with
+      c_lloyd = 0.835, so choosing N_seeds = round((c_lloyd^2 * A_tot) / target_grain_size_m^2)
+      sets the theoretical mean lineal intercept directly to target_grain_size_m.
     """
     if width_px <= 0 or height_px <= 0 or pixel_size_m <= 0.0 or target_grain_size_m <= 0.0:
         raise ValueError("Invalid dimensions or physical scales for synthetic Voronoi generator")
@@ -88,7 +109,79 @@ def generate_synthetic_voronoi_labels(
     for new_id, old_id in enumerate(unique_ids, start=1):
         compact[raw_labels == old_id] = new_id
 
-    return compact, float(target_grain_size_m)
+    truth = _voronoi_geometry_truth(pts, w_m, h_m)
+    return compact, truth
+
+
+def _voronoi_geometry_truth(pts: np.ndarray, w_m: float, h_m: float) -> float:
+    """Exact mean lineal intercept l = pi*A/(2*L) from Voronoi ridges clipped to the window."""
+    far = 50.0 * max(w_m, h_m)
+    cx, cy = w_m / 2.0, h_m / 2.0
+    anchors = np.array(
+        [[cx - far, cy - far], [cx + far, cy - far], [cx - far, cy + far], [cx + far, cy + far]]
+    )
+    vor = Voronoi(np.vstack([pts, anchors]))
+    total = 0.0
+    for rv in vor.ridge_vertices:
+        if -1 in rv:
+            continue
+        a, b = vor.vertices[rv[0]], vor.vertices[rv[1]]
+        d = b - a
+        t0, t1 = 0.0, 1.0
+        # Liang-Barsky clip of the ridge to [0,w_m] x [0,h_m]
+        for p_, q_ in ((-d[0], a[0]), (d[0], w_m - a[0]), (-d[1], a[1]), (d[1], h_m - a[1])):
+            if p_ == 0.0:
+                if q_ < 0.0:
+                    t0, t1 = 1.0, 0.0
+                    break
+            elif p_ < 0.0:
+                t0 = max(t0, q_ / p_)
+            else:
+                t1 = min(t1, q_ / p_)
+        if t1 > t0:
+            total += (t1 - t0) * float(np.hypot(d[0], d[1]))
+    if total <= 0.0:
+        raise ValueError("Voronoi window contains no grain boundary")
+    return float(np.pi * (w_m * h_m) / (2.0 * total))
+
+
+def segmentation_diagnostics(
+    labels: np.ndarray, pixel_size_m: float, small_area_px: int = 100
+) -> Dict[str, object]:
+    """
+    Over-fragmentation diagnostics (read-only; never feeds back into parameters):
+    grain count, area distribution, small-fragment fraction, border-touching count.
+    Provenance: image_measured. A True ``manual_review_required`` means do not trust.
+    """
+    ids, areas = np.unique(labels[labels > 0], return_counts=True)
+    if ids.size == 0:
+        return {
+            "provenance": "image_measured",
+            "num_grains": 0,
+            "manual_review_required": True,
+            "reasons": ["no grains"],
+        }
+    med = float(np.median(areas))
+    small = (areas < small_area_px) | (areas < 0.1 * med)
+    edge = np.concatenate([labels[0], labels[-1], labels[:, 0], labels[:, -1]])
+    frac_small = float(np.mean(small))
+    reasons = []
+    if frac_small > 0.25:
+        reasons.append(f"small-fragment fraction {frac_small:.2f} > 0.25 (possible over-fragmentation)")
+    if ids.size < 20:
+        reasons.append("fewer than 20 grains (poor statistics)")
+    return {
+        "provenance": "image_measured",
+        "num_grains": int(ids.size),
+        "area_px_percentiles": {str(q): float(np.percentile(areas, q)) for q in (5, 25, 50, 75, 95)},
+        "median_equiv_diameter_m": float(np.sqrt(4.0 * med / np.pi) * pixel_size_m),
+        "small_fragment_count": int(np.sum(small)),
+        "small_fragment_fraction": frac_small,
+        "small_fragment_area_fraction": float(areas[small].sum() / areas.sum()),
+        "border_touching_grains": int(np.unique(edge[edge > 0]).size),
+        "manual_review_required": bool(reasons),
+        "reasons": reasons,
+    }
 
 
 def _compute_boundary_mask_from_labels(labels: np.ndarray) -> np.ndarray:
@@ -110,11 +203,15 @@ def segment_micrograph(
     Segment a preprocessed micrograph into contiguous labeled grains using adaptive
     thresholding, morphological filtering, distance-transform seed extraction, and watershed.
 
-    Policies:
-      - M4 (copper): Suppress straight intragranular annealing twin traces so host grains
-        are not over-segmented by twin lamellae.
+    Policies & Segmentation Uncertainty Limitations:
+      - M4 (copper): Suppress straight intragranular annealing twin traces via morphological
+        opening and enlarged watershed seed spacing so host FCC copper grains are not
+        over-segmented by twin lamellae.
       - M5 (ferritic_steel): Mask out dark pearlite colonies via prep.foreground_mask so
         only ferrite grains are labeled (1..K) and pearlite is background (0).
+      - Uncertainty limitation: Automated 2D optical watershed segmentation is sensitive to
+        incomplete boundary etching and twin/sub-boundary contrast; reference test-line
+        cross-checks (V-12) and diagnostic QA overlays are always exported to bound error.
     """
     if pixel_size_m <= 0.0:
         raise ValueError(f"pixel_size_m must be positive, got {pixel_size_m}")
@@ -159,7 +256,8 @@ def segment_micrograph(
     else:
         k_close = cv2.getStructuringElement(cv2.MORPH_ELLIPSE, (3, 3))
         boundary_bin = cv2.morphologyEx(raw_boundary, cv2.MORPH_OPEN, k_close)
-        min_seed_dist_px = 21
+        # Scale seed spacing with physical resolution (~12 um minimum grain center spacing)
+        min_seed_dist_px = max(21, int(round(12.0e-6 / pixel_size_m)))
         policy = "standard_watershed"
 
     interior_mask = (boundary_bin == 0) & prep.foreground_mask

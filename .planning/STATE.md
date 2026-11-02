@@ -1,12 +1,12 @@
 ---
 gsd_state_version: '1.0'
-status: planning
+status: completed
 progress:
   total_phases: 8
-  completed_phases: 6
+  completed_phases: 8
   total_plans: 8
-  completed_plans: 6
-  percent: 75
+  completed_plans: 8
+  percent: 100
 ---
 
 # Project State
@@ -16,23 +16,23 @@ progress:
 See: .planning/PROJECT.md (updated 2026-10-29)
 
 **Core value:** Emergent Hall–Petch $d^{-1/2}$ scaling from 1D discrete edge-dislocation pile-up mechanics with strict Python/TypeScript parity and verified scientific provenance.
-**Current focus:** Phase 7: Micrograph Preprocessing & Web Data Integration
+**Current focus:** Phase 8: Final Packaging, Validation Report & Static Build Verification (Complete)
 
 ## Current Position
 
-Phase: 7 of 8 (Micrograph Preprocessing & Web Data Integration)
-Plan: 0 of 1 in current phase
-Status: Ready to discuss/plan
-Last activity: 2026-10-29 — Completed and verified Phase 6 (Emergent Hall–Petch Derivation: `V-09`, `V-10`, `V-15`, cross-runtime golden parity, and interactive UI chart)
+Phase: 8 of 8 (Final Packaging, Validation Report & Static Build Verification)
+Plan: 1 of 1 in current phase
+Status: Complete
+Last activity: 2026-10-29 — Completed Phases 7 & 8 (Micrograph CV pipeline, web overlay & chord import, canonical preset runner, automated `docs/validation_report.md` covering `V-01`–`V-17`, `docs/limitations.md`, `docs/user_guide.md`, and static smoke tests)
 
-Progress: [███████░░░] 75%
+Progress: [██████████] 100%
 
 ## Performance Metrics
 
 **Velocity:**
-- Total plans completed: 6
+- Total plans completed: 8
 - Average duration: 25 min
-- Total execution time: 2.5 hours
+- Total execution time: 3.3 hours
 
 **By Phase:**
 
@@ -44,6 +44,8 @@ Progress: [███████░░░] 75%
 | 4 | 1/1 | 30 min | 30 min |
 | 5 | 1/1 | 30 min | 30 min |
 | 6 | 1/1 | 25 min | 25 min |
+| 7 | 1/1 | 25 min | 25 min |
+| 8 | 1/1 | 20 min | 20 min |
 
 ## Accumulated Context
 

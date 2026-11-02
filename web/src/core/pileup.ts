@@ -2,6 +2,17 @@
  * web/src/core/pileup.ts - Discrete edge-dislocation pile-up engine & EFN benchmark.
  * Pure TypeScript scientific core: zero UI, DOM, Three.js, or network dependencies.
  * Matches Python reference hpsim.core.pileup exactly.
+ *
+ * Physical Model (spec.md §5.6, §5.7; docs/model.md §12):
+ *   1D array of identical like-signed edge dislocations gliding on a single slip plane.
+ *   Leading dislocation (index 0) locked at impenetrable obstacle at x = 0.
+ *   Remaining N-1 mobile dislocations accumulate at 0 < x_1 < ... < x_{N-1} under tau_applied_pa.
+ *
+ * Isotropic Elasticity & Interaction Prefactor (Hirth & Lothe 1982, Hull & Bacon 2011, EFN 1951):
+ *   Interaction shear stress on glide plane: tau(x) = mu * b / [2*pi*(1 - nu) * x]  [Pa].
+ *   Interaction prefactor A = mu * b / [2*pi*(1 - nu)]  [Pa*m = N/m].
+ *   Note: A_EFN == A_pileup == A'_spec. Purely a notation distinction; identical physical quantity.
+ *   Dislocation tip stress: tau_tip = N * tau_applied  [Pa].
  */
 
 export interface PileupInputs {
@@ -481,3 +492,58 @@ export function solvePileupEquilibrium(inputs: PileupInputs): PileupResult {
     pileupLengthM: fullPos[N - 1],
   };
 }
+
+export interface PileupLengthSensitivityResult {
+  kyLDHalfPaM05: number;
+  kyLDFullPaM05: number;
+  kyLDQuarterPaM05: number;
+  ratioDFullToHalf: number;
+  ratioDQuarterToHalf: number;
+  formulaLDHalf: string;
+  formulaLDFull: string;
+  formulaLDQuarter: string;
+}
+
+/**
+ * Compute analytical Hall-Petch slope k_y sensitivity to pile-up length scale L = c * d (spec.md §5.7).
+ *
+ * Cases:
+ *   - c = 1/2 (L = d/2): k_y = M_T * sqrt(2 * mu * b * tau* / [pi * (1 - nu)])  [Pa*m^(1/2)]
+ *   - c = 1   (L = d):   k_y = M_T * sqrt(mu * b * tau* / [pi * (1 - nu)]) = k_y(d/2) / sqrt(2)
+ *   - c = 1/4 (L = d/4): k_y = M_T * sqrt(4 * mu * b * tau* / [pi * (1 - nu)]) = k_y(d/2) * sqrt(2)
+ */
+export function computePileupHallPetchKySensitivity(
+  muPa: number,
+  nu: number,
+  burgersM: number,
+  tauStarPa: number,
+  taylorFactor: number = 3.06
+): PileupLengthSensitivityResult {
+  if (muPa <= 0.0 || !(nu > -1.0 && nu < 0.5) || burgersM <= 0.0) {
+    throw new Error("Invalid elastic or Burgers parameters in computePileupHallPetchKySensitivity");
+  }
+  if (tauStarPa <= 0.0) {
+    throw new Error(`Barrier stress tauStarPa must be positive, got ${tauStarPa}`);
+  }
+  if (taylorFactor <= 0.0) {
+    throw new Error(`Taylor factor must be positive, got ${taylorFactor}`);
+  }
+
+  const base = taylorFactor * Math.sqrt((muPa * burgersM * tauStarPa) / (Math.PI * (1.0 - nu)));
+
+  const kyDHalf = base * Math.SQRT2;
+  const kyDFull = base * 1.0;
+  const kyDQuarter = base * 2.0;
+
+  return {
+    kyLDHalfPaM05: kyDHalf,
+    kyLDFullPaM05: kyDFull,
+    kyLDQuarterPaM05: kyDQuarter,
+    ratioDFullToHalf: 1.0 / Math.SQRT2,
+    ratioDQuarterToHalf: Math.SQRT2,
+    formulaLDHalf: "M_T * sqrt(2 * mu * b * tau_star / [pi * (1 - nu)])",
+    formulaLDFull: "M_T * sqrt(mu * b * tau_star / [pi * (1 - nu)])",
+    formulaLDQuarter: "M_T * sqrt(4 * mu * b * tau_star / [pi * (1 - nu)])",
+  };
+}
+

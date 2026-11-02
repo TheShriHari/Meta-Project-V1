@@ -28,6 +28,8 @@ export interface SourceShutoffInputs {
   sourceDistanceM: number;
   tauSrcPa?: number;
   maxCount?: number;
+  /** Warm-start the count search (default true); false = pure sequential reference, must give identical results. */
+  warmStart?: boolean;
 }
 
 export interface SourceShutoffResult {
@@ -55,6 +57,7 @@ export interface YieldOnsetInputs {
   tauSrcPa?: number;
   maxCount?: number;
   bisectionIterations?: number;
+  sourceDistanceRatio?: number;
 }
 
 export interface YieldOnsetResult {
@@ -85,6 +88,7 @@ export interface HallPetchSweepInputs {
   tauSrcPa?: number;
   bootstrapSamples?: number;
   seed?: number;
+  sourceDistanceRatio?: number;
 }
 
 export interface HallPetchPoint {
@@ -138,11 +142,18 @@ export function computeAnalyticHallPetchKy(
   nu: number,
   burgersM: number,
   tauStarPa: number,
-  taylorFactor = 3.06
+  taylorFactor = 3.06,
+  sourceDistanceRatio = 0.5
 ): number {
+  if (sourceDistanceRatio <= 0.0) {
+    throw new Error(`sourceDistanceRatio must be positive, got ${sourceDistanceRatio}`);
+  }
   return (
     taylorFactor *
-    Math.sqrt((2.0 * muPa * burgersM * tauStarPa) / (Math.PI * (1.0 - nu)))
+    Math.sqrt(
+      (muPa * burgersM * tauStarPa) /
+        (Math.PI * (1.0 - nu) * sourceDistanceRatio)
+    )
   );
 }
 
@@ -196,6 +207,20 @@ export function solvePileupWithSource(
     (Math.PI * (1.0 - inputs.nu) * L * tauEff) / (inputs.muPa * inputs.burgersM);
 
   let N = 1;
+  const candN = Math.min(maxCount - 1, Math.max(1, Math.trunc(asympN * 0.85)));
+  if (inputs.warmStart !== false && candN > 1) {
+    const rCand = getCachedEfnRootsWithZero(candN - 1);
+    if (rCand[rCand.length - 1] < lDim) {
+      let tbCand = 0.0;
+      for (let j = 0; j < rCand.length; j++) {
+        tbCand += A / (L - rCand[j] / (2.0 * lam));
+      }
+      if (tauEff - tbCand > tauSrcPa) {
+        N = candN;
+      }
+    }
+  }
+
   while (N < maxCount) {
     const rootsN = getCachedEfnRootsWithZero(N - 1);
     if (rootsN[rootsN.length - 1] >= lDim) {
@@ -263,13 +288,17 @@ export function findYieldOnset(inputs: YieldOnsetInputs): YieldOnsetResult {
   const tauSrcPa = inputs.tauSrcPa ?? 0.0;
   const maxCount = inputs.maxCount ?? 300;
   const bisectionIterations = inputs.bisectionIterations ?? 40;
+  const sourceDistanceRatio = inputs.sourceDistanceRatio ?? 0.5;
+  if (sourceDistanceRatio <= 0.0) {
+    throw new Error(`sourceDistanceRatio must be positive, got ${sourceDistanceRatio}`);
+  }
 
-  const L = 0.5 * inputs.grainSizeM;
+  const L = sourceDistanceRatio * inputs.grainSizeM;
   const tauStar = computeEffectiveTauStar(inputs.tauStarRefPa, mPrime, beta);
 
   const tauEffAnalytic = Math.sqrt(
-    (2.0 * inputs.muPa * inputs.burgersM * tauStar) /
-      (Math.PI * (1.0 - inputs.nu) * inputs.grainSizeM)
+    (inputs.muPa * inputs.burgersM * tauStar) /
+      (Math.PI * (1.0 - inputs.nu) * L)
   );
 
   let lo = Math.max(tauSrcPa + 1.0, 0.2 * tauEffAnalytic);
@@ -408,6 +437,7 @@ export function runHallPetchSweep(
       taylorFactor: inputs.taylorFactor,
       sigma0OffsetPa: inputs.sigma0OffsetPa,
       tauSrcPa,
+      sourceDistanceRatio: inputs.sourceDistanceRatio,
     });
     return {
       grainSizeM: onset.grainSizeM,
@@ -435,7 +465,8 @@ export function runHallPetchSweep(
     inputs.nu,
     inputs.burgersM,
     tauStarEff,
-    inputs.taylorFactor
+    inputs.taylorFactor,
+    inputs.sourceDistanceRatio ?? 0.5
   );
   const analyticSigma0 =
     inputs.sigma0OffsetPa !== undefined && inputs.sigma0OffsetPa !== null
@@ -491,6 +522,84 @@ export function runHallPetchSweep(
     v10Passed,
   };
 }
+
+export interface SourceDistanceSensitivityResult {
+  ratios: number[];
+  results: Record<number, HallPetchSweepResult>;
+  fittedKyByRatio: Record<number, number>;
+  analyticKyByRatio: Record<number, number>;
+  ratioToHalfDScaling: Record<number, number>;
+  expectedAnalyticScaling: Record<number, number>;
+}
+
+export function evaluateSourceDistanceSensitivity(
+  baseInputs: HallPetchSweepInputs,
+  ratios: number[] = [0.25, 0.5, 1.0]
+): SourceDistanceSensitivityResult {
+  const results: Record<number, HallPetchSweepResult> = {};
+  const fittedKyByRatio: Record<number, number> = {};
+  const analyticKyByRatio: Record<number, number> = {};
+  const ratioToHalfDScaling: Record<number, number> = {};
+  const expectedAnalyticScaling: Record<number, number> = {};
+
+  for (const r of ratios) {
+    const sweepRes = runHallPetchSweep({
+      ...baseInputs,
+      sourceDistanceRatio: r,
+    });
+    results[r] = sweepRes;
+    fittedKyByRatio[r] = sweepRes.fittedKyPaM05;
+    analyticKyByRatio[r] = sweepRes.analyticKyPaM05;
+    expectedAnalyticScaling[r] = Math.sqrt(0.5 / r);
+  }
+
+  const refKy = fittedKyByRatio[0.5] ?? Object.values(fittedKyByRatio)[0];
+  for (const r of ratios) {
+    ratioToHalfDScaling[r] = fittedKyByRatio[r] / refKy;
+  }
+
+  return {
+    ratios,
+    results,
+    fittedKyByRatio,
+    analyticKyByRatio,
+    ratioToHalfDScaling,
+    expectedAnalyticScaling,
+  };
+}
+
+export const CALIBRATION_PROTOCOL = {
+  comparison_contract:
+    "10-400 um, 16 log-spaced points (np.geomspace) for the calibration sweep; held-out evaluation at 5 log-spaced points over the held-out source's own d range",
+  calibrated_parameters: {
+    tau_star_ref_pa:
+      "ONE scalar per material, fitted by bisection so the simulated Hall-Petch slope k_y matches calibration_fit.k_y_pa_m05. It is a CALIBRATION TARGET, not an emergent prediction. beta=0, m'=1.",
+  },
+  fixed_inputs_from_calibration_source: [
+    "sigma_0_pa (friction intercept of calibration_fit)",
+  ],
+  not_calibrated: [
+    "mu_pa",
+    "nu",
+    "burgers_m",
+    "taylor_factor",
+    "tau_src_pa (=0)",
+  ],
+  predicted_on_held_out:
+    "sigma_y(d) at held-out grain sizes, compared with held_out_fit sigma_0 + k_y d^-1/2",
+  headline_metric:
+    "held_out_unadjusted_mean_rel_error: held-out material's own sigma_0 and k_y are NOT used anywhere in the prediction (uses calibration sigma_0 + calibrated tau*_ref).",
+  non_blind_diagnostics: {
+    held_out_intercept_adjusted_mean_rel_error:
+      "uses held-out sigma_0 (leaks intercept; NOT blind)",
+    held_out_k_y_rel_diff:
+      "slope-only: |k_y_sim(calibrated) - k_y_held|/k_y_held; no intercept used; k_y_held is only the comparison target",
+  },
+  v15_band:
+    "v15_within_25pct_band = (headline unadjusted mean rel error <= 0.25); may be False.",
+  held_out_data_status:
+    "verified_fits rows only; reconstructed hall_petch_datasets.csv rows are demonstration_only and never used here. tau_c_pa is unused when sigma_0_offset_pa is given; ferritic tau_c (needs_citation) therefore does not enter any result.",
+};
 
 export interface CalibratedMaterialEntry {
   key: string;

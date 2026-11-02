@@ -87,6 +87,7 @@ class YieldOnsetInputs:
     tau_src_pa: float = 0.0
     max_count: int = 300
     bisection_iterations: int = 40
+    source_distance_ratio: float = 0.5  # L = source_distance_ratio * grain_size_m (default L = d/2)
 
 
 @dataclass(frozen=True)
@@ -121,6 +122,7 @@ class HallPetchSweepInputs:
     tau_src_pa: float = 0.0
     bootstrap_samples: int = 200
     seed: int = 42
+    source_distance_ratio: float = 0.5  # L = source_distance_ratio * grain_size_m (default L = d/2)
 
 
 @dataclass(frozen=True)
@@ -177,14 +179,19 @@ def compute_analytic_hall_petch_ky(
     burgers_m: float,
     tau_star_pa: float,
     taylor_factor: float = 3.06,
+    source_distance_ratio: float = 0.5,
 ) -> float:
     """
     Continuum Eshelby-Frank-Nabarro Hall-Petch slope (spec.md §5.7):
-    k_y = M_T * sqrt( 2 * G * b * tau* / [pi * (1 - nu)] ) in Pa * m^(1/2).
+    k_y = M_T * sqrt( mu * b * tau* / [pi * (1 - nu) * source_distance_ratio] ) in Pa * m^(1/2).
+    For source at grain center (source_distance_ratio = 0.5), this recovers:
+    k_y = M_T * sqrt( 2 * G * b * tau* / [pi * (1 - nu)] ).
     """
+    if source_distance_ratio <= 0.0:
+        raise ValueError(f"source_distance_ratio must be positive, got {source_distance_ratio}")
     return float(
         taylor_factor
-        * np.sqrt((2.0 * mu_pa * burgers_m * tau_star_pa) / (np.pi * (1.0 - nu)))
+        * np.sqrt((mu_pa * burgers_m * tau_star_pa) / (np.pi * (1.0 - nu) * source_distance_ratio))
     )
 
 
@@ -285,21 +292,23 @@ def solve_pileup_with_source(inputs: SourceShutoffInputs) -> SourceShutoffResult
 
 def find_yield_onset(inputs: YieldOnsetInputs) -> YieldOnsetResult:
     """
-    Find the critical effective driving stress tau_eff,crit at grain size d (L = d/2)
+    Find the critical effective driving stress tau_eff,crit at grain size d (L = source_distance_ratio * d)
     such that tau_tip(L, tau_eff) >= tau*(m') via bisection (spec.md §5.7).
     """
     if inputs.grain_size_m <= 0.0:
         raise ValueError(f"grain_size_m must be positive, got {inputs.grain_size_m}")
+    if inputs.source_distance_ratio <= 0.0:
+        raise ValueError(f"source_distance_ratio must be positive, got {inputs.source_distance_ratio}")
 
-    L = 0.5 * inputs.grain_size_m
+    L = inputs.source_distance_ratio * inputs.grain_size_m
     tau_star = compute_effective_tau_star(
         inputs.tau_star_ref_pa, inputs.m_prime, inputs.beta
     )
 
     tau_eff_analytic = float(
         np.sqrt(
-            (2.0 * inputs.mu_pa * inputs.burgers_m * tau_star)
-            / (np.pi * (1.0 - inputs.nu) * inputs.grain_size_m)
+            (inputs.mu_pa * inputs.burgers_m * tau_star)
+            / (np.pi * (1.0 - inputs.nu) * L)
         )
     )
 
@@ -423,6 +432,7 @@ def run_hall_petch_sweep(inputs: HallPetchSweepInputs) -> HallPetchSweepResult:
                 taylor_factor=inputs.taylor_factor,
                 sigma_0_offset_pa=inputs.sigma_0_offset_pa,
                 tau_src_pa=inputs.tau_src_pa,
+                source_distance_ratio=inputs.source_distance_ratio,
             )
         )
         points.append(
@@ -452,7 +462,12 @@ def run_hall_petch_sweep(inputs: HallPetchSweepInputs) -> HallPetchSweepResult:
         inputs.tau_star_ref_pa, inputs.m_prime, inputs.beta
     )
     analytic_k_y = compute_analytic_hall_petch_ky(
-        inputs.mu_pa, inputs.nu, inputs.burgers_m, tau_star_eff, inputs.taylor_factor
+        inputs.mu_pa,
+        inputs.nu,
+        inputs.burgers_m,
+        tau_star_eff,
+        inputs.taylor_factor,
+        source_distance_ratio=inputs.source_distance_ratio,
     )
     analytic_sigma_0 = (
         float(inputs.sigma_0_offset_pa)
@@ -504,6 +519,84 @@ def run_hall_petch_sweep(inputs: HallPetchSweepInputs) -> HallPetchSweepResult:
         k_y_rel_error_vs_analytic=float(rel_err),
         v09_passed=v09_passed,
         v10_passed=v10_passed,
+    )
+
+
+@dataclass(frozen=True)
+class SourceDistanceSensitivityResult:
+    """Summary of Hall-Petch slope sensitivity to dislocation source distance L = ratio * d."""
+    ratios: List[float]
+    results: Dict[float, HallPetchSweepResult]
+    fitted_ky_by_ratio: Dict[float, float]
+    analytic_ky_by_ratio: Dict[float, float]
+    ratio_to_half_d_scaling: Dict[float, float]
+    expected_analytic_scaling: Dict[float, float]
+
+
+def evaluate_source_distance_sensitivity(
+    base_inputs: HallPetchSweepInputs,
+    ratios: Sequence[float] = (0.25, 0.5, 1.0),
+) -> SourceDistanceSensitivityResult:
+    """
+    Evaluate sensitivity of emergent Hall-Petch slope k_y to dislocation source
+    distance L in {d/4 (0.25), d/2 (0.5), d (1.0)}.
+
+    Governing physics & scaling:
+      In the EFN continuum formulation, the pile-up tip stress is tau_tip ~ N * tau_eff,
+      where N ~ pi*(1-nu)*L*tau_eff / (mu*b). Equating tau_tip = tau* gives:
+        tau_eff,crit = sqrt( mu * b * tau* / [pi * (1 - nu) * L] )
+      Because L = alpha * d:
+        tau_eff,crit = (1 / sqrt(alpha)) * sqrt( mu * b * tau* / [pi * (1 - nu) * d] )
+      Consequently, macroscopic k_y scales analytically as sqrt(1 / L):
+        k_y(alpha) = (1 / sqrt(alpha)) * k_y(alpha=1)
+        k_y(d/2) ~ sqrt(2/d)
+        k_y(d)   ~ sqrt(1/d)   => k_y(d) / k_y(d/2) = 1 / sqrt(2) ~ 0.7071
+        k_y(d/4) ~ sqrt(4/d)   => k_y(d/4) / k_y(d/2) = sqrt(2) ~ 1.4142
+
+      The log-log power-law exponent (V-09) remains d^(-1/2) regardless of the chosen
+      source distance ratio alpha, since L proportional to d preserves the -0.5 slope.
+    """
+    res_dict: Dict[float, HallPetchSweepResult] = {}
+    fitted_ky: Dict[float, float] = {}
+    analytic_ky: Dict[float, float] = {}
+    scaling_to_half: Dict[float, float] = {}
+    expected_scaling: Dict[float, float] = {}
+
+    for r in ratios:
+        r_flt = float(r)
+        sweep_inp = HallPetchSweepInputs(
+            mu_pa=base_inputs.mu_pa,
+            nu=base_inputs.nu,
+            burgers_m=base_inputs.burgers_m,
+            tau_c_pa=base_inputs.tau_c_pa,
+            taylor_factor=base_inputs.taylor_factor,
+            tau_star_ref_pa=base_inputs.tau_star_ref_pa,
+            grain_sizes_m=base_inputs.grain_sizes_m,
+            m_prime=base_inputs.m_prime,
+            beta=base_inputs.beta,
+            sigma_0_offset_pa=base_inputs.sigma_0_offset_pa,
+            tau_src_pa=base_inputs.tau_src_pa,
+            bootstrap_samples=base_inputs.bootstrap_samples,
+            seed=base_inputs.seed,
+            source_distance_ratio=r_flt,
+        )
+        sweep_res = run_hall_petch_sweep(sweep_inp)
+        res_dict[r_flt] = sweep_res
+        fitted_ky[r_flt] = sweep_res.fitted_k_y_pa_m05
+        analytic_ky[r_flt] = sweep_res.analytic_k_y_pa_m05
+        expected_scaling[r_flt] = float(np.sqrt(0.5 / r_flt))
+
+    ref_ky = fitted_ky.get(0.5, list(fitted_ky.values())[0])
+    for r_flt, ky in fitted_ky.items():
+        scaling_to_half[r_flt] = float(ky / ref_ky)
+
+    return SourceDistanceSensitivityResult(
+        ratios=[float(r) for r in ratios],
+        results=res_dict,
+        fitted_ky_by_ratio=fitted_ky,
+        analytic_ky_by_ratio=analytic_ky,
+        ratio_to_half_d_scaling=scaling_to_half,
+        expected_analytic_scaling=expected_scaling,
     )
 
 
@@ -670,11 +763,44 @@ VERIFIED_MATERIAL_SPECS = {
 }
 
 
+CALIBRATION_PROTOCOL = {
+    "comparison_contract": "10-400 um, 16 log-spaced points (np.geomspace) for the calibration sweep; "
+    "held-out evaluation at 5 log-spaced points over the held-out source's own d range",
+    "calibrated_parameters": {
+        "tau_star_ref_pa": "ONE scalar per material, fitted by bisection so the simulated Hall-Petch "
+        "slope k_y matches calibration_fit.k_y_pa_m05. It is a CALIBRATION TARGET, not an emergent "
+        "prediction. beta=0, m'=1.",
+    },
+    "fixed_inputs_from_calibration_source": ["sigma_0_pa (friction intercept of calibration_fit)"],
+    "not_calibrated": ["mu_pa", "nu", "burgers_m", "taylor_factor", "tau_src_pa (=0)"],
+    "predicted_on_held_out": "sigma_y(d) at held-out grain sizes, compared with held_out_fit "
+    "sigma_0 + k_y d^-1/2",
+    "headline_metric": "held_out_unadjusted_mean_rel_error: held-out material's own sigma_0 and k_y are "
+    "NOT used anywhere in the prediction (uses calibration sigma_0 + calibrated tau*_ref).",
+    "non_blind_diagnostics": {
+        "held_out_intercept_adjusted_mean_rel_error": "uses held-out sigma_0 (leaks intercept; NOT blind)",
+        "held_out_k_y_rel_diff": "slope-only: |k_y_sim(calibrated) - k_y_held|/k_y_held; no intercept used; "
+        "k_y_held is only the comparison target",
+    },
+    "v15_band": "v15_within_25pct_band = (headline unadjusted mean rel error <= 0.25); may be False.",
+    "held_out_data_status": "verified_fits rows only; reconstructed hall_petch_datasets.csv rows are "
+    "demonstration_only and never used here. tau_c_pa is unused when sigma_0_offset_pa is given; "
+    "ferritic tau_c (needs_citation) therefore does not enter any result.",
+}
+
+
 def evaluate_literature_calibration_and_validation() -> Dict[str, dict]:
     """
-    Calibrate tau*_ref on each material's primary verified literature fit, verify V-09
-    and V-10 over a 1.6-decade grain-size sweep (10 um to 400 um), and evaluate V-15
-    against the held-out secondary literature fit.
+    Calibrate tau*_ref on each material's primary verified literature fit, verify V-09/V-10 over
+    the canonical 10-400 um / 16-point sweep, and compare against the held-out secondary fit.
+    See the module constant CALIBRATION_PROTOCOL for the exact protocol.
+
+    Held-out metrics (no held-out leakage in the headline):
+      - `held_out_unadjusted_mean_rel_error` (HEADLINE, blind): sigma_0 of the *calibration*
+        source + calibrated tau*_ref; nothing from the held-out fit enters the prediction.
+      - `held_out_intercept_adjusted_mean_rel_error` (NOT blind): replaces sigma_0 by the
+        held-out source's own sigma_0.
+      - `held_out_k_y_rel_diff` (slope-only, not blind w.r.t. target k_y).
     """
     results: Dict[str, dict] = {}
     sweep_d_m = np.geomspace(10.0e-6, 400.0e-6, 16)
@@ -717,44 +843,27 @@ def evaluate_literature_calibration_and_validation() -> Dict[str, dict]:
             )
         )
 
-        # Evaluate on held-out grain-size range (5 points across held-out range)
-        held_d_m = np.geomspace(
-            held["d_min_um"] * 1e-6, held["d_max_um"] * 1e-6, 5
-        )
-        rel_errors = []
-        rel_errors_unadjusted_s0 = []
+        held_d_m = np.geomspace(held["d_min_um"] * 1e-6, held["d_max_um"] * 1e-6, 5)
+        err_unadj = []
+        err_adj = []
         for d_val in held_d_m:
-            onset_held_s0 = find_yield_onset(
-                YieldOnsetInputs(
-                    mu_pa=spec["mu_pa"],
-                    nu=spec["nu"],
-                    burgers_m=spec["burgers_m"],
-                    grain_size_m=float(d_val),
-                    tau_star_ref_pa=tau_star_cal,
-                    tau_c_pa=spec["tau_c_pa"],
-                    taylor_factor=spec["taylor_factor"],
-                    sigma_0_offset_pa=held["sigma_0_pa"],
-                )
-            )
-            onset_cal_s0 = find_yield_onset(
-                YieldOnsetInputs(
-                    mu_pa=spec["mu_pa"],
-                    nu=spec["nu"],
-                    burgers_m=spec["burgers_m"],
-                    grain_size_m=float(d_val),
-                    tau_star_ref_pa=tau_star_cal,
-                    tau_c_pa=spec["tau_c_pa"],
-                    taylor_factor=spec["taylor_factor"],
-                    sigma_0_offset_pa=cal["sigma_0_pa"],
-                )
-            )
             sigma_lit_held = held["sigma_0_pa"] + held["k_y_pa_m05"] * (d_val ** (-0.5))
-            rel_errors.append(abs(onset_held_s0.sigma_y_pa - sigma_lit_held) / sigma_lit_held)
-            rel_errors_unadjusted_s0.append(abs(onset_cal_s0.sigma_y_pa - sigma_lit_held) / sigma_lit_held)
+            for s0, bucket in ((cal["sigma_0_pa"], err_unadj), (held["sigma_0_pa"], err_adj)):
+                onset = find_yield_onset(
+                    YieldOnsetInputs(
+                        mu_pa=spec["mu_pa"],
+                        nu=spec["nu"],
+                        burgers_m=spec["burgers_m"],
+                        grain_size_m=float(d_val),
+                        tau_star_ref_pa=tau_star_cal,
+                        tau_c_pa=spec["tau_c_pa"],
+                        taylor_factor=spec["taylor_factor"],
+                        sigma_0_offset_pa=s0,
+                    )
+                )
+                bucket.append(abs(onset.sigma_y_pa - sigma_lit_held) / sigma_lit_held)
 
-        mean_held_err = float(np.mean(rel_errors))
-        max_held_err = float(np.max(rel_errors))
-        mean_unadj_err = float(np.mean(rel_errors_unadjusted_s0))
+        mean_unadj = float(np.mean(err_unadj))
         ky_held_rel_diff = abs(sweep.fitted_k_y_pa_m05 - held["k_y_pa_m05"]) / held["k_y_pa_m05"]
 
         results[mat_key] = {
@@ -775,10 +884,11 @@ def evaluate_literature_calibration_and_validation() -> Dict[str, dict]:
             "held_out_source": held["source_id"],
             "held_out_k_y_pa_m05": held["k_y_pa_m05"],
             "held_out_k_y_rel_diff": float(ky_held_rel_diff),
-            "held_out_mean_rel_error": mean_held_err,
-            "held_out_max_rel_error": max_held_err,
-            "held_out_unadjusted_sigma0_mean_rel_error": mean_unadj_err,
-            "v15_within_25pct_band": bool(mean_held_err <= 0.25),
+            "held_out_unadjusted_mean_rel_error": mean_unadj,
+            "held_out_unadjusted_max_rel_error": float(np.max(err_unadj)),
+            "held_out_intercept_adjusted_mean_rel_error": float(np.mean(err_adj)),
+            "held_out_intercept_adjusted_max_rel_error": float(np.max(err_adj)),
+            "v15_within_25pct_band": bool(mean_unadj <= 0.25),
         }
 
     return results

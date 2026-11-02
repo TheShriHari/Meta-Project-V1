@@ -56,7 +56,14 @@ _MATERIAL_KEY_MAP = {
 def load_micrograph_metadata(
     csv_path: str = "data/micrographs/metadata.csv",
 ) -> List[MicrographMetadata]:
-    """Load and validate micrograph calibration metadata from CSV."""
+    """
+    Load and validate micrograph calibration metadata from CSV.
+
+    Scale-bar calibration follows the exact physical ratio from `data/micrographs/metadata.csv`:
+        pixel_size_m = (scale_bar_um * 1e-6) / pixels_for_scale_bar
+    No image resampling or rescaling is performed during loading, ensuring that pixel coordinates
+    map linearly to SI meters via `pixel_size_m`.
+    """
     base_dir = os.path.dirname(os.path.abspath(csv_path))
     records: List[MicrographMetadata] = []
 

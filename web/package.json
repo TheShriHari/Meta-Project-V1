@@ -7,6 +7,7 @@
     "test": "cd .. && node --experimental-strip-types --test web/tests/*.test.mjs",
     "dev": "vite",
     "build": "tsc && vite build",
+    "build:gh-pages": "node scripts/build-gh-pages.js",
     "preview": "vite preview",
     "typecheck": "tsc"
   },

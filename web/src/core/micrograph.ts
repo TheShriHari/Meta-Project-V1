@@ -62,8 +62,6 @@ export interface MicrographGrainPolygon {
   eulerDeg: [number, number, number];
   slipTraceAngleDeg: number;
   phase: "alpha-Al" | "alpha-Cu" | "Ferrite" | "Synthetic";
-  isTwinExcluded?: boolean;
-  isPearliteMasked?: boolean;
 }
 
 export interface MicrographInterceptLine {
@@ -74,6 +72,27 @@ export interface MicrographInterceptLine {
   segmentChordsUm: number[];
 }
 
+export interface MicrographPopulationStats {
+  numGrainsTotal: number;
+  numGrainsExported: number;
+  astmMeanInterceptM: number;
+  astmMeanInterceptUm: number;
+  chordMeanM: number;
+  chordMeanUm: number;
+  stdInterceptM: number;
+  stdInterceptUm: number;
+  chordCv: number;
+  p10M: number;
+  p50M: number;
+  p90M: number;
+  p10Um: number;
+  p50Um: number;
+  p90Um: number;
+  totalCrossings: number;
+  totalChords: number;
+  totalLineLengthUm: number;
+}
+
 export interface MicrographPreset {
   key: string;
   name: string;
@@ -81,6 +100,10 @@ export interface MicrographPreset {
   source: string;
   licenseNote: string;
   methodologyNote: string;
+  segmentationPolicy?: string;
+  segmentationUncertaintyNote?: string;
+  pearliteMaskedFraction?: number;
+  isRealSegmentedFixture?: boolean;
   widthUm: number;
   heightUm: number;
   scaleBarUm: number;
@@ -89,6 +112,7 @@ export interface MicrographPreset {
   interceptLines: MicrographInterceptLine[];
   chordsM: number[];
   stats: ChordStats;
+  populationStats?: MicrographPopulationStats;
 }
 
 /**
@@ -451,6 +475,8 @@ interface PresetBuilderSpec {
   source: string;
   licenseNote: string;
   methodologyNote: string;
+  segmentationPolicy: string;
+  pearliteMaskedFraction: number;
   widthUm: number;
   heightUm: number;
   scaleBarUm: number;
@@ -461,8 +487,6 @@ interface PresetBuilderSpec {
   targetMeanUm: number;
   seed: number;
   phase: "alpha-Al" | "alpha-Cu" | "Ferrite" | "Synthetic";
-  markTwins?: boolean;
-  markPearlite?: boolean;
 }
 
 function buildVoronoiMicrographPreset(spec: PresetBuilderSpec): MicrographPreset {
@@ -515,8 +539,6 @@ function buildVoronoiMicrographPreset(spec: PresetBuilderSpec): MicrographPreset
       eulerDeg: [phi1, Phi, phi2],
       slipTraceAngleDeg,
       phase: spec.phase,
-      isTwinExcluded: Boolean(spec.markTwins && i % 6 === 2),
-      isPearliteMasked: Boolean(spec.markPearlite && i % 7 === 3),
     });
   }
 
@@ -529,7 +551,6 @@ function buildVoronoiMicrographPreset(spec: PresetBuilderSpec): MicrographPreset
     const yUm = frac * spec.heightUm;
     const xSet: number[] = [0.0, spec.widthUm];
     for (const g of grains) {
-      if (g.isPearliteMasked) continue;
       const verts = g.verticesUm;
       for (let e = 0; e < verts.length; e++) {
         const [x1, y1] = verts[e];
@@ -580,7 +601,6 @@ function buildVoronoiMicrographPreset(spec: PresetBuilderSpec): MicrographPreset
     const xUm = frac * spec.widthUm;
     const ySet: number[] = [0.0, spec.heightUm];
     for (const g of grains) {
-      if (g.isPearliteMasked) continue;
       const verts = g.verticesUm;
       for (let e = 0; e < verts.length; e++) {
         const [x1, y1] = verts[e];
@@ -633,11 +653,16 @@ function buildVoronoiMicrographPreset(spec: PresetBuilderSpec): MicrographPreset
 
   return {
     key: spec.key,
-    name: spec.name,
+    name: `${SYNTHETIC_DEMO_LABEL} (${spec.materialKey} look-alike)`,
     materialKey: spec.materialKey,
-    source: spec.source,
-    licenseNote: spec.licenseNote,
-    methodologyNote: spec.methodologyNote,
+    source: SYNTHETIC_DEMO_LABEL,
+    licenseNote: `${SYNTHETIC_DEMO_LABEL}. Generated geometry only; no source image data was used.`,
+    methodologyNote:
+      "Synthetic jittered-grid Voronoi (seeded RNG). Chords rescaled to an illustrative mean for sensitivity only. " +
+      "No twin/pearlite classification was applied. Orientations are seeded random, not measured.",
+    segmentationPolicy: "synthetic_demo_none",
+    pearliteMaskedFraction: 0,
+    isRealSegmentedFixture: false,
     widthUm: spec.widthUm,
     heightUm: spec.heightUm,
     scaleBarUm: spec.scaleBarUm,
@@ -649,105 +674,364 @@ function buildVoronoiMicrographPreset(spec: PresetBuilderSpec): MicrographPreset
   };
 }
 
+/**
+ * Convert a real segmented micrograph JSON fixture (`web/public/data/micrographs/*.json`)
+ * into a strongly-typed `MicrographPreset` with micrometer coordinates and exact chord statistics.
+ */
+export function parseSegmentedMicrographFixture(raw: Record<string, unknown>): MicrographPreset {
+  const key = String(raw.key ?? "aluminium");
+  const materialName = String(raw.material_name ?? key);
+  const cal = (raw.calibration ?? {}) as Record<string, unknown>;
+  const pixelSizeUm = Number(cal.pixel_size_um ?? 0.5);
+  const scaleBarUm = Number(cal.scale_bar_um ?? 50.0);
+  const pxPerUm = pixelSizeUm > 0 ? 1.0 / pixelSizeUm : 2.0;
+
+  const dims = (raw.image_dimensions_px ?? {}) as Record<string, unknown>;
+  const widthPx = Number(dims.width ?? 600);
+  const heightPx = Number(dims.height ?? 450);
+  const widthUm = widthPx * pixelSizeUm;
+  const heightUm = heightPx * pixelSizeUm;
+
+  const phaseStr = String(raw.phase_of_interest ?? "Synthetic");
+  const phase: "alpha-Al" | "alpha-Cu" | "Ferrite" | "Synthetic" =
+    phaseStr === "alpha-Al" || phaseStr === "alpha-Cu" || phaseStr === "Ferrite"
+      ? phaseStr
+      : "Synthetic";
+
+  const rawGrains = Array.isArray(raw.grains) ? raw.grains : [];
+  const grains: MicrographGrainPolygon[] = rawGrains.map((gObj, idx) => {
+    const g = gObj as Record<string, unknown>;
+    const id = Number(g.grain_id ?? idx + 1);
+    const polyPx = Array.isArray(g.polygon_px) ? (g.polygon_px as [number, number][]) : [];
+    const verticesUm: [number, number][] = polyPx.map(([px, py]) => [
+      px * pixelSizeUm,
+      py * pixelSizeUm,
+    ]);
+    const centUmRaw = Array.isArray(g.centroid_um) ? (g.centroid_um as [number, number]) : [0, 0];
+    const slipRad = Number(g.slip_trace_angle_rad ?? 0.0);
+    const slipTraceAngleDeg = (slipRad * 180.0) / Math.PI;
+    const rot = Array.isArray(g.rotation_matrix) ? (g.rotation_matrix as number[][]) : null;
+    const phi1 = rot
+      ? Math.round(((Math.atan2(rot[0][1], rot[0][0]) * 180) / Math.PI + 360) % 360)
+      : (id * 37) % 360;
+
+    return {
+      id,
+      verticesUm,
+      centroidUm: [Number(centUmRaw[0] ?? 0), Number(centUmRaw[1] ?? 0)],
+      areaUm2: Number(g.area_um2 ?? 0),
+      equivalentDiameterUm: Number(g.equiv_diameter_um ?? 10),
+      eulerDeg: [phi1, 45, 30],
+      slipTraceAngleDeg,
+      phase,
+    };
+  });
+
+  const rawLines = Array.isArray(raw.sample_intercept_lines) ? raw.sample_intercept_lines : [];
+  const interceptLines: MicrographInterceptLine[] = rawLines.map((lObj, idx) => {
+    const l = lObj as Record<string, unknown>;
+    const orientation: "horizontal" | "vertical" =
+      l.orientation === "vertical" ? "vertical" : "horizontal";
+    const positionPx = orientation === "horizontal" ? Number(l.y1 ?? 0) : Number(l.x1 ?? 0);
+    const positionUm = positionPx * pixelSizeUm;
+    const crossingsPx = Array.isArray(l.crossings_px) ? (l.crossings_px as [number, number][]) : [];
+    const crossingsUm: [number, number][] = crossingsPx.map(([cx, cy]) => [
+      cx * pixelSizeUm,
+      cy * pixelSizeUm,
+    ]);
+    return {
+      id: `${orientation === "horizontal" ? "H" : "V"}${idx + 1}`,
+      positionUm,
+      orientation,
+      crossingsUm,
+      segmentChordsUm: [],
+    };
+  });
+
+  const rawChordsM = Array.isArray(raw.chords_m)
+    ? (raw.chords_m as number[]).map(Number).filter((v) => Number.isFinite(v) && v > 0)
+    : [];
+  const stats = computeChordStats(rawChordsM);
+  const segPolicy = String(raw.segmentation_policy ?? "standard_watershed");
+  const segUncertainty = String(raw.segmentation_uncertainty_note ?? "");
+  const pearliteFrac = Number(raw.pearlite_masked_fraction ?? 0.0);
+
+  const rawStats = (raw.statistics ?? {}) as Record<string, unknown>;
+  let populationStats: MicrographPopulationStats | undefined;
+  if (rawStats && Object.keys(rawStats).length > 0) {
+    populationStats = {
+      numGrainsTotal: Number(rawStats.num_grains_total ?? grains.length),
+      numGrainsExported: Number(rawStats.num_grains_exported ?? grains.length),
+      astmMeanInterceptM: Number(rawStats.astm_mean_intercept_m ?? rawStats.mean_intercept_m ?? stats.meanM),
+      astmMeanInterceptUm: Number(rawStats.astm_mean_intercept_um ?? rawStats.mean_intercept_um ?? stats.meanM * 1e6),
+      chordMeanM: Number(rawStats.chord_mean_m ?? stats.meanM),
+      chordMeanUm: Number(rawStats.chord_mean_um ?? stats.meanM * 1e6),
+      stdInterceptM: Number(rawStats.std_intercept_m ?? stats.stdM),
+      stdInterceptUm: Number(rawStats.std_intercept_um ?? stats.stdM * 1e6),
+      chordCv: Number(rawStats.chord_cv ?? stats.cv),
+      p10M: Number(rawStats.p10_m ?? 0),
+      p50M: Number(rawStats.p50_m ?? 0),
+      p90M: Number(rawStats.p90_m ?? 0),
+      p10Um: Number(rawStats.p10_um ?? 0),
+      p50Um: Number(rawStats.p50_um ?? 0),
+      p90Um: Number(rawStats.p90_um ?? 0),
+      totalCrossings: Number(rawStats.total_crossings ?? 0),
+      totalChords: Number(rawStats.total_chords ?? rawChordsM.length),
+      totalLineLengthUm: Number(rawStats.total_line_length_um ?? 0),
+    };
+  }
+
+  const astmDisplayUm = populationStats
+    ? populationStats.astmMeanInterceptUm.toFixed(2)
+    : (stats.meanM * 1e6).toFixed(2);
+  const chordDisplayUm = populationStats
+    ? populationStats.chordMeanUm.toFixed(2)
+    : (stats.meanM * 1e6).toFixed(2);
+  const totalCount = populationStats?.totalChords ?? stats.count;
+
+  return {
+    key,
+    name: `${materialName} — Real Segmented Micrograph (${grains.length} Contours, ℓ̄_ASTM = ${astmDisplayUm} μm, ℓ̄_chord = ${chordDisplayUm} μm, n = ${totalCount})`,
+    materialKey: key === "synthetic_voronoi_30um" ? "aluminium" : key,
+    source: String(raw.license_note ?? materialName),
+    licenseNote: String(raw.license_note ?? ""),
+    methodologyNote: `${segPolicy}: ${segUncertainty}`,
+    segmentationPolicy: segPolicy,
+    segmentationUncertaintyNote: segUncertainty,
+    pearliteMaskedFraction: pearliteFrac,
+    isRealSegmentedFixture: key !== "synthetic_voronoi_30um",
+    widthUm,
+    heightUm,
+    scaleBarUm,
+    pxPerUm,
+    grains,
+    interceptLines,
+    chordsM: rawChordsM,
+    stats,
+    populationStats,
+  };
+}
+
+export const SYNTHETIC_DEMO_LABEL = "SYNTHETIC DEMONSTRATION — NOT MEASURED FROM SOURCE MICROGRAPH";
+
 export const BUILTIN_MICROGRAPH_PRESETS: Record<string, MicrographPreset> = {
-  aluminium: buildVoronoiMicrographPreset({
-    key: "aluminium",
-    name: "Aluminium 99.5% (DoITPoMS #609, Anodised Polarized Light)",
-    materialKey: "aluminium",
-    source: "DoITPoMS Micrograph Library #609 (University of Cambridge)",
-    licenseNote:
-      "Decision D6: Non-commercial educational provenance (DoITPoMS). Precomputed polygon & chord geometry bundled.",
-    methodologyNote:
-      "ASTM E112 line-intercept extraction across α-Al grains (scale bar: 40 μm = 100 px).",
-    widthUm: 180.0,
-    heightUm: 135.0,
-    scaleBarUm: 40.0,
-    pxPerUm: 2.5,
-    gridCols: 5,
-    gridRows: 4,
-    jitter: 0.55,
-    targetMeanUm: 34.5,
-    seed: 609,
-    phase: "alpha-Al",
-  }),
-  copper: buildVoronoiMicrographPreset({
-    key: "copper",
-    name: "Copper 99.7% (DoITPoMS #436, Wrought Annealed — Twin-Filtered)",
-    materialKey: "copper",
-    source: "DoITPoMS Micrograph Library #436 (University of Cambridge)",
-    licenseNote:
-      "Decision D6: Non-commercial educational provenance (DoITPoMS). Precomputed polygon & chord geometry bundled.",
-    methodologyNote:
-      "Decision M4: Straight parallel annealing twin boundaries filtered out before ASTM E112 grain-boundary intercept counting (scale bar: 200 μm = 291 px).",
-    widthUm: 320.0,
-    heightUm: 240.0,
-    scaleBarUm: 100.0,
-    pxPerUm: 1.455,
-    gridCols: 6,
-    gridRows: 4,
-    jitter: 0.52,
-    targetMeanUm: 48.2,
-    seed: 436,
-    phase: "alpha-Cu",
-    markTwins: true,
-  }),
-  pure_iron: buildVoronoiMicrographPreset({
-    key: "pure_iron",
-    name: "Pure α-Iron >99.9% (Annealed, 2% Nital Etch, 100×)",
-    materialKey: "pure_iron",
-    source: "Wikimedia Commons (Fer_pur_100x.jpg, CC BY-SA 3.0)",
-    licenseNote: "CC BY-SA 3.0 open license; raw micrograph and segmented chord data redistributable.",
-    methodologyNote:
-      "ASTM E112 multi-line intercept measurement on single-phase equiaxed α-ferrite (scale bar: 100 μm = 451 px).",
-    widthUm: 200.0,
-    heightUm: 150.0,
-    scaleBarUm: 50.0,
-    pxPerUm: 4.51,
-    gridCols: 6,
-    gridRows: 5,
-    jitter: 0.58,
-    targetMeanUm: 31.8,
-    seed: 100,
-    phase: "Ferrite",
-  }),
-  ferritic_steel: buildVoronoiMicrographPreset({
-    key: "ferritic_steel",
-    name: "Ferritic Steel Fe–0.2C (DoITPoMS #202, Ferrite-Only Masked)",
-    materialKey: "ferritic_steel",
-    source: "DoITPoMS Micrograph Library #202 (University of Cambridge)",
-    licenseNote:
-      "Decision D6: Non-commercial educational provenance (DoITPoMS). Precomputed polygon & chord geometry bundled.",
-    methodologyNote:
-      "Decision M5: Dark pearlite colonies masked out by intensity thresholding; intercepts restricted to proeutectoid α-ferrite grains (scale bar: 200 μm = 292 px).",
-    widthUm: 220.0,
-    heightUm: 165.0,
-    scaleBarUm: 50.0,
-    pxPerUm: 1.46,
-    gridCols: 7,
-    gridRows: 5,
-    jitter: 0.6,
-    targetMeanUm: 26.4,
-    seed: 202,
-    phase: "Ferrite",
-    markPearlite: true,
-  }),
-  synthetic_voronoi_30um: buildVoronoiMicrographPreset({
-    key: "synthetic_voronoi_30um",
-    name: "Synthetic Equiaxed Voronoi Polycrystal (V-04 Benchmark, d̄ = 30.0 μm)",
-    materialKey: "aluminium",
-    source: "HPSim Deterministic 2D Voronoi Generator (Seed #42)",
-    licenseNote: "MIT License — Synthetic benchmark reference geometry.",
-    methodologyNote:
-      "Benchmark V-04: Known synthetic Voronoi tessellation with exact target mean intercept l̄ = 30.0 μm.",
-    widthUm: 180.0,
-    heightUm: 135.0,
-    scaleBarUm: 30.0,
-    pxPerUm: 2.0,
-    gridCols: 6,
-    gridRows: 4,
-    jitter: 0.45,
-    targetMeanUm: 30.0,
-    seed: 42,
-    phase: "Synthetic",
-  }),
+  aluminium: {
+    ...buildVoronoiMicrographPreset({
+      key: "aluminium",
+      name: "Synthetic Voronoi (Model Fallback — Load web/public/data/micrographs/aluminium.json for Segmented Micrograph)",
+      materialKey: "aluminium",
+      source: "Synthetic Voronoi Model Fallback (Target: DoITPoMS #609 Al 99.5%, ℓ̄_ASTM = 8.112 μm, ℓ̄_chord = 7.847 μm, n = 963)",
+      licenseNote:
+        "Decision D6: Raw DoITPoMS image not bundled; runtime loads real watershed polygons & 963 chords from /data/micrographs/aluminium.json.",
+      methodologyNote:
+        "Synthetic Voronoi fallback until /data/micrographs/aluminium.json (standard_watershed, ℓ̄_ASTM = 8.112 μm, 932 crossings) is fetched.",
+      segmentationPolicy: "standard_watershed",
+      pearliteMaskedFraction: 0.0,
+      widthUm: 196.0,
+      heightUm: 182.0,
+      scaleBarUm: 40.0,
+      pxPerUm: 2.5,
+      gridCols: 6,
+      gridRows: 5,
+      jitter: 0.55,
+      targetMeanUm: 8.112,
+      seed: 609,
+      phase: "alpha-Al",
+    }),
+    populationStats: {
+      numGrainsTotal: 158,
+      numGrainsExported: 140,
+      astmMeanInterceptM: 8.111588e-6,
+      astmMeanInterceptUm: 8.112,
+      chordMeanM: 7.847e-6,
+      chordMeanUm: 7.847,
+      stdInterceptM: 10.162e-6,
+      stdInterceptUm: 10.162,
+      chordCv: 1.2951,
+      p10M: 1.6e-6,
+      p50M: 4.8e-6,
+      p90M: 16.72e-6,
+      p10Um: 1.6,
+      p50Um: 4.8,
+      p90Um: 16.72,
+      totalCrossings: 932,
+      totalChords: 963,
+      totalLineLengthUm: 7560.0,
+    },
+  },
+  copper: {
+    ...buildVoronoiMicrographPreset({
+      key: "copper",
+      name: "Synthetic Voronoi (Model Fallback — Load web/public/data/micrographs/copper.json for Segmented Micrograph)",
+      materialKey: "copper",
+      source: "Synthetic Voronoi Model Fallback (Target: DoITPoMS #436 Cu 99.7%, ℓ̄_ASTM = 17.267 μm, ℓ̄_chord = 16.717 μm, n = 1044)",
+      licenseNote:
+        "Decision D6: Raw DoITPoMS image not bundled; runtime loads real twin-filtered polygons & 1044 chords from /data/micrographs/copper.json.",
+      methodologyNote:
+        "Synthetic Voronoi fallback until /data/micrographs/copper.json (M4_copper_twin_exclusion, ℓ̄_ASTM = 17.267 μm, 1011 crossings) is fetched.",
+      segmentationPolicy: "M4_copper_twin_exclusion",
+      pearliteMaskedFraction: 0.0,
+      widthUm: 536.0,
+      heightUm: 336.0,
+      scaleBarUm: 200.0,
+      pxPerUm: 1.455,
+      gridCols: 6,
+      gridRows: 4,
+      jitter: 0.52,
+      targetMeanUm: 17.267,
+      seed: 436,
+      phase: "alpha-Cu",
+    }),
+    populationStats: {
+      numGrainsTotal: 252,
+      numGrainsExported: 140,
+      astmMeanInterceptM: 17.267e-6,
+      astmMeanInterceptUm: 17.267,
+      chordMeanM: 16.717e-6,
+      chordMeanUm: 16.717,
+      stdInterceptM: 12.639e-6,
+      stdInterceptUm: 12.639,
+      chordCv: 0.7561,
+      p10M: 2.955e-6,
+      p50M: 14.433e-6,
+      p90M: 33.677e-6,
+      p10Um: 2.955,
+      p50Um: 14.433,
+      p90Um: 33.677,
+      totalCrossings: 1011,
+      totalChords: 1044,
+      totalLineLengthUm: 17457.04,
+    },
+  },
+  pure_iron: {
+    ...buildVoronoiMicrographPreset({
+      key: "pure_iron",
+      name: "Synthetic Voronoi (Model Fallback — Load web/public/data/micrographs/pure_iron.json for Segmented Micrograph)",
+      materialKey: "pure_iron",
+      source: "Synthetic Voronoi Model Fallback (Target: Wikimedia Fer_pur_100x.jpg α-Fe, ℓ̄_ASTM = 7.599 μm, ℓ̄_chord = 7.261 μm, n = 855)",
+      licenseNote:
+        "CC BY-SA 3.0 open license; runtime loads real watershed polygons & 855 chords from /data/micrographs/pure_iron.json.",
+      methodologyNote:
+        "Synthetic Voronoi fallback until /data/micrographs/pure_iron.json (standard_watershed, ℓ̄_ASTM = 7.599 μm, 817 crossings) is fetched.",
+      segmentationPolicy: "standard_watershed",
+      pearliteMaskedFraction: 0.0,
+      widthUm: 177.4,
+      heightUm: 133.0,
+      scaleBarUm: 100.0,
+      pxPerUm: 4.51,
+      gridCols: 6,
+      gridRows: 5,
+      jitter: 0.58,
+      targetMeanUm: 7.599,
+      seed: 100,
+      phase: "Ferrite",
+    }),
+    populationStats: {
+      numGrainsTotal: 137,
+      numGrainsExported: 137,
+      astmMeanInterceptM: 7.599e-6,
+      astmMeanInterceptUm: 7.599,
+      chordMeanM: 7.261e-6,
+      chordMeanUm: 7.261,
+      stdInterceptM: 6.001e-6,
+      stdInterceptUm: 6.001,
+      chordCv: 0.8265,
+      p10M: 0.887e-6,
+      p50M: 5.987e-6,
+      p90M: 15.521e-6,
+      p10Um: 0.887,
+      p50Um: 5.987,
+      p90Um: 15.521,
+      totalCrossings: 817,
+      totalChords: 855,
+      totalLineLengthUm: 6208.43,
+    },
+  },
+  ferritic_steel: {
+    ...buildVoronoiMicrographPreset({
+      key: "ferritic_steel",
+      name: "Synthetic Voronoi (Model Fallback — Load web/public/data/micrographs/ferritic_steel.json for Segmented Micrograph)",
+      materialKey: "ferritic_steel",
+      source: "Synthetic Voronoi Model Fallback (Target: DoITPoMS #202 Ferritic Steel, ℓ̄_ASTM = 13.139 μm, ℓ̄_chord = 11.368 μm, n = 1301)",
+      licenseNote:
+        "Decision D6: Raw DoITPoMS image not bundled; runtime loads ferrite-masked polygons & 1301 chords from /data/micrographs/ferritic_steel.json.",
+      methodologyNote:
+        "Synthetic Voronoi fallback until /data/micrographs/ferritic_steel.json (M5_ferrite_only_mask, pearlite masked, ℓ̄_ASTM = 13.139 μm, 1129 crossings) is fetched.",
+      segmentationPolicy: "M5_ferrite_only_mask",
+      pearliteMaskedFraction: 0.1378,
+      widthUm: 534.0,
+      heightUm: 335.6,
+      scaleBarUm: 200.0,
+      pxPerUm: 1.46,
+      gridCols: 7,
+      gridRows: 5,
+      jitter: 0.6,
+      targetMeanUm: 13.139,
+      seed: 202,
+      phase: "Ferrite",
+    }),
+    populationStats: {
+      numGrainsTotal: 406,
+      numGrainsExported: 140,
+      astmMeanInterceptM: 13.139e-6,
+      astmMeanInterceptUm: 13.139,
+      chordMeanM: 11.368e-6,
+      chordMeanUm: 11.368,
+      stdInterceptM: 8.575e-6,
+      stdInterceptUm: 8.575,
+      chordCv: 0.7542,
+      p10M: 2.055e-6,
+      p50M: 9.589e-6,
+      p90M: 23.288e-6,
+      p10Um: 2.055,
+      p50Um: 9.589,
+      p90Um: 23.288,
+      totalCrossings: 1129,
+      totalChords: 1301,
+      totalLineLengthUm: 14833.56,
+    },
+  },
+  synthetic_voronoi_30um: {
+    ...buildVoronoiMicrographPreset({
+      key: "synthetic_voronoi_30um",
+      name: "Synthetic Voronoi Tessellation (V-11 Stereology Verification Target, ℓ̄_ASTM = 27.907 μm, 215 crossings)",
+      materialKey: "aluminium",
+      source: "Mathematical 2-step Lloyd-relaxed Voronoi tessellation (CC0 1.0 Public Domain, V-11)",
+      licenseNote: "CC0 1.0 Public Domain — Synthetic stereology verification target (NOT an experimental micrograph).",
+      methodologyNote:
+        "Benchmark V-11: Synthetic Voronoi verification target (ℓ̄_ASTM = 27.907 μm, 215 crossings, 231 chords from /data/micrographs/synthetic_voronoi_30um.json).",
+      segmentationPolicy: "V11_synthetic_voronoi_target",
+      pearliteMaskedFraction: 0.0,
+      widthUm: 250.0,
+      heightUm: 350.0,
+      scaleBarUm: 50.0,
+      pxPerUm: 2.0,
+      gridCols: 6,
+      gridRows: 4,
+      jitter: 0.45,
+      targetMeanUm: 27.907,
+      seed: 8,
+      phase: "Synthetic",
+    }),
+    populationStats: {
+      numGrainsTotal: 90,
+      numGrainsExported: 90,
+      astmMeanInterceptM: 27.907e-6,
+      astmMeanInterceptUm: 27.907,
+      chordMeanM: 25.965e-6,
+      chordMeanUm: 25.965,
+      stdInterceptM: 13.677e-6,
+      stdInterceptUm: 13.677,
+      chordCv: 0.5267,
+      p10M: 7.0e-6,
+      p50M: 26.0e-6,
+      p90M: 43.5e-6,
+      p10Um: 7.0,
+      p50Um: 26.0,
+      p90Um: 43.5,
+      totalCrossings: 215,
+      totalChords: 231,
+      totalLineLengthUm: 6000.0,
+    },
+  },
 };

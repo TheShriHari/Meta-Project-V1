@@ -153,22 +153,29 @@ For incoming system (s_in, n_in, b_in) at a boundary with neighbouring grain j, 
 The boundary plane normal is assumed per A5. m′ is a geometric criterion, **not** a complete physical law; the log states which criteria passed/failed and with what values.
 
 ### 5.6 Pile-up model (discrete, 1D)
-Notation: s_i ≥ 0 is the distance of dislocation i behind the boundary; leader s₁ = 0 (held by the boundary); source at s = L.
-- Edge interaction constant per unit length: A = G b² / (2π(1−ν)); define A′ = A / b = G b / (2π(1−ν)) (stress units × length).
-- Effective driving stress τ_eff = τ_app,RSS − τ_c (zero if negative ⇒ no pile-up).
-- Force balance for followers i = 2…N (divided by b): **−τ_eff + Σ_{j≠i} A′/(s_i − s_j) = 0**.
-- Solve with `scipy.optimize.root` using the analytic Jacobian (J_ik = −A′/(s_i−s_k)² for k≠i; J_ii = +Σ_{j≠i} A′/(s_i−s_j)²), parametrize by positive gaps to preserve ordering, and use continuation in N (previous solution + one more dislocation) with a damped-dynamics fallback. Guard: spacing < b ⇒ flag "core overlap" in the event log.
-- **Source shut-off (quasi-static emission):** starting at N = 1, add a dislocation while τ_eff − τ_back(L; N) > τ_src, where τ_back(L; N) = Σ_j A′/(L − s_j) and τ_src is the source activation stress (default 0, configurable). Final N is the pile-up size.
-- **Tip stress (exact by global balance):** τ_tip = N · τ_eff (force on the leader divided by b). This identity is a unit test.
-- **Analytic reference (continuum Eshelby–Frank–Nabarro):** N ≈ π(1−ν) τ_eff L / (G b) for edge character, so τ_tip ≈ π(1−ν) L τ_eff² / (G b).
+Notation: s_i ≥ 0 [m] is the distance of dislocation i behind the boundary; leader s₁ = 0 [m] (held by the boundary); source at s = L [m].
+- **Edge interaction constant per unit length & prefactor conventions:**
+  - Force formulation (e.g. Cottrell 1953): interaction force per unit dislocation line length is f = A_force / s [N/m] where A_force = G b² / (2π(1−ν)) [N]. Dividing by Burgers vector b [m] gives the interaction shear stress prefactor A′ = A_force / b = G b / (2π(1−ν)) [Pa·m].
+  - Stress formulation (Eshelby, Frank & Nabarro 1951, Hirth & Lothe 1982 Eq. 3-43, Hull & Bacon 2011 Eq. 4.14, codebase `pileup.py`): the interaction shear stress field directly on the slip plane is τ = A / s [Pa], where A = μ b / (2π(1−ν)) [Pa·m].
+  - Elastic modulus equivalence: μ ≡ G [Pa] (shear modulus); both notations are mathematically and numerically identical: A_EFN ≡ A′_spec = μ b / [2π(1−ν)] [Pa·m].
+- Effective driving stress τ_eff = τ_app,RSS − τ_c [Pa] (zero if negative ⇒ no pile-up).
+- Force balance for followers i = 2…N (expressed in stress units [Pa]): **−τ_eff + Σ_{j≠i} A/(s_i − s_j) = 0** with A = G b / [2π(1−ν)] [Pa·m].
+- Solve with `scipy.optimize.root` or exact Golub–Welsch / mpmath polynomial roots using the analytic Jacobian (J_ik = −A/(s_i−s_k)² [Pa/m] for k≠i; J_ii = +Σ_{j≠i} A/(s_i−s_j)² [Pa/m]), parametrize by positive gaps to preserve ordering, and use continuation in N (previous solution + one more dislocation) with a damped-dynamics fallback. Guard: spacing < b ⇒ flag "core overlap" in the event log.
+- **Source shut-off (quasi-static emission):** starting at N = 1, add a dislocation while τ_eff − τ_back(L; N) > τ_src [Pa], where τ_back(L; N) = Σ_j A/(L − s_j) [Pa] and τ_src [Pa] is the source activation stress (default 0, configurable). Final N is the pile-up size.
+- **Tip stress (exact by global balance):** τ_tip = N · τ_eff [Pa] (force on the leader divided by b, identical to τ_eff + Σ_{j>1} A/s_j). This identity is a unit test.
+- **Analytic reference (continuum Eshelby–Frank–Nabarro):** N ≈ π(1−ν) τ_eff L / (G b) [dimensionless] for edge character, so τ_tip ≈ π(1−ν) L τ_eff² / (G b) [Pa].
 
 ### 5.7 Yield onset and the emergent Hall–Petch relation
-- Boundary threshold: **τ\*(m′) = τ\*_ref · (1 + β(1 − m′))**, with β ≥ 0. Default **β = 0** for all calibration and headline results; β > 0 appears only in a labelled sensitivity study.
-- **Yield onset:** the smallest τ_app such that τ_tip ≥ τ\*; found by bisection on τ_eff (τ_tip is non-decreasing in τ_eff). Report the plateau resolution caused by integer N.
-- With L = d/2, the continuum result gives τ_eff,crit = sqrt( 2 G b τ\* / (π(1−ν) d) ) ∝ d^(−1/2). Macroscopic yield: **σ_y = M_T (τ_c + τ_eff,crit)**, hence the analytic reference **k_y = M_T · sqrt( 2 G b τ\* / (π(1−ν)) )** and σ₀ = M_T τ_c.
+- Boundary threshold: **τ\*(m′) = τ\*_ref · (1 + β(1 − m′))** [Pa], with β ≥ 0 [dimensionless]. Default **β = 0** for all calibration and headline results; β > 0 appears only in a labelled sensitivity study.
+- **Yield onset:** the smallest τ_app [Pa] such that τ_tip ≥ τ\* [Pa]; found by bisection on τ_eff (τ_tip is non-decreasing in τ_eff). Report the plateau resolution caused by integer N.
+- **Pile-up length scaling (L = c · d sensitivity):**
+  - Baseline L = d/2 (source at grain centre): τ_eff,crit = sqrt( 2 G b τ\* / (π(1−ν) d) ) [Pa] ∝ d^(−1/2). Macroscopic yield: **σ_y = M_T (τ_c + τ_eff,crit)** [Pa], hence the analytic reference **k_y = M_T · sqrt( 2 G b τ\* / (π(1−ν)) )** [Pa·m^(1/2)] and σ₀ = M_T τ_c [Pa].
+  - Sensitivity to source location: For arbitrary L = c · d, k_y(c) = M_T · sqrt( G b τ\* / (π(1−ν) c) ) [Pa·m^(1/2)].
+    - For L = d (transgranular source, c = 1): k_y(d) = k_y(d/2) / sqrt(2) ≈ 0.7071 · k_y(d/2).
+    - For L = d/4 (near-boundary source, c = 1/4): k_y(d/4) = k_y(d/2) · sqrt(2) ≈ 1.4142 · k_y(d/2).
 - **What is emergent:** the d^(−1/2) *exponent* and the dependence on G, b, ν come from the discrete pile-up solution, not from an input formula.
-- **What is calibrated:** one scalar τ\*_ref per material, fit to a **calibration** dataset. Everything else is reported on **held-out** data. Calibrated values are labelled *calibrated*, never *sourced*.
-- Fit: OLS of σ_y vs d^(−1/2) with bootstrap confidence intervals for k_y and σ₀; also report log–log slope of τ_eff,crit vs d (target −0.5).
+- **What is calibrated:** one scalar τ\*_ref [Pa] per material, fit to a **calibration** dataset. Everything else is reported on **held-out** data. Calibrated values are labelled *calibrated*, never *sourced*.
+- Fit: OLS of σ_y vs d^(−1/2) with bootstrap confidence intervals for k_y [Pa·m^(1/2)] and σ₀ [Pa]; also report log–log slope of τ_eff,crit vs d (target −0.5).
 
 ### 5.8 Micrograph pipeline (Layer A)
 1. **Calibrate scale** from metadata (µm per pixel); refuse to run without it.

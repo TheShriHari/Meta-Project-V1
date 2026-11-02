@@ -45,6 +45,20 @@ from hpsim.core.glide import (
     calculate_glide_velocity,
     integrate_dislocation_position,
 )
+from hpsim.core.pileup import (
+    PileupInputs,
+    PileupResult,
+    PileupLengthSensitivityResult,
+    validate_pileup_inputs,
+    compute_pileup_prefactor,
+    compute_efn_roots,
+    compute_efn_exact_positions,
+    compute_efn_asymptotic_count,
+    compute_pileup_residuals,
+    compute_pileup_jacobian,
+    solve_pileup_equilibrium,
+    compute_pileup_hall_petch_ky_sensitivity,
+)
 from hpsim.core.hallpetch import (
     SourceShutoffInputs,
     SourceShutoffResult,
@@ -94,4 +108,16 @@ __all__ = [
     "schmid_factor_uniaxial",
     "calculate_glide_velocity",
     "integrate_dislocation_position",
+    "PileupInputs",
+    "PileupResult",
+    "PileupLengthSensitivityResult",
+    "validate_pileup_inputs",
+    "compute_pileup_prefactor",
+    "compute_efn_roots",
+    "compute_efn_exact_positions",
+    "compute_efn_asymptotic_count",
+    "compute_pileup_residuals",
+    "compute_pileup_jacobian",
+    "solve_pileup_equilibrium",
+    "compute_pileup_hall_petch_ky_sensitivity",
 ]

@@ -1,17 +1,23 @@
 """
-Phase 5 RED tests: Discrete Dislocation Pile-Up Engine & Eshelby-Frank-Nabarro (EFN) Benchmark.
-Tests written before implementing src/hpsim/core/pileup.py.
+Phase 5 Tests: Discrete Dislocation Pile-Up Engine, EFN Benchmark & Physics Conventions.
 """
-import pytest
+import os
 import numpy as np
+import pytest
+import mpmath
+import yaml
 
 from hpsim.core.pileup import (
     solve_pileup_equilibrium,
     compute_efn_exact_positions,
+    compute_efn_roots,
     compute_efn_asymptotic_count,
+    compute_pileup_prefactor,
+    compute_pileup_hall_petch_ky_sensitivity,
     PileupInputs,
     PileupResult,
 )
+from hpsim.core.glide import calculate_glide_velocity
 
 A_FCC_AL = 4.0495e-10  # m
 B_FCC_AL = A_FCC_AL / np.sqrt(2.0)  # ~ 2.8634e-10 m
@@ -86,10 +92,62 @@ def test_two_dislocation_analytical_solution():
     assert res.positions_m[1] == pytest.approx(expected_x2, rel=1e-10)
     assert res.max_residual_pa == pytest.approx(0.0, abs=1e-6)
 
-    # Compare with EFN exact function
-    efn_pos = compute_efn_exact_positions(inputs)
-    assert len(efn_pos) == 2
-    assert efn_pos[1] == pytest.approx(expected_x2, rel=1e-10)
+    # Independent residual (own implementation, not the module's): A/x2 - tau = 0
+    assert abs(A / res.positions_m[1] - 40e6) < 1e-6
+    # efn_positions_m is the same quantity reported by the engine; hand value still the oracle
+    assert res.efn_positions_m[1] == pytest.approx(expected_x2, rel=1e-10)
+
+
+def test_first_principles_dimensional_analysis_n2():
+    """
+    Task 3: First-principles dimensional analysis test for N=2 using primitive inputs from materials.yaml
+    (G, b, nu) without calling compute_pileup_prefactor.
+
+    Verifies:
+      1. Formula: A = G * b / [2 * pi * (1 - nu)] in Pa * m.
+      2. Equilibrium position: x_1 = A / tau_eff in m.
+      3. Product identity: x_1 * tau_eff == G * b / [2 * pi * (1 - nu)].
+      4. Dimensional consistency: [x_1] * [tau_eff] = m * Pa = Pa * m.
+      5. Numerical value for Aluminium (G=26 GPa, nu=0.345, b=0.286343 nm).
+    """
+    materials_path = os.path.join(os.path.dirname(__file__), "..", "src", "hpsim", "materials", "materials.yaml")
+    with open(materials_path, "r", encoding="utf-8") as f:
+        mat_data = yaml.safe_load(f)
+
+    al_params = mat_data["aluminium"]["parameters"]
+    G = float(al_params["G"]["value"])          # 26.0e9 Pa
+    nu = float(al_params["nu"]["value"])        # 0.345
+    b = float(al_params["b"]["value"])          # 2.86343e-10 m
+
+    # Primitive direct calculation of A = G*b / [2*pi*(1 - nu)] in Pa * m
+    A_primitive = (G * b) / (2.0 * np.pi * (1.0 - nu))
+    tau_eff = 45.0e6  # Pa (45 MPa applied driving stress)
+
+    # Solve N=2 discrete pile-up
+    inputs = PileupInputs(
+        mu_pa=G,
+        nu=nu,
+        burgers_m=b,
+        tau_applied_pa=tau_eff,
+        count=2,
+    )
+    res = solve_pileup_equilibrium(inputs)
+    assert res.converged is True
+    assert len(res.positions_m) == 2
+    assert res.positions_m[0] == 0.0
+
+    x_1 = res.positions_m[1]
+    expected_x_1 = A_primitive / tau_eff
+
+    # Assert exact product relation: x_1 * tau_eff == G * b / [2 * pi * (1 - nu)]
+    product = x_1 * tau_eff
+    assert product == pytest.approx(A_primitive, rel=1e-12)
+    assert x_1 == pytest.approx(expected_x_1, rel=1e-12)
+
+    # Print and assert numeric coefficient
+    # For Al: G=26 GPa, b=0.286343 nm, nu=0.345 -> A ~ 1.80899997 Pa*m
+    print(f"\n[Dimensional Analysis N=2] Primitive coefficient A = {product:.8e} Pa*m (expected {A_primitive:.8e} Pa*m)")
+    assert 1.808e0 <= product <= 1.810e0
 
 
 def test_three_dislocation_analytical_solution():
@@ -118,9 +176,69 @@ def test_three_dislocation_analytical_solution():
     assert res.positions_m[1] == pytest.approx(expected_x2, rel=1e-10)
     assert res.positions_m[2] == pytest.approx(expected_x3, rel=1e-10)
 
-    # Cross-check with EFN polynomial roots function
-    efn_pos = compute_efn_exact_positions(inputs)
-    assert np.allclose(res.positions_m, efn_pos, rtol=1e-9, atol=1e-14)
+    # Hand-derived independent check (A=1, tau=lam units -> x=xi/(2 lam)):
+    # force balance 1/x1 + 1/(x1-x2) = lam = 1/x2 + 1/(x2-x1), solved by hand above.
+    x1, x2 = res.positions_m[1], res.positions_m[2]
+    assert abs(A / x1 + A / (x1 - x2) - 50e6) < 1e-5
+    assert abs(A / x2 + A / (x2 - x1) - 50e6) < 1e-5
+    # Symmetry identity from summing both balances: 1/x1 + 1/x2 = 2 lam
+    assert A / x1 + A / x2 == pytest.approx(2 * 50e6, rel=1e-10)
+
+
+def test_mpmath_independent_oracle_n4_and_n5():
+    """
+    Task 4: Independent EFN root oracle using high-precision mpmath.polyroots (dps=50) for N=4 and N=5:
+      - N=4 (m=3): Associated Laguerre polynomial L_3^(1)(xi) = 4 - 6*xi + 2*xi^2 - (1/6)*xi^3 = 0.
+      - N=5 (m=4): Associated Laguerre polynomial L_4^(1)(xi) = 5 - 10*xi + 5*xi^2 - (5/6)*xi^3 + (1/24)*xi^4 = 0.
+      - Roots xi_k computed to 50 digits independently of tridiagonal Golub-Welsch eigensolver.
+      - Predicted equilibrium positions: x_k = xi_k / (2 * lambda) with lambda = tau_app / A.
+      - Compares solver's positions against these independent mpmath roots.
+    """
+    mpmath.mp.dps = 50
+
+    # m = 3 (N = 4 dislocations: 1 locked + 3 mobile)
+    # L_3^(1)(xi) = 4 - 6*xi + 2*xi^2 - (1/6)*xi^3 = 0
+    # Coefficients in descending order: [-1/6, 2, -6, 4]
+    poly_m3 = [-mpmath.mpf(1)/6, mpmath.mpf(2), -mpmath.mpf(6), mpmath.mpf(4)]
+    mp_roots_m3 = sorted([float(r) for r in mpmath.polyroots(poly_m3)])
+    assert len(mp_roots_m3) == 3
+
+    # m = 4 (N = 5 dislocations: 1 locked + 4 mobile)
+    # L_4^(1)(xi) = 5 - 10*xi + 5*xi^2 - (5/6)*xi^3 + (1/24)*xi^4 = 0
+    # Coefficients in descending order: [1/24, -5/6, 5, -10, 5]
+    poly_m4 = [mpmath.mpf(1)/24, -mpmath.mpf(5)/6, mpmath.mpf(5), -mpmath.mpf(10), mpmath.mpf(5)]
+    mp_roots_m4 = sorted([float(r) for r in mpmath.polyroots(poly_m4)])
+    assert len(mp_roots_m4) == 4
+
+    tau_app = 55.0e6  # Pa
+    A = compute_pileup_prefactor(MU_AL, NU_AL, B_FCC_AL)
+    lam = tau_app / A
+
+    # Verify N = 4 against mpmath oracle
+    res_n4 = solve_pileup_equilibrium(PileupInputs(
+        mu_pa=MU_AL,
+        nu=NU_AL,
+        burgers_m=B_FCC_AL,
+        tau_applied_pa=tau_app,
+        count=4,
+    ))
+    assert res_n4.converged is True
+    expected_pos_n4 = [0.0] + [xi / (2.0 * lam) for xi in mp_roots_m3]
+    for k in range(4):
+        assert res_n4.positions_m[k] == pytest.approx(expected_pos_n4[k], rel=1e-12, abs=1e-15)
+
+    # Verify N = 5 against mpmath oracle
+    res_n5 = solve_pileup_equilibrium(PileupInputs(
+        mu_pa=MU_AL,
+        nu=NU_AL,
+        burgers_m=B_FCC_AL,
+        tau_applied_pa=tau_app,
+        count=5,
+    ))
+    assert res_n5.converged is True
+    expected_pos_n5 = [0.0] + [xi / (2.0 * lam) for xi in mp_roots_m4]
+    for k in range(5):
+        assert res_n5.positions_m[k] == pytest.approx(expected_pos_n5[k], rel=1e-12, abs=1e-15)
 
 
 def test_force_signs_and_repulsion():
@@ -196,48 +314,45 @@ def test_crowding_toward_obstacle():
         assert spacings[k + 1] > spacings[k], f"Density crowding violated at spacing index {k}"
 
 
-def test_efn_numerical_solver_benchmark_agreement():
-    """
-    The Newton-Raphson force-balance solver must agree with the exact EFN
-    orthogonal polynomial roots across counts N=2, 3, 5, 10, 15, 25 to within numerical tolerance.
-    """
-    for N in [2, 3, 5, 10, 15, 25]:
-        inputs = PileupInputs(
-            mu_pa=MU_AL,
-            nu=NU_AL,
-            burgers_m=B_FCC_AL,
-            tau_applied_pa=45e6,
-            count=N,
-        )
-        res = solve_pileup_equilibrium(inputs)
-        efn_pos = compute_efn_exact_positions(inputs)
+def _indep_residuals(pos, A, tau):
+    """Independent force-balance residual R_i = sum_{j!=i} A/(x_i-x_j) - tau (own code, incl. locked x_0)."""
+    return np.array([
+        sum(A / (pos[i] - pos[j]) for j in range(len(pos)) if j != i) - tau
+        for i in range(1, len(pos))
+    ])
 
+
+def test_equilibrium_residual_property():
+    """PROPERTY/RESIDUAL test (no closed form for N>3): returned positions satisfy force balance,
+    ordering, positive gaps, x_0 = 0 boundary condition, and units (metres, scale A/tau)."""
+    tau = 45e6
+    A = MU_AL * B_FCC_AL / (2.0 * np.pi * (1.0 - NU_AL))
+    for N in [2, 3, 5, 10, 15, 25]:
+        res = solve_pileup_equilibrium(PileupInputs(mu_pa=MU_AL, nu=NU_AL, burgers_m=B_FCC_AL, tau_applied_pa=tau, count=N))
         assert res.converged is True
-        # Maximum position discrepancy must be < 1e-10 m (sub-Angstrom precision)
-        max_err = np.max(np.abs(res.positions_m - efn_pos))
-        assert max_err < 1e-10, f"Discrepancy too large for N={N}: {max_err:.2e} m"
-        assert res.max_residual_pa < 1e-5, f"Residual too large for N={N}: {res.max_residual_pa:.2e} Pa"
+        pos = res.positions_m
+        assert pos.shape == (N,)
+        assert pos[0] == 0.0
+        assert np.all(np.diff(pos) > 0.0)
+        r = _indep_residuals(pos, A, tau)
+        assert np.max(np.abs(r)) < 1e-6 * tau  # relative 1e-6 of applied stress
+        # units: A/tau is a length in metres; Laguerre bound xi_max < 4m+2 => x_N < (2m+1)*A/tau
+        scale = A / tau
+        assert 0.0 < pos[-1] < (2 * (N - 1) + 1) * scale
 
 
 def test_eshelby_tip_stress_multiplication():
-    """
-    Classic Eshelby theorem: The total stress concentration on the locked obstacle dislocation
-    is exactly N * tau_applied.
-    """
+    """Eshelby identity N*tau, checked against an independent sum over returned positions.
+    Summing mobile balances (pair terms cancel) gives sum_i A/x_i = (N-1)*tau (stress on the
+    locked dislocation from mobile ones); plus applied tau gives N*tau."""
+    tau_app = 30e6
+    A = MU_AL * B_FCC_AL / (2.0 * np.pi * (1.0 - NU_AL))
     for N in [2, 4, 8, 16]:
-        tau_app = 30e6
-        inputs = PileupInputs(
-            mu_pa=MU_AL,
-            nu=NU_AL,
-            burgers_m=B_FCC_AL,
-            tau_applied_pa=tau_app,
-            count=N,
-        )
-        res = solve_pileup_equilibrium(inputs)
+        res = solve_pileup_equilibrium(PileupInputs(mu_pa=MU_AL, nu=NU_AL, burgers_m=B_FCC_AL, tau_applied_pa=tau_app, count=N))
         assert res.converged is True
-        # Theoretical tip stress = N * tau_app
-        expected_tip_stress = N * tau_app
-        assert res.tip_stress_pa == pytest.approx(expected_tip_stress, rel=1e-6)
+        tip_from_positions = tau_app + sum(A / x for x in res.positions_m[1:])
+        assert tip_from_positions == pytest.approx(N * tau_app, rel=1e-9)
+        assert res.tip_stress_pa == pytest.approx(tip_from_positions, rel=1e-9)
 
 
 def test_scaling_laws():
@@ -309,10 +424,67 @@ def test_solver_inadequate_iteration_budget():
     assert res.status == "max_iterations_exceeded"
 
 
+def test_pileup_length_hall_petch_sensitivity():
+    """
+    Task 5: Sensitivity study of Hall-Petch slope k_y to pile-up length scale L = c * d.
+    Compares baseline L = d/2 against L = d and L = d/4.
+    """
+    tau_star = 120.0e6  # Pa
+    res = compute_pileup_hall_petch_ky_sensitivity(
+        mu_pa=MU_AL,
+        nu=NU_AL,
+        burgers_m=B_FCC_AL,
+        tau_star_pa=tau_star,
+        taylor_factor=3.06,
+    )
+
+    # Check scaling ratios
+    assert res.ratio_d_full_to_half == pytest.approx(1.0 / np.sqrt(2.0), rel=1e-12)
+    assert res.ratio_d_quarter_to_half == pytest.approx(np.sqrt(2.0), rel=1e-12)
+
+    # k_y(L=d) is smaller by factor 1/sqrt(2) because slip band is longer
+    assert res.ky_L_d_full_pa_m05 == pytest.approx(res.ky_L_d_half_pa_m05 / np.sqrt(2.0), rel=1e-12)
+
+    # k_y(L=d/4) is larger by factor sqrt(2) because slip band is shorter
+    assert res.ky_L_d_quarter_pa_m05 == pytest.approx(res.ky_L_d_half_pa_m05 * np.sqrt(2.0), rel=1e-12)
+
+    # Check dimensional scaling: [k_y] = Pa * m^(1/2)
+    # Typical Hall-Petch slope for metals is 0.05 - 1.0 MPa * m^(1/2) = 5e4 - 1e6 Pa * m^(1/2)
+    assert 1e4 <= res.ky_L_d_half_pa_m05 <= 1e7
+
+
+def test_post_transmission_glide_velocity_direction():
+    """
+    Task 6: Post-transmission velocity points away from boundary (x > 0).
+    When a dislocation transmits across an obstacle boundary at x=0 into an adjacent grain,
+    the glide velocity v along the outgoing slip coordinate must be positive (v > 0)
+    so the dislocation glides into the receiving grain interior, away from the boundary.
+    """
+    M_d = 1.0e-4   # 1 / (Pa * s)
+    b = B_FCC_AL   # m
+    tau_c = 1.0e6  # 1 MPa friction stress
+
+    # Case A: Outgoing system has positive resolved shear stress tau_RSS > tau_c
+    tau_rss_pos = 15.0e6  # 15 MPa
+    v_pos = calculate_glide_velocity(tau_rss_pos, tau_c, M_d, b)
+    assert v_pos > 0.0, "Positive driving stress must produce positive velocity (away from boundary)"
+
+    # Case B: Outgoing system with |tau_RSS| >= tau_c but negative crystal projection
+    # Physical slip vector convention requires flipping s -> -s so tau_eff = |tau_RSS| >= tau_c
+    tau_rss_neg = -15.0e6
+    tau_eff_directed = abs(tau_rss_neg)
+    v_directed = calculate_glide_velocity(tau_eff_directed, tau_c, M_d, b)
+    assert v_directed > 0.0, "Transmitted dislocation with effective outward orientation glides into grain interior"
+    assert v_directed == pytest.approx(v_pos, rel=1e-12)
+
+    # Under-threshold stress does not glide (v = 0)
+    v_zero = calculate_glide_velocity(0.5e6, tau_c, M_d, b)
+    assert v_zero == 0.0
+
+
 def test_phase5_fixtures_parity():
     """Verify that stored golden fixtures match Python solver across all 5 test cases."""
     import json
-    import os
 
     fixture_path = os.path.join(os.path.dirname(__file__), "golden", "phase5_fixtures.json")
     with open(fixture_path, "r", encoding="utf-8") as f:
@@ -363,4 +535,3 @@ def test_phase5_fixtures_parity():
     assert res5.converged == c5["converged"]
     assert res5.iterations == c5["iterations"]
     assert np.allclose(res5.positions_m, c5["positions_m"], atol=1e-12)
-
