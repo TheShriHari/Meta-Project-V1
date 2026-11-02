@@ -31,6 +31,7 @@ import {
   type ParsedUserChordDataset,
 } from "../core/micrograph.ts";
 import { resolveAssetUrl } from "../core/paths.ts";
+import { BeginnerScreen } from "./BeginnerScreen.tsx";
 
 const BASE_STEPS_PER_SECOND = 60;
 const MAX_HISTORY = 20000;
@@ -165,7 +166,11 @@ const EXPERIMENT_PRESETS: ExperimentPresetSpec[] = [
   },
 ];
 
-export function App() {
+interface AdvancedDashboardProps {
+  onGoHome: () => void;
+}
+
+function AdvancedDashboard({ onGoHome }: AdvancedDashboardProps) {
   const [axisKey, setAxisKey] = useState("[001]");
   const [cells, setCells] = useState(5);
   const [systemIndex, setSystemIndex] = useState(() => bestSystemIndex(LOADING_AXES["[001]"]));
@@ -562,6 +567,19 @@ export function App() {
         <div className="banner-top">
           <h1>HPSim · Dislocation Glide, Transmission, Pile-Up & Hall–Petch Engine</h1>
           <div className="banner-actions">
+            <button
+              id="btn-go-home"
+              onClick={onGoHome}
+              style={{
+                background: "rgba(16, 185, 129, 0.15)",
+                borderColor: "#10b981",
+                color: "#6ee7b7",
+                fontWeight: 600,
+                fontSize: "12px",
+              }}
+            >
+              ← Simple View
+            </button>
             <label style={{ margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "11.5px", color: "#93c5fd", fontWeight: 600 }}>
                 Experiment Preset:
@@ -2195,5 +2213,15 @@ export function App() {
       </main>
     </div>
   );
+}
+
+export function App() {
+  const [appView, setAppView] = useState<'beginner' | 'advanced'>('beginner');
+
+  if (appView === 'beginner') {
+    return <BeginnerScreen onGoAdvanced={() => setAppView('advanced')} />;
+  }
+
+  return <AdvancedDashboard onGoHome={() => setAppView('beginner')} />;
 }
 
