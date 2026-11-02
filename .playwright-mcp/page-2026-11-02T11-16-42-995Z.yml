@@ -1,0 +1,80 @@
+- generic [ref=e3]:
+  - banner [ref=e4]:
+    - generic [ref=e5]:
+      - generic [ref=e6]: HPSim
+      - generic [ref=e7]: /
+      - generic [ref=e8]: Intuitive Mechanics
+    - navigation "Chapter progress" [ref=e9]:
+      - 'button "Chapter 1: The Defect" [ref=e11] [cursor=pointer]':
+        - generic [ref=e12]: ✓
+        - generic [ref=e13]: The Defect
+      - 'button "Chapter 2: The Wall" [ref=e16] [cursor=pointer]':
+        - generic [ref=e17]: "2"
+        - generic [ref=e18]: The Wall
+      - 'button "Chapter 3: More Walls, More Strength" [disabled] [ref=e21]':
+        - generic [ref=e22]: "3"
+        - generic [ref=e23]: More Walls, More Strength
+      - 'button "Chapter 4: The Pattern Has a Name" [disabled] [ref=e26]':
+        - generic [ref=e27]: "4"
+        - generic [ref=e28]: The Pattern Has a Name
+    - button "Research Mode →" [ref=e29] [cursor=pointer]
+  - main [ref=e30]:
+    - generic [ref=e31]:
+      - generic [ref=e32]:
+        - generic [ref=e33]:
+          - generic:
+            - generic: Extra half-plane of atoms
+            - generic: b ⟂ dislocation line
+            - generic: Slip plane
+            - generic: b
+            - generic: Dislocation core (⊥)
+        - generic: Defect line (Dislocation core)
+        - generic [ref=e35]: Edge Dislocation (⊥) • Single FCC Slip Plane
+        - group "Camera views" [ref=e36]:
+          - button "front" [ref=e37] [cursor=pointer]
+          - button "top" [ref=e38] [cursor=pointer]
+          - button "side" [ref=e39] [cursor=pointer]
+          - button "isometric" [ref=e40] [cursor=pointer]
+          - button "Return to Free View" [ref=e111] [cursor=pointer]
+          - button "Reset" [ref=e42] [cursor=pointer]
+        - complementary "Scene Legend" [ref=e43]:
+          - generic [ref=e44]:
+            - generic [ref=e45]: Scene Legend
+            - button "✕" [ref=e48] [cursor=pointer]
+          - generic [ref=e49]:
+            - generic [ref=e53]:
+              - generic [ref=e54]: Crystal Atoms
+              - generic [ref=e55]: Gold spheres (#D4A843) representing FCC crystal lattice
+            - generic [ref=e59]:
+              - generic [ref=e60]: Displaced Atoms
+              - generic [ref=e61]: Cyan-white highlight indicating displacement magnitude |u|
+            - generic [ref=e65]:
+              - generic [ref=e66]: Reference Lattice
+              - generic [ref=e67]: "Faint white spheres: original undisplaced atom positions"
+            - generic [ref=e72]:
+              - generic [ref=e73]: Extra Half-Plane
+              - generic [ref=e74]: Inserted atomic half-plane terminating inside crystal
+            - generic [ref=e78]:
+              - generic [ref=e79]: Dislocation Line (ξ)
+              - generic [ref=e80]: "Pink line: terminating bottom edge of the extra half-plane"
+            - generic [ref=e84]:
+              - generic [ref=e85]: Dislocation Core (⊥)
+              - generic [ref=e86]: Pink sphere marking the defect center on the slip plane
+            - generic [ref=e90]:
+              - generic [ref=e91]: "Slip Plane {111}"
+              - generic [ref=e92]: Translucent amber plane where dislocation glide occurs
+            - generic [ref=e93]:
+              - generic [ref=e94]: ➔
+              - generic [ref=e96]:
+                - generic [ref=e97]: Burgers Vector (b)
+                - generic [ref=e98]: "Amber arrow: slip direction (b ⟂ dislocation line)"
+      - generic [ref=e115]:
+        - button "Glide Again ↺" [ref=e116] [cursor=pointer]
+        - button "What stops it? →" [ref=e117] [cursor=pointer]
+  - status:
+    - paragraph: The defect left the simulated region. The crystal's atoms have permanently shifted.
+  - complementary [ref=e106]:
+    - button "🔬 Experiment Log (1 run) ▲" [ref=e118] [cursor=pointer]:
+      - generic [ref=e108]: 🔬
+      - generic [ref=e109]: Experiment Log (1 run)
+      - generic [ref=e110]: ▲

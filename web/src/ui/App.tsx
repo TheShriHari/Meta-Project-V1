@@ -1,3 +1,4 @@
+import { SceneLegend } from "./components/SceneLegend.tsx";
 import { useEffect, useMemo, useRef, useState } from "react";
 import { Viewer, LAYERS, type Layer } from "../render/viewer.ts";
 import type { ViewName } from "../render/camera.ts";
@@ -31,12 +32,15 @@ import {
   type ParsedUserChordDataset,
 } from "../core/micrograph.ts";
 import { resolveAssetUrl } from "../core/paths.ts";
+import { LearningExperience } from "./learning/LearningExperience.tsx";
 import { BeginnerScreen } from "./BeginnerScreen.tsx";
 
 const BASE_STEPS_PER_SECOND = 60;
 const MAX_HISTORY = 20000;
 const LAYER_LABEL: Record<Layer, string> = {
   atoms: "Atoms",
+  ghost: "Reference lattice (ideal R0)",
+  extraHalfPlane: "Extra half-plane of atoms",
   bonds: "NN bonds",
   cell: "Unit cell",
   axes: "Axes (X red, Y green, Z blue)",
@@ -176,6 +180,7 @@ function AdvancedDashboard({ onGoHome }: AdvancedDashboardProps) {
   const [systemIndex, setSystemIndex] = useState(() => bestSystemIndex(LOADING_AXES["[001]"]));
   const [stressMpa, setStressMpa] = useState(40);
   const [speed, setSpeed] = useState(1);
+  const [isDislocationViewActive, setIsDislocationViewActive] = useState<boolean>(false);
   const [playing, setPlaying] = useState(false);
   const [version, setVersion] = useState(0);
   const [layerOn, setLayerOn] = useState<Record<Layer, boolean>>(
@@ -578,7 +583,7 @@ function AdvancedDashboard({ onGoHome }: AdvancedDashboardProps) {
                 fontSize: "12px",
               }}
             >
-              ← Simple View
+              ← Guided Journey
             </button>
             <label style={{ margin: 0, display: "flex", alignItems: "center", gap: "6px" }}>
               <span style={{ fontSize: "11.5px", color: "#93c5fd", fontWeight: 600 }}>
@@ -724,13 +729,42 @@ function AdvancedDashboard({ onGoHome }: AdvancedDashboardProps) {
       <main className="layout">
         <section className="viewport" aria-label="3D crystal view">
           <div ref={hostRef} className="canvas-host" id="viewport" />
+          <SceneLegend
+            chapterId="research"
+            hasGrainBoundary={layerOn.boundary}
+            hasExtraHalfPlane={layerOn.extraHalfPlane}
+            hasDisplacedAtoms={true}
+            hasGhostLattice={layerOn.ghost}
+            hasBurgersVector={layerOn.burgers}
+            hasBonds={layerOn.bonds}
+          />
           <div className="views" role="group" aria-label="Camera views">
             {(["front", "top", "side", "isometric"] as ViewName[]).map((v) => (
-              <button key={v} id={`view-${v}`} onClick={() => setView(v)}>
+              <button key={v} id={`view-${v}`} onClick={() => {
+                setIsDislocationViewActive(false);
+                setView(v);
+              }}>
                 {v}
               </button>
             ))}
-            <button id="view-reset" onClick={() => viewerRef.current?.resetCamera()}>
+            <button
+              id="view-dislocation"
+              onClick={() => {
+                const active = viewerRef.current?.toggleDislocationView();
+                setIsDislocationViewActive(Boolean(active));
+              }}
+              style={{
+                borderColor: isDislocationViewActive ? "#10b981" : undefined,
+                color: isDislocationViewActive ? "#6ee7b7" : undefined,
+                fontWeight: isDislocationViewActive ? 700 : undefined,
+              }}
+            >
+              {isDislocationViewActive ? "Return to Free View" : "Dislocation View"}
+            </button>
+            <button id="view-reset" onClick={() => {
+              setIsDislocationViewActive(false);
+              viewerRef.current?.resetCamera();
+            }}>
               reset camera
             </button>
           </div>
@@ -2216,12 +2250,16 @@ function AdvancedDashboard({ onGoHome }: AdvancedDashboardProps) {
 }
 
 export function App() {
-  const [appView, setAppView] = useState<'beginner' | 'advanced'>('beginner');
+  const [appView, setAppView] = useState<'learning' | 'beginner' | 'advanced'>('learning');
+
+  if (appView === 'learning') {
+    return <LearningExperience onGoResearchMode={() => setAppView('advanced')} />;
+  }
 
   if (appView === 'beginner') {
     return <BeginnerScreen onGoAdvanced={() => setAppView('advanced')} />;
   }
 
-  return <AdvancedDashboard onGoHome={() => setAppView('beginner')} />;
+  return <AdvancedDashboard onGoHome={() => setAppView('learning')} />;
 }
 

@@ -1,0 +1,33 @@
+- generic [ref=f1e3]:
+  - banner [ref=f1e4]:
+    - generic [ref=f1e5]:
+      - generic [ref=f1e6]: HPSim
+      - generic [ref=f1e7]: /
+      - generic [ref=f1e8]: Intuitive Mechanics
+    - navigation "Chapter progress" [ref=f1e9]:
+      - 'button "Chapter 1: The Defect" [ref=f1e11] [cursor=pointer]':
+        - generic [ref=f1e12]: "1"
+        - generic [ref=f1e13]: The Defect
+      - 'button "Chapter 2: The Wall" [disabled] [ref=f1e16]':
+        - generic [ref=f1e17]: "2"
+        - generic [ref=f1e18]: The Wall
+      - 'button "Chapter 3: More Walls, More Strength" [disabled] [ref=f1e21]':
+        - generic [ref=f1e22]: "3"
+        - generic [ref=f1e23]: More Walls, More Strength
+      - 'button "Chapter 4: The Pattern Has a Name" [disabled] [ref=f1e26]':
+        - generic [ref=f1e27]: "4"
+        - generic [ref=f1e28]: The Pattern Has a Name
+    - button "Research Mode →" [ref=f1e29] [cursor=pointer]
+  - main [ref=f1e30]:
+    - generic [ref=f1e31]:
+      - generic [ref=f1e32]:
+        - generic: ← Dislocation gliding (100%)
+        - generic [ref=f1e35]: Edge Dislocation (⊥) • Single FCC Slip Plane
+      - generic [ref=f1e36]: Gliding under 40 MPa shear stress...
+  - status:
+    - paragraph: Stress applied (40 MPa). The dislocation is gliding along its slip plane.
+  - complementary [ref=f1e43]:
+    - button "🔬 Experiment Log (0 runs) ▲" [ref=f1e44] [cursor=pointer]:
+      - generic [ref=f1e45]: 🔬
+      - generic [ref=f1e46]: Experiment Log (0 runs)
+      - generic [ref=f1e47]: ▲

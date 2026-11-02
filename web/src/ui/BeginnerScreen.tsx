@@ -92,7 +92,7 @@ export function BeginnerScreen({ onGoAdvanced }: BeginnerScreenProps) {
     v.loadStructure(initialDemo);
 
     for (const l of LAYERS) {
-      v.setLayer(l, l === "atoms" || l === "slipPlane" || l === "core");
+      v.setLayer(l, l === "atoms" || l === "ghost" || l === "extraHalfPlane" || l === "slipPlane" || l === "core" || l === "burgers");
     }
     v.setView("front");
     v.setCorePosition(initialDemo.controller.state.pos_m);
@@ -125,7 +125,7 @@ export function BeginnerScreen({ onGoAdvanced }: BeginnerScreenProps) {
 
     viewer.loadStructure(demo);
     for (const l of LAYERS) {
-      viewer.setLayer(l, l === "atoms" || l === "slipPlane" || l === "core");
+      viewer.setLayer(l, l === "atoms" || l === "ghost" || l === "extraHalfPlane" || l === "slipPlane" || l === "core" || l === "burgers");
     }
     viewer.setView("front");
     viewer.setCorePosition(demo.controller.state.pos_m);
