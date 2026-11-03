@@ -1,4 +1,0 @@
-[     745ms] [INFO] %cDownload the React DevTools for a better development experience: https://react.dev/link/react-devtools font-weight:bold @ http://localhost:5173/node_modules/.vite/deps/react-dom_client.js?v=3b304c38:15803
-[   34875ms] Error: invalid playback arguments
-    at framesToSteps (http://localhost:5173/src/core/playback.ts:8:77)
-    at tick (http://localhost:5173/src/ui/chapters/Chapter1Defect.tsx:85:14)

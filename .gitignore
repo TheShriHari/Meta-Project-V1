@@ -32,3 +32,12 @@ venv/
 *.swp
 *.DS_Store
 Thumbs.db
+
+# AI Agent, planning, scratch, and MCP test artifacts
+.agent/
+.agentmemory/
+.planning/
+.playwright-mcp/
+openspec/
+scratch/
+*.log

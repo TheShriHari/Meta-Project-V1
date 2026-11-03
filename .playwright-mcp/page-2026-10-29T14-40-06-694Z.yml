@@ -1,5 +1,0 @@
-- generic [active] [ref=f3e1]:
-  - text: The server is configured with a public base URL of /hpsim/ - did you mean to visit
-  - link "/hpsim/" [ref=f3e2] [cursor=pointer]:
-    - /url: /hpsim/
-  - text: instead?
